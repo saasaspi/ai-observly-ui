@@ -1,0 +1,247 @@
+# AI Observly — Frontend / UI Build Instructions
+
+## How to use this document
+This covers **only the UI layer** — pages, screens, components, layout, and copy. The backend (database, API route logic, calculations, Stripe/email integrations) is being built **separately, by someone else, but within the same Next.js codebase** — Next.js isn't split into two technologies, it's one project where frontend and backend work is just being divided between two people.
+
+**What this means practically:** build every screen described below using **Next.js (App Router) + Tailwind CSS**. Where a screen needs real data (a dashboard number, a list of customers, a saved setting), don't build the real logic for it — call a placeholder function that returns realistic mock data shaped exactly like the "Data it needs" note under that section. The backend developer will later replace those placeholder functions with real ones that return the same shape — that's the handoff contract, and it's summarized again in full at the end of this document.
+
+**Build order:** Dashboard → Settings screens (key, Stripe, feature mapping, integration guide) → Landing page → Auth screens (signup/login/onboarding). Same priority as the full build, UI-only.
+
+## Product identity (for copy/tone consistency)
+- **Name:** AI Observly
+- **One-line pitch:** "See exactly which customers and features are actually making you money — no engineering dashboard required."
+- **Tone throughout:** plain English, money-first language. Avoid "token," "API," "proxy," or model names anywhere by default — always behind a "show technical details" toggle where one exists.
+
+---
+
+## PHASE 1 — Dashboard (build first)
+
+**Goal:** a working, good-looking dashboard screen using realistic hardcoded sample data — no real backend calls yet.
+
+### 1.1 — Overall layout
+A single dashboard page as the app's home screen (assume logged-in state for now — real login gating is a backend/routing concern being handled separately). Clean, spacious layout: top summary row, then customer list, then feature breakdown. Plenty of whitespace, large confident numbers, muted colors except the green/yellow/red status indicators below.
+
+### 1.2 — Top summary row
+Three large stat cards, side by side:
+- **Total Revenue (this month)**
+- **Total AI Cost (this month)**
+- **Profit** — colored green if positive, red if negative
+
+Sample data for now: Revenue $4,200, AI Cost $1,140, Profit $3,060.
+**Data it needs:** `{ totalRevenue: number, totalCost: number, totalProfit: number }`
+
+### 1.3 — Customer list section
+Header: "Your Customers." A table/card list, one row per customer:
+- Customer name/ID
+- Monthly cost
+- Monthly revenue
+- Margin (revenue − cost)
+- Colored status dot: **green** (margin > 30% of revenue), **yellow** (0–30%), **red** (negative)
+- Sorted **worst-first** (lowest margin at top) by default
+
+Sample data: 5 customers, a mix of green/yellow/one red.
+**Data it needs:** `customers: [{ id, name, cost, revenue, margin, status: "green"|"yellow"|"red" }]`
+
+### 1.4 — Feature breakdown section
+Header: "Cost & ROI by Feature." A table, one row per feature:
+- Feature name
+- **Cost** — small caption under the column header: "Actual"
+- **Revenue** — small caption under the column header: "Estimate"
+- **ROI** (revenue − cost), green/red by sign
+
+Directly below the table, permanently visible (not a hover tooltip), muted text:
+
+> **Estimated revenue allocation**
+> Revenue is currently split evenly across features included in the customer's plan.
+
+Sort worst-first. Sample data: 4 features (e.g. Chatbot, Summarizer, Report Generator, Image Analysis), a believable mix including at least one negative ROI.
+**Data it needs:** `features: [{ name, cost, revenueEstimate, roi }]`
+
+### 1.5 — "Show technical details" toggle
+Top-right toggle, off by default. When on, reveal an extra column/expandable row per customer/feature: total tokens, model(s) used, request count. This is the only place those ever appear.
+**Data it needs (only when toggle is on):** `{ tokens, models: string[], requestCount }` per customer/feature.
+
+### 1.6 — Empty state
+Design (visually, not functionally) what this page looks like with zero data: a friendly message — "Connect your AI provider and Stripe to see your real numbers here" — with a button that will later link into onboarding.
+
+---
+
+## PHASE 2 — Settings & in-app screens (UI only)
+
+Each of these is a **screen with UI and copy** — the actual key generation, encryption, Stripe API calls, and database writes are backend work being done separately. Wire each button/save action to a placeholder function for now.
+
+### 2.1 — Secret key screen
+Settings page, "Developer Keys" section:
+- "Generate Key" button → shows a key once in a copyable text box with a "Copy" button, plus the note: "Store this somewhere safe — you won't be able to see the full key again."
+- "Regenerate" and "Revoke" buttons.
+- If a key already exists: show only the last 4 characters (e.g. `obs_live_••••••••1a2b`) with Regenerate/Revoke visible.
+**Actions it needs (placeholder for now):** `generateKey()`, `regenerateKey()`, `revokeKey()` — each returning `{ keyDisplay: string }`.
+
+### 2.2 — Stripe connection screen
+Settings section, "Connect Stripe":
+- Instructions text: "Go to your Stripe Dashboard → Developers → API Keys → Create restricted key. Grant Read-only access to Customers and Subscriptions only, and leave everything else off. Paste that key below."
+- A visually distinct reassurance box (light background, checkmark icon): **"This key is read-only — it cannot move money, refund charges, or see card numbers."**
+- Text input for the key + "Connect" button + a "last synced" timestamp display once connected.
+**Actions it needs:** `connectStripe(key: string)` → returns `{ connected: boolean, lastSynced: date }`.
+
+### 2.3 — Feature-to-plan mapping screen
+Settings section, "Feature Mapping":
+- List of pricing plans (assume this comes pre-populated from Stripe sync, mock 2–3 sample plans for now).
+- For each plan, a multi-select of feature labels (mock a handful, e.g. "chatbot," "summarizer") — checkboxes for which features are included.
+- "Save mapping" button.
+- Explanatory line: "This tells AI Observly which of your features a customer is paying for, so we can estimate revenue per feature. We'll always label this as an estimate, never a hard number."
+**Data it needs:** `plans: [{ name, includedFeatures: string[] }]` and `availableFeatures: string[]`.
+**Action it needs:** `saveMapping(plans)`.
+
+### 2.4 — Integration Guide page
+A page (linked from Settings, and shown right after key generation in onboarding), titled "How to Connect Your App," with two tabs. **Use this exact copy — it's finished, not a placeholder:**
+
+#### Tab 1 — "I have a developer"
+> **How AI Observly logging works**
+> Your app keeps calling OpenAI/Anthropic exactly as it does today, using your own API key. Nothing routes through AI Observly. After each call completes, send us a small usage report in the background — don't await it, and don't let a failure to send it affect the user-facing request in any way.
+>
+> **Endpoint:** `POST https://[your-ai-observly-domain]/api/log-usage`
+>
+> **Payload:**
+> ```json
+> {
+>   "api_key": "obs_live_xxxxxxxxxxxxxxxx",
+>   "customer_id": "the ID you use for this customer",
+>   "feature_label": "chatbot",
+>   "model": "gpt-4o",
+>   "input_tokens": 512,
+>   "output_tokens": 128
+> }
+> ```
+>
+> **Example (Node.js), fire-and-forget:**
+> ```js
+> const response = await openai.chat.completions.create({ ... });
+>
+> fetch("https://[your-ai-observly-domain]/api/log-usage", {
+>   method: "POST",
+>   headers: { "Content-Type": "application/json" },
+>   body: JSON.stringify({
+>     api_key: process.env.AI_OBSERVLY_KEY,
+>     customer_id: currentCustomer.id,
+>     feature_label: "chatbot",
+>     model: "gpt-4o",
+>     input_tokens: response.usage.prompt_tokens,
+>     output_tokens: response.usage.completion_tokens,
+>   }),
+> }).catch(() => {});
+> ```
+>
+> **Requirements:** call this after every AI request you want tracked. Never `await`/block on it in the main request path.
+
+#### Tab 2 — "I'm building this myself"
+> Paste the text below into Replit, Cursor, Lovable, or whatever tool you're using — it tells your AI assistant exactly what to change.
+>
+> ```
+> I want to track how much I'm spending on AI (OpenAI/Anthropic) calls, broken 
+> down by which customer is using it and which feature they're using, using a 
+> tool called AI Observly. Please do the following:
+>
+> 1. Find every place in my code where we call the OpenAI or Anthropic API.
+>
+> 2. After each of those calls finishes and we have the AI's answer, add a 
+>    step that sends a small report to AI Observly in the background — this 
+>    must NOT wait for a response and must NOT affect what happens with the 
+>    real AI answer in any way, even if this report fails to send.
+>
+> 3. The report should be a POST request to:
+>    https://[your-ai-observly-domain]/api/log-usage
+>
+>    With this information:
+>    - api_key: "obs_live_xxxxxxxxxxxxxxxx"
+>    - customer_id: the ID of whichever customer is logged in
+>    - feature_label: a short label for which feature this call belongs to
+>    - model: the name of the AI model used
+>    - input_tokens and output_tokens: from the normal API response
+>
+> 4. Don't change anything else about how the AI calls work.
+>
+> Show me exactly what you're about to change before applying it, so I can 
+> confirm.
+> ```
+
+### 2.5 — Test-data buttons (in Settings, near the key section)
+- "Send a test usage event" button — no real call needed yet, just a UI button with a loading state and a success/failure toast.
+- "Load sample billing data (test mode)" button, with a small label near it: "Test data — not connected to a real Stripe account." Same treatment — button + toast, no real logic yet.
+**Actions they need:** `sendTestEvent()`, `seedTestBillingData()`.
+
+### 2.6 — "Recalculate now" button
+A button in Settings that will trigger the backend's daily calculation job on demand. UI only — a button with a loading spinner and a "Last calculated: [time]" label.
+**Action it needs:** `recalculateNow()` → returns `{ lastCalculated: date }`.
+
+---
+
+## PHASE 3 — Landing page
+
+Public marketing page at the root URL, separate from the dashboard. Use this copy directly.
+
+### 3.1 — Hero section
+- Headline: **"See which customers and features are actually making you money."**
+- Subheadline: "AI Observly connects to your AI provider and your Stripe account and shows you real cost and ROI, per customer and per feature — in plain English, no engineering dashboard required."
+- Primary button: "Get Started"
+
+### 3.2 — "How it works" section
+3-step visual layout, this exact copy:
+
+> **1. Connect your accounts**
+> Paste in a read-only Stripe key and generate your AI Observly secret key. Takes about five minutes — no engineering work required if you're comfortable pasting a couple of settings values.
+>
+> **2. Your app keeps working exactly as before**
+> Your AI features keep calling OpenAI or Anthropic directly, exactly like they do today. AI Observly never sits in the middle of your live traffic — your app just sends us a quick, background copy of what each request cost after the fact.
+>
+> **3. See the real picture**
+> Your dashboard shows, per customer and per feature: what it costs you, what it earns you, and whether it's actually profitable — in plain dollars, not tokens.
+
+### 3.3 — Trust/FAQ section
+- **"Can this break my app?"** — "No. AI Observly never routes your live AI traffic through our servers — your app keeps calling OpenAI/Anthropic directly. If AI Observly is ever briefly unavailable, your product keeps working exactly as normal."
+- **"Is my Stripe data safe?"** — "We only ever ask for a read-only Stripe key that can see your customer list and subscription amounts — it cannot move money, issue refunds, or see card details."
+- **"Do I need to be technical to set this up?"** — "No. If you're building with an AI coding assistant like Replit, Cursor, or Lovable, we give you a copy-paste prompt that does the setup for you."
+
+### 3.4 — Footer signup / waitlist capture
+Email input + "Get Early Access" button.
+**Action it needs:** `submitWaitlist(email)`.
+
+---
+
+## PHASE 4 — Auth screens (UI only)
+
+### 4.1 — Signup & login forms
+Standard email + password forms. "Forgot password" link/flow UI.
+**Actions they need (placeholder):** `signup(email, password)`, `login(email, password)`, `requestPasswordReset(email)`.
+
+### 4.2 — Onboarding flow UI
+A 3-step guided flow with a progress bar, shown right after signup:
+1. **Generate your key** (2.1) — show the "I'm building this myself" prompt (2.4, Tab 2) right here.
+2. **Connect Stripe** (2.2), with the reassurance text.
+3. **Map your plans to features** (2.3).
+
+After step 3, redirect to the dashboard (Phase 1's page).
+
+---
+
+## Appendix — Frontend/Backend handoff contract
+
+Everything below is a placeholder function the UI calls. The backend developer's job is to implement each one to return exactly this shape — this list is the interface between the two halves of the build.
+
+| Screen | Function | Returns / Accepts |
+|---|---|---|
+| Dashboard (1.2) | `getDashboardSummary()` | `{ totalRevenue, totalCost, totalProfit }` |
+| Dashboard (1.3) | `getCustomers()` | `[{ id, name, cost, revenue, margin, status }]` |
+| Dashboard (1.4) | `getFeatureBreakdown()` | `[{ name, cost, revenueEstimate, roi }]` |
+| Dashboard (1.5) | `getTechnicalDetails(customerOrFeatureId)` | `{ tokens, models, requestCount }` |
+| Secret key (2.1) | `generateKey()` / `regenerateKey()` / `revokeKey()` | `{ keyDisplay }` |
+| Stripe connect (2.2) | `connectStripe(key)` | `{ connected, lastSynced }` |
+| Feature mapping (2.3) | `getPlans()` | `{ plans: [{ name, includedFeatures }], availableFeatures }` |
+| Feature mapping (2.3) | `saveMapping(plans)` | `{ success }` |
+| Test buttons (2.5) | `sendTestEvent()` / `seedTestBillingData()` | `{ success }` |
+| Recalculate (2.6) | `recalculateNow()` | `{ lastCalculated }` |
+| Waitlist (3.4) | `submitWaitlist(email)` | `{ success }` |
+| Auth (4.1) | `signup(email, password)` / `login(email, password)` | `{ success, userId }` |
+| Auth (4.1) | `requestPasswordReset(email)` | `{ success }` |
+
+Use this table when the backend is ready to plug in — swap each placeholder function for a real one matching the same input/output shape, and no UI code should need to change.

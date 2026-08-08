@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "AI Observly"
+description = "AI cost and ROI observability dashboard for SaaS founders. Shows revenue, AI costs, and profit per customer and feature, with a landing page, auth, onboarding, and settings screens."
+version = "1.0.0"
+id = "artifacts/ai-observly"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23329
+
+[services.development]
+run = "pnpm --filter @workspace/ai-observly run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ai-observly", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ai-observly/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23329"
+BASE_PATH = "/"
