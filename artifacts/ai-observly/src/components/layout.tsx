@@ -9,13 +9,18 @@ import {
 import { ReactNode } from "react";
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/settings", label: "Settings", icon: Settings },
     { href: "/docs", label: "Docs", icon: BookOpen },
   ];
+
+  const handleLogout = () => {
+    localStorage.removeItem("ai_observly_authed");
+    setLocation("/");
+  };
 
   return (
     <div className="flex min-h-[100dvh] w-full bg-background">
@@ -51,14 +56,14 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="p-4 mt-auto border-t border-border">
-          <Link 
-            href="/"
+          <button 
+            onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground w-full transition-colors"
             data-testid="btn-logout"
           >
             <LogOut className="w-4 h-4" />
             Sign Out
-          </Link>
+          </button>
         </div>
       </aside>
 

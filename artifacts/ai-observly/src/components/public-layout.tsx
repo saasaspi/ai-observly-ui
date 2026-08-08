@@ -1,43 +1,166 @@
-import { ReactNode } from "react";
-import { Link } from "wouter";
+import { ReactNode, useState } from "react";
+import { Link, useLocation } from "wouter";
+import { Menu, X } from "lucide-react";
+
+const sectionLinks = [
+  { label: "How it works", anchor: "how-it-works" },
+  { label: "Features", anchor: "features" },
+  { label: "Who it's for", anchor: "who-its-for" },
+  { label: "Pricing", anchor: "pricing" },
+  { label: "FAQ", anchor: "faq" },
+];
 
 export function PublicLayout({ children }: { children: ReactNode }) {
+  const [location] = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const isHome = location === "/";
+
+  // Build a section href: if on home page, just scroll; if on another page go to /#section
+  const sectionHref = (anchor: string) => (isHome ? `#${anchor}` : `/#${anchor}`);
+
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col font-sans">
-      <header className="border-b border-border/40 backdrop-blur-md sticky top-0 z-50 bg-background/80">
+      <header className="border-b border-border/40 backdrop-blur-md sticky top-0 z-50 bg-background/90">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg font-outfit" data-testid="link-home">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 font-bold text-lg font-outfit shrink-0" data-testid="link-home">
             <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+              </svg>
             </div>
             AI Observly
           </Link>
-          
-          <nav className="flex items-center gap-6 text-sm font-medium">
-            <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-docs">
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
+            {sectionLinks.map(({ label, anchor }) => (
+              <a
+                key={anchor}
+                href={sectionHref(anchor)}
+                className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {label}
+              </a>
+            ))}
+            <Link
+              href="/docs"
+              className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              data-testid="link-docs"
+            >
               Docs
             </Link>
-            <Link href="/login" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-login">
+          </nav>
+
+          {/* Desktop auth */}
+          <div className="hidden md:flex items-center gap-3">
+            <Link
+              href="/login"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted"
+              data-testid="link-login"
+            >
               Log in
             </Link>
-            <Link href="/signup" className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:opacity-90 transition-opacity" data-testid="link-signup">
+            <Link
+              href="/signup"
+              className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity shadow-sm"
+              data-testid="link-signup"
+            >
               Get Started
             </Link>
-          </nav>
+          </div>
+
+          {/* Mobile menu toggle */}
+          <button
+            className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
+
+        {/* Mobile menu */}
+        {mobileOpen && (
+          <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-md px-6 py-4 flex flex-col gap-1">
+            {sectionLinks.map(({ label, anchor }) => (
+              <a
+                key={anchor}
+                href={sectionHref(anchor)}
+                className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                {label}
+              </a>
+            ))}
+            <Link
+              href="/docs"
+              className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Docs
+            </Link>
+            <div className="border-t border-border mt-2 pt-3 flex flex-col gap-2">
+              <Link href="/login" className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
+                Log in
+              </Link>
+              <Link href="/signup" className="px-3 py-2.5 rounded-md text-sm font-medium bg-primary text-primary-foreground text-center hover:opacity-90 transition-opacity" onClick={() => setMobileOpen(false)}>
+                Get Started
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
       <main className="flex-1 flex flex-col">
         {children}
       </main>
 
-      <footer className="border-t border-border py-12 text-center text-muted-foreground">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center">
-          <div className="flex items-center gap-2 mb-4 font-outfit font-semibold text-foreground">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
-            AI Observly
+      <footer className="border-t border-border py-12 bg-card">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+            {/* Brand */}
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2 mb-3 font-outfit font-semibold text-foreground">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                  <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+                </svg>
+                AI Observly
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                AI cost & margin tracking for founders who ship fast.
+              </p>
+            </div>
+            {/* Product */}
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Product</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><a href="/#features" className="hover:text-foreground transition-colors">Features</a></li>
+                <li><a href="/#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
+                <li><a href="/#how-it-works" className="hover:text-foreground transition-colors">How it works</a></li>
+              </ul>
+            </div>
+            {/* Resources */}
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Resources</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="/docs" className="hover:text-foreground transition-colors">Docs</Link></li>
+                <li><a href="/#faq" className="hover:text-foreground transition-colors">FAQ</a></li>
+              </ul>
+            </div>
+            {/* Account */}
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Account</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="/login" className="hover:text-foreground transition-colors">Log in</Link></li>
+                <li><Link href="/signup" className="hover:text-foreground transition-colors">Get started</Link></li>
+              </ul>
+            </div>
           </div>
-          <p className="text-sm">© {new Date().getFullYear()} AI Observly. See exactly what your AI costs.</p>
+          <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
+            <p>© {new Date().getFullYear()} AI Observly. See exactly what your AI costs.</p>
+            <p>Built in public · Made for founders</p>
+          </div>
         </div>
       </footer>
     </div>

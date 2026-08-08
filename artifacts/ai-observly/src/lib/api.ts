@@ -74,10 +74,16 @@ export async function submitWaitlist(email: string) {
 }
 
 export async function signup(email: string, password: string) {
+  localStorage.setItem("ai_observly_authed", "true");
   return { success: true, userId: "u_demo" };
 }
 export async function login(email: string, password: string) {
+  localStorage.setItem("ai_observly_authed", "true");
   return { success: true, userId: "u_demo" };
+}
+export async function logout() {
+  localStorage.removeItem("ai_observly_authed");
+  return { success: true };
 }
 export async function requestPasswordReset(email: string) {
   return { success: true };

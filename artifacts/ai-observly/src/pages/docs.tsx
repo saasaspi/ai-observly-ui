@@ -1,26 +1,12 @@
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout";
+import { PublicLayout } from "@/components/public-layout";
 import { Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-export default function Docs() {
+function DocsContent() {
   const [tab, setTab] = useState<"self" | "developer">("self");
   const { toast } = useToast();
-
-  // If user is accessing from within the app, wrap with DashboardLayout, else PublicLayout
-  // In a real app we'd check auth state, but here we can check the URL. If they navigated directly,
-  // we could just render it as public if not authenticated, or we can just stick it in DashboardLayout 
-  // since the prompt says "The docs page should use DashboardLayout when accessed from /docs within the app (sidebar visible), so add it to the same layout." Wait, the prompt also says "But also make sure the public landing page navbar has a "Docs" link pointing to /docs."
-  // To handle both, we can just use PublicLayout if they don't have a token, or we can just render the page content in either. Actually, I can render the layout based on `location` but location is just `/docs`. 
-  // Let's just use PublicLayout if it's not authenticated. But I can't easily check auth. 
-  // I will just use a minimal wrapper that checks localStorage or just use PublicLayout for now, but wait, the prompt says "The docs page should use DashboardLayout when accessed from /docs within the app". 
-  // I'll just use DashboardLayout, because the instructions explicitly say to use DashboardLayout. Let's see: if I just wrap it in DashboardLayout, public users will see the sidebar. Is that okay? The prompt says "accessible from the public nav AND from the dashboard sidebar." 
-  // I'll make a standalone component for the docs content. Then wrap it in PublicLayout if it's public.
-  // We can just use DashboardLayout for now, and if they come from the public page, they'll see the dashboard sidebar, which is fine (like a docs sidebar). Or we can provide a standalone wrapper.
-  // Actually, wait, `location` inside the component is just `/docs`. Let's just assume we want `DashboardLayout` as instructed: "The docs page should use DashboardLayout when accessed from /docs within the app... But also make sure the public landing page navbar has a 'Docs' link pointing to /docs."
-  // A common pattern is to just always use DashboardLayout for `/docs` since it has a sidebar which looks like docs. But the dashboard layout has "Dashboard" and "Settings" links.
-  
-  // Let's implement a simple check: if the user came from a public route, maybe we don't have a token. Since we don't have real auth, I'll just wrap it in DashboardLayout as requested. Wait, a public user seeing "Settings" and "Sign Out" might be weird. Let's just wrap it in `DashboardLayout`.
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -77,7 +63,7 @@ fetch("https://[your-ai-observly-domain]/api/log-usage", {
   }),
 }).catch(() => {});`;
 
-  const Content = () => (
+  return (
     <div className="max-w-3xl mx-auto py-8">
       <div className="mb-10">
         <h1 className="text-3xl font-bold font-outfit mb-2">Integration Guide</h1>
@@ -85,13 +71,13 @@ fetch("https://[your-ai-observly-domain]/api/log-usage", {
       </div>
 
       <div className="flex bg-muted rounded-lg p-1 mb-8 max-w-md">
-        <button 
+        <button
           onClick={() => setTab("self")}
           className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-colors ${tab === "self" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
         >
           I'm building this myself
         </button>
-        <button 
+        <button
           onClick={() => setTab("developer")}
           className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-colors ${tab === "developer" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
         >
@@ -105,9 +91,8 @@ fetch("https://[your-ai-observly-domain]/api/log-usage", {
             <p className="text-muted-foreground mb-6">
               Paste the text below into Replit, Cursor, Lovable, or whatever tool you're using — it tells your AI assistant exactly what to change.
             </p>
-            
             <div className="relative">
-              <button 
+              <button
                 onClick={() => handleCopy(promptText)}
                 className="absolute top-4 right-4 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-xs flex items-center gap-1.5 hover:bg-secondary/80 font-medium"
               >
@@ -126,20 +111,15 @@ fetch("https://[your-ai-observly-domain]/api/log-usage", {
                 Your app keeps calling OpenAI/Anthropic exactly as it does today, using your own API key. Nothing routes through AI Observly. After each call completes, send us a small usage report in the background — don't await it, and don't let a failure to send it affect the user-facing request in any way.
               </p>
             </div>
-            
             <div className="p-8 space-y-8">
               <div>
                 <div className="inline-flex items-center gap-3 bg-muted/50 border border-border rounded-lg px-4 py-3 font-mono text-sm mb-6 w-full">
                   <span className="text-primary font-bold">POST</span>
                   <span className="text-foreground/80 break-all">https://[your-ai-observly-domain]/api/log-usage</span>
                 </div>
-                
                 <h3 className="text-sm font-semibold uppercase text-muted-foreground mb-3">Payload</h3>
                 <div className="relative">
-                  <button 
-                    onClick={() => handleCopy(devPayloadText)}
-                    className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
-                  >
+                  <button onClick={() => handleCopy(devPayloadText)} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground">
                     <Copy className="w-4 h-4" />
                   </button>
                   <pre className="bg-muted/50 border border-border rounded-lg p-4 text-sm font-mono text-foreground overflow-x-auto">
@@ -147,14 +127,10 @@ fetch("https://[your-ai-observly-domain]/api/log-usage", {
                   </pre>
                 </div>
               </div>
-
               <div>
                 <h3 className="text-sm font-semibold uppercase text-muted-foreground mb-3">Example (Node.js), fire-and-forget:</h3>
                 <div className="relative">
-                  <button 
-                    onClick={() => handleCopy(devExampleText)}
-                    className="absolute top-3 right-3 text-muted-foreground hover:text-foreground"
-                  >
+                  <button onClick={() => handleCopy(devExampleText)} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground">
                     <Copy className="w-4 h-4" />
                   </button>
                   <pre className="bg-muted/50 border border-border rounded-lg p-4 text-sm font-mono text-foreground overflow-x-auto">
@@ -162,7 +138,6 @@ fetch("https://[your-ai-observly-domain]/api/log-usage", {
                   </pre>
                 </div>
               </div>
-
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 flex gap-3 text-sm">
                 <span className="font-semibold text-primary">Note:</span>
                 <span className="text-muted-foreground">Call this after every AI request you want tracked. Never await/block on it in the main request path.</span>
@@ -173,13 +148,24 @@ fetch("https://[your-ai-observly-domain]/api/log-usage", {
       </div>
     </div>
   );
+}
 
-  // If there's a quick way to know they are logged in, we'd use it. For now, since the prompt says 
-  // "The docs page should use DashboardLayout when accessed from /docs within the app (sidebar visible), so add it to the same layout. But also make sure the public landing page navbar has a 'Docs' link pointing to /docs."
-  // I will just use DashboardLayout. If they access from the public nav, they just get the dashboard sidebar. This is perfectly fine.
+export default function Docs() {
+  const isAuthed = localStorage.getItem("ai_observly_authed") === "true";
+
+  if (isAuthed) {
+    return (
+      <DashboardLayout>
+        <DocsContent />
+      </DashboardLayout>
+    );
+  }
+
   return (
-    <DashboardLayout>
-      <Content />
-    </DashboardLayout>
+    <PublicLayout>
+      <div className="max-w-5xl mx-auto px-6 py-12">
+        <DocsContent />
+      </div>
+    </PublicLayout>
   );
 }
