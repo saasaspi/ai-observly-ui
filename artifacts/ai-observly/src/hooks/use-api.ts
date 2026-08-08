@@ -7,7 +7,8 @@ export const keys = {
   customers: ["customers"],
   featureBreakdown: ["featureBreakdown"],
   technicalDetails: (id: string) => ["technicalDetails", id],
-  plans: ["plans"],
+  customFeatures: ["customFeatures"],
+  customPlans: ["customPlans"],
 };
 
 // Queries
@@ -40,11 +41,12 @@ export function useTechnicalDetails(id: string, enabled: boolean) {
   });
 }
 
-export function usePlans() {
-  return useQuery({
-    queryKey: keys.plans,
-    queryFn: api.getPlans,
-  });
+export function useCustomFeatures() {
+  return useQuery({ queryKey: keys.customFeatures, queryFn: api.getCustomFeatures });
+}
+
+export function useCustomPlans() {
+  return useQuery({ queryKey: keys.customPlans, queryFn: api.getCustomPlans });
 }
 
 // Mutations
@@ -60,20 +62,24 @@ export function useRevokeKey() {
   return useMutation({ mutationFn: api.revokeKey });
 }
 
-export function useConnectStripe() {
-  return useMutation({ mutationFn: (key: string) => api.connectStripe(key) });
+export function useSaveCustomFeatures() {
+  const qc = useQueryClient();
+  return useMutation({ 
+    mutationFn: api.saveCustomFeatures,
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.customFeatures })
+  });
 }
 
-export function useSaveMapping() {
-  return useMutation({ mutationFn: api.saveMapping });
+export function useSaveCustomPlans() {
+  const qc = useQueryClient();
+  return useMutation({ 
+    mutationFn: api.saveCustomPlans,
+    onSuccess: () => qc.invalidateQueries({ queryKey: keys.customPlans })
+  });
 }
 
 export function useSendTestEvent() {
   return useMutation({ mutationFn: api.sendTestEvent });
-}
-
-export function useSeedTestBillingData() {
-  return useMutation({ mutationFn: api.seedTestBillingData });
 }
 
 export function useRecalculateNow() {

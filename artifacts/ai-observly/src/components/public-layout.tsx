@@ -4,7 +4,7 @@ import { Link } from "wouter";
 export function PublicLayout({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col font-sans">
-      <header className="border-b border-border/40 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-border/40 backdrop-blur-md sticky top-0 z-50 bg-background/80">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold text-lg font-outfit" data-testid="link-home">
             <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
@@ -14,6 +14,9 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           </Link>
           
           <nav className="flex items-center gap-6 text-sm font-medium">
+            <Link href="/docs" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-docs">
+              Docs
+            </Link>
             <Link href="/login" className="text-muted-foreground hover:text-foreground transition-colors" data-testid="link-login">
               Log in
             </Link>

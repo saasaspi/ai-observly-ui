@@ -14,10 +14,10 @@ export async function getCustomers() {
 
 export async function getFeatureBreakdown() {
   return [
-    { name: "Chatbot", cost: 520, revenueEstimate: 1120, roi: 600 },
-    { name: "Summarizer", cost: 310, revenueEstimate: 840, roi: 530 },
-    { name: "Report Generator", cost: 220, revenueEstimate: 600, roi: 380 },
-    { name: "Image Analysis", cost: 290, revenueEstimate: 180, roi: -110 },
+    { name: "Feature A", cost: 520, revenueEstimate: 1120, roi: 600 },
+    { name: "Feature B", cost: 310, revenueEstimate: 840, roi: 530 },
+    { name: "Feature C", cost: 220, revenueEstimate: 600, roi: 380 },
+    { name: "Feature D", cost: 290, revenueEstimate: 180, roi: -110 },
   ];
 }
 
@@ -35,30 +35,36 @@ export async function revokeKey() {
   return { keyDisplay: "" };
 }
 
-export async function connectStripe(key: string) {
-  return { connected: true, lastSynced: new Date() };
+// Custom feature management (stored in localStorage for now)
+export type CustomFeature = { id: string; name: string; label: string };
+export type CustomPlan = { id: string; name: string; includedFeatureIds: string[] };
+
+export async function getCustomFeatures(): Promise<CustomFeature[]> {
+  const stored = localStorage.getItem('ai_observly_features');
+  if (stored) return JSON.parse(stored);
+  return [];
 }
 
-export async function getPlans() {
-  return {
-    plans: [
-      { name: "Starter", includedFeatures: ["chatbot"] },
-      { name: "Growth", includedFeatures: ["chatbot", "summarizer"] },
-      { name: "Pro", includedFeatures: ["chatbot", "summarizer", "report-generator", "image-analysis"] },
-    ],
-    availableFeatures: ["chatbot", "summarizer", "report-generator", "image-analysis"],
-  };
+export async function saveCustomFeatures(features: CustomFeature[]): Promise<{ success: boolean }> {
+  localStorage.setItem('ai_observly_features', JSON.stringify(features));
+  return { success: true };
 }
-export async function saveMapping(plans: any) {
+
+export async function getCustomPlans(): Promise<CustomPlan[]> {
+  const stored = localStorage.getItem('ai_observly_plans');
+  if (stored) return JSON.parse(stored);
+  return [];
+}
+
+export async function saveCustomPlans(plans: CustomPlan[]): Promise<{ success: boolean }> {
+  localStorage.setItem('ai_observly_plans', JSON.stringify(plans));
   return { success: true };
 }
 
 export async function sendTestEvent() {
   return { success: true };
 }
-export async function seedTestBillingData() {
-  return { success: true };
-}
+
 export async function recalculateNow() {
   return { lastCalculated: new Date() };
 }

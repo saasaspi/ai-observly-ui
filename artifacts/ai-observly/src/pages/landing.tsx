@@ -50,23 +50,23 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background pointer-events-none" />
         
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-sm text-primary mb-8">
+          <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-8 shadow-sm">
             <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse"></span>
             Stop guessing your AI margins
           </div>
           
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8 font-outfit text-foreground leading-[1.1]">
-            See which customers and features are <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">actually making you money.</span>
+            See which customers and features are <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">actually making you money.</span>
           </h1>
           
           <p className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
-            AI Observly connects to your AI provider and your Stripe account and shows you real cost and ROI, per customer and per feature — in plain English, no engineering dashboard required.
+            AI Observly connects to your AI provider and tracks costs across your customers and features — showing you real cost and ROI in plain English, no engineering dashboard required.
           </p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link 
               href="/signup" 
-              className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity w-full sm:w-auto"
+              className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity w-full sm:w-auto shadow-sm"
               data-testid="hero-cta"
             >
               Get Started
@@ -87,9 +87,9 @@ export default function LandingPage() {
           <div className="grid md:grid-cols-3 gap-12">
             <div className="relative">
               <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-bold font-outfit mb-6">1</div>
-              <h3 className="text-xl font-semibold mb-4 text-foreground">Connect your accounts</h3>
+              <h3 className="text-xl font-semibold mb-4 text-foreground">Generate your key</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Paste in a read-only Stripe key and generate your AI Observly secret key. Takes about five minutes — no engineering work required if you're comfortable pasting a couple of settings values.
+                Generate your AI Observly secret key. Takes about two minutes — no complicated setup required.
               </p>
             </div>
             
@@ -118,7 +118,7 @@ export default function LandingPage() {
           <h2 className="text-3xl md:text-4xl font-bold font-outfit mb-12 text-center">Frequently Asked Questions</h2>
           
           <div className="space-y-8">
-            <div className="p-8 rounded-2xl bg-card border border-border">
+            <div className="p-8 rounded-2xl bg-card border border-border shadow-sm">
               <h3 className="text-xl font-semibold mb-3 flex items-start gap-3">
                 <CheckCircle2 className="w-6 h-6 text-primary shrink-0 mt-0.5" />
                 "Can this break my app?"
@@ -128,17 +128,17 @@ export default function LandingPage() {
               </p>
             </div>
             
-            <div className="p-8 rounded-2xl bg-card border border-border">
+            <div className="p-8 rounded-2xl bg-card border border-border shadow-sm">
               <h3 className="text-xl font-semibold mb-3 flex items-start gap-3">
                 <CheckCircle2 className="w-6 h-6 text-primary shrink-0 mt-0.5" />
-                "Is my Stripe data safe?"
+                "Do you have access to my revenue data?"
               </h3>
               <p className="text-muted-foreground ml-9 leading-relaxed">
-                We only ever ask for a read-only Stripe key that can see your customer list and subscription amounts — it cannot move money, issue refunds, or see card details.
+                You control what revenue data you enter. AI Observly allows you to define custom plans and customer revenues so we can calculate margins accurately.
               </p>
             </div>
             
-            <div className="p-8 rounded-2xl bg-card border border-border">
+            <div className="p-8 rounded-2xl bg-card border border-border shadow-sm">
               <h3 className="text-xl font-semibold mb-3 flex items-start gap-3">
                 <CheckCircle2 className="w-6 h-6 text-primary shrink-0 mt-0.5" />
                 "Do I need to be technical to set this up?"
@@ -168,7 +168,7 @@ export default function LandingPage() {
                       <Input 
                         placeholder="founder@startup.com" 
                         {...field} 
-                        className="h-12 bg-background border-border focus-visible:ring-primary"
+                        className="h-12 bg-background border-border focus-visible:ring-primary shadow-sm"
                         data-testid="input-waitlist-email"
                       />
                     </FormControl>
@@ -178,7 +178,7 @@ export default function LandingPage() {
               />
               <button 
                 type="submit" 
-                className="h-12 px-6 rounded-md bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity whitespace-nowrap"
+                className="h-12 px-6 rounded-md bg-primary text-primary-foreground font-medium hover:opacity-90 transition-opacity whitespace-nowrap shadow-sm"
                 disabled={submitWaitlist.isPending}
                 data-testid="btn-waitlist-submit"
               >

@@ -3,7 +3,8 @@ import {
   LayoutDashboard, 
   Settings, 
   LogOut,
-  Sparkles
+  Sparkles,
+  BookOpen
 } from "lucide-react";
 import { ReactNode } from "react";
 
@@ -13,6 +14,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/docs", label: "Docs", icon: BookOpen },
   ];
 
   return (
