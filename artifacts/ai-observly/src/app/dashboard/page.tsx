@@ -34,7 +34,7 @@ function IntegrationBanner() {
       <div className="flex items-center gap-2.5 min-w-0">
         <AlertCircle className="w-4 h-4 text-yellow-600 shrink-0" />
         <span className="text-yellow-800 font-medium">Integration pending — no data yet.</span>
-        <Link href="/docs" className="text-yellow-700 underline hover:text-yellow-900 hidden sm:inline">
+        <Link href="/dashboard/docs" className="text-yellow-700 underline hover:text-yellow-900 hidden sm:inline">
           Finish setup →
         </Link>
       </div>
@@ -134,7 +134,7 @@ function OverviewContent() {
           </div>
           <p className="text-sm text-muted-foreground mb-4">This is mock data. Connect your app to see real numbers.</p>
           <div className="flex flex-wrap gap-3">
-            <Link href="/docs" className="text-sm text-primary hover:underline font-medium">Integration guide →</Link>
+            <Link href="/dashboard/docs" className="text-sm text-primary hover:underline font-medium">Integration guide →</Link>
             <Link href="/settings" className="text-sm text-primary hover:underline font-medium">Generate API key →</Link>
           </div>
         </div>

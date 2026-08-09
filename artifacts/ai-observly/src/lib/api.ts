@@ -96,6 +96,7 @@ export async function signup(email: string, password: string) {
   });
   if (data.success) {
     localStorage.setItem("ai_observly_authed", "true");
+    localStorage.setItem("ai_observly_user_email", email);
   }
   return data;
 }
@@ -107,6 +108,7 @@ export async function login(email: string, password: string) {
   });
   if (data.success) {
     localStorage.setItem("ai_observly_authed", "true");
+    localStorage.setItem("ai_observly_user_email", email);
   }
   return data;
 }

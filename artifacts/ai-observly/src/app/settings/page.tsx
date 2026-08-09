@@ -340,6 +340,7 @@ function AddonCostTab({ customFeatures }: { customFeatures: CustomFeature[] }) {
 function SettingsContent() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"keys" | "features" | "plans" | "guide" | "debug" | "addon-cost">("keys");
+  const [guideMode, setGuideMode] = useState<"self" | "developer">("self");
 
   // Check URL param on mount for deep-linking to a tab (e.g. ?tab=addon-cost)
   useEffect(() => {
@@ -646,17 +647,113 @@ confirm.`;
       {activeTab === "guide" && (
         <div className="max-w-2xl space-y-6">
           <div>
-            <h2 className="text-base font-semibold mb-1">Integration prompt</h2>
-            <p className="text-sm text-muted-foreground">Paste this into Replit, Cursor, Lovable, or any AI coding tool to add AI Observly tracking automatically.</p>
+            <h2 className="text-base font-semibold mb-1">Integration</h2>
+            <p className="text-sm text-muted-foreground">Connect your app to AI Observly in the way that fits your workflow.</p>
           </div>
-          <div className="relative">
-            <button onClick={() => copyToClipboard(promptText)} className="absolute top-4 right-4 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-xs flex items-center gap-1.5 hover:bg-secondary/80 font-medium z-10">
-              <Copy className="w-3.5 h-3.5" /> Copy prompt
+
+          {/* Path toggle */}
+          <div className="flex bg-muted rounded-lg p-1 max-w-sm">
+            <button
+              onClick={() => setGuideMode("self")}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${guideMode === "self" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              I'll set this up myself
             </button>
-            <pre className="bg-muted/50 border border-border rounded-xl p-6 pt-14 text-sm text-foreground overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
-              {promptText}
-            </pre>
+            <button
+              onClick={() => setGuideMode("developer")}
+              className={`flex-1 py-2 text-sm font-medium rounded-md transition-colors ${guideMode === "developer" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              I have a developer
+            </button>
           </div>
+
+          {guideMode === "self" ? (
+            /* ── Self path: AI prompt ── */
+            <div>
+              <p className="text-sm text-muted-foreground mb-4">Paste this into Replit, Cursor, Lovable, or any AI coding tool to add AI Observly tracking automatically.</p>
+              <div className="relative">
+                <button onClick={() => copyToClipboard(promptText)} className="absolute top-4 right-4 bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md text-xs flex items-center gap-1.5 hover:bg-secondary/80 font-medium z-10">
+                  <Copy className="w-3.5 h-3.5" /> Copy prompt
+                </button>
+                <pre className="bg-muted/50 border border-border rounded-xl p-6 pt-14 text-sm text-foreground overflow-x-auto whitespace-pre-wrap font-mono leading-relaxed">
+                  {promptText}
+                </pre>
+              </div>
+            </div>
+          ) : (
+            /* ── Developer path: technical docs ── */
+            <div className="space-y-6">
+              <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
+                <div className="p-6 border-b border-border">
+                  <h3 className="font-semibold mb-2">How AI Observly logging works</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Your app keeps calling OpenAI/Anthropic exactly as it does today, using your own API key. Nothing routes through AI Observly. After each call completes, send us a small usage report in the background — don't await it, and don't let a failure affect the user-facing request in any way.
+                  </p>
+                </div>
+                <div className="p-6 space-y-6">
+                  {/* Endpoint */}
+                  <div>
+                    <div className="inline-flex items-center gap-3 bg-muted/50 border border-border rounded-lg px-4 py-3 font-mono text-sm mb-4 w-full">
+                      <span className="text-primary font-bold">POST</span>
+                      <span className="text-foreground/80 break-all">https://[your-ai-observly-domain]/api/log-usage</span>
+                    </div>
+                    <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">Payload</h4>
+                    <div className="relative">
+                      <button onClick={() => copyToClipboard(`{\n  "api_key": "${apiKey || "obs_live_xxxxxxxxxxxxxxxx"}",\n  "customer_id": "the ID you use for this customer",\n  "feature_label": "chatbot",\n  "model": "gpt-4o",\n  "input_tokens": 512,\n  "output_tokens": 128\n}`)} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground p-1">
+                        <Copy className="w-4 h-4" />
+                      </button>
+                      <pre className="bg-muted/50 border border-border rounded-lg p-4 pr-10 text-sm font-mono text-foreground overflow-x-auto">{`{
+  "api_key": "${apiKey || "obs_live_xxxxxxxxxxxxxxxx"}",
+  "customer_id": "the ID you use for this customer",
+  "feature_label": "chatbot",
+  "model": "gpt-4o",
+  "input_tokens": 512,
+  "output_tokens": 128
+}`}</pre>
+                    </div>
+                  </div>
+                  {/* Code example */}
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase text-muted-foreground mb-2">Example (Node.js) — fire-and-forget</h4>
+                    <div className="relative">
+                      <button onClick={() => copyToClipboard(`const response = await openai.chat.completions.create({ ... });\n\nfetch("https://[your-ai-observly-domain]/api/log-usage", {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify({\n    api_key: process.env.AI_OBSERVLY_KEY,\n    customer_id: currentCustomer.id,\n    feature_label: "chatbot",\n    model: "gpt-4o",\n    input_tokens: response.usage.prompt_tokens,\n    output_tokens: response.usage.completion_tokens,\n  }),\n}).catch(() => {});`)} className="absolute top-3 right-3 text-muted-foreground hover:text-foreground p-1">
+                        <Copy className="w-4 h-4" />
+                      </button>
+                      <pre className="bg-muted/50 border border-border rounded-lg p-4 pr-10 text-sm font-mono text-foreground overflow-x-auto">{`const response = await openai.chat.completions.create({ ... });
+
+fetch("https://[your-ai-observly-domain]/api/log-usage", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    api_key: process.env.AI_OBSERVLY_KEY,
+    customer_id: currentCustomer.id,
+    feature_label: "chatbot",
+    model: "gpt-4o",
+    input_tokens: response.usage.prompt_tokens,
+    output_tokens: response.usage.completion_tokens,
+  }),
+}).catch(() => {});`}</pre>
+                    </div>
+                  </div>
+                  {/* Note */}
+                  <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 flex gap-3 text-sm">
+                    <span className="font-semibold text-primary shrink-0">Note:</span>
+                    <span className="text-muted-foreground">Call this after every AI request you want tracked. Never await/block on it in the main request path.</span>
+                  </div>
+                  {/* Copy link hint */}
+                  <div className="flex items-center gap-3 pt-2 border-t border-border">
+                    <p className="text-sm text-muted-foreground flex-1">Share this page with your developer</p>
+                    <button
+                      onClick={() => { copyToClipboard(window.location.href); }}
+                      className="flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
+                    >
+                      <Copy className="w-3.5 h-3.5" /> Copy link
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

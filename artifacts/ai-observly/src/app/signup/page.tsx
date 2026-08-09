@@ -13,6 +13,7 @@ import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Sparkles } from "lucide-react";
 
 const signupSchema = z.object({
+  name: z.string().min(1, "Name is required"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
@@ -29,7 +30,7 @@ export default function Signup() {
 
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { email: "", password: "", confirmPassword: "" },
+    defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
   });
 
   const onSubmit = (data: z.infer<typeof signupSchema>) => {
@@ -37,7 +38,7 @@ export default function Signup() {
       { email: data.email, password: data.password },
       {
         onSuccess: () => {
-          // Show onboarding dialog before navigating to dashboard
+          localStorage.setItem("ai_observly_user_name", data.name.trim());
           setShowOnboarding(true);
         },
         onError: () => {
@@ -71,6 +72,20 @@ export default function Signup() {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Jane Smith" {...field} data-testid="input-signup-name" autoComplete="name" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="email"

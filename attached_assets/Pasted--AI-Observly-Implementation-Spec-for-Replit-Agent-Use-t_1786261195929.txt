@@ -1,0 +1,138 @@
+# AI Observly — Implementation Spec for Replit Agent
+
+Use this as the working brief. Each item below has: what's happening now, what it should do instead, how to implement it, and a checklist to confirm it's done. Where a decision is needed before building, it's called out explicitly — don't assume, ask or pick the safer default noted.
+
+---
+
+## 1. Consolidate all docs links to one landing-page URL and one dashboard URL — stop the cross-navigation entirely
+
+**Root cause of the current hassle:** Every docs-related link inside the dashboard — the sidebar "Docs" link, the footer note "Integration Guide", the "Finish setup" button at the end of onboarding, and the doc link inside Settings → Integrations — all currently point to the *same* docs page that lives on the landing/home site. Because that page sits outside the authenticated app, clicking any of them knocks the user out of the dashboard and, most of the time, forces them to log in again just to get back in. That back-and-forth is the actual problem — fixing one link at a time isn't enough, every docs link needs to be re-pointed at once using the rule below.
+
+**Required behavior:** There should be exactly two docs destinations on the whole site, and nothing should ever cross between them:
+
+- **One landing-page docs URL** (e.g. `/docs`) — public, no login required. Every docs-related link anywhere on the landing/marketing site points here, and only here.
+- **One dashboard docs URL** (e.g. `/dashboard/docs`) — lives inside the authenticated app, renders inside the normal dashboard layout (sidebar, top nav, logged-in state intact). Every docs-related link anywhere inside the authenticated app points here, and only here.
+
+**Every place to update (audit all of these, not just the obvious one):**
+- Dashboard sidebar "Docs" link
+- Dashboard footer note "Integration Guide"
+- "Finish setup" button at the end of onboarding
+- The doc link inside Settings → Integrations
+- Any other docs mention inside the dashboard found while auditing — all should point to the single dashboard docs URL above
+- Landing page nav "Docs" link, and any other docs mentions on the marketing site — all should point to the single landing page docs URL above
+
+**Implementation notes:**
+- This is a routing fix, not necessarily a content fix — the dashboard docs page can reuse the same written content as the landing docs page for now. What matters is that clicking any dashboard docs link keeps the user inside the authenticated app shell and never sends them to the marketing site's URL, since that's what's currently forcing the re-login.
+- Neither docs URL should ever redirect to the other, even if visited directly.
+- The goal stated by the user: the user should not have to move between the landing page and the dashboard back and forth. Inside the dashboard, everything — including all docs access — should stay self-contained.
+
+**Done when:**
+- [ ] Every docs link listed above has been checked and points to the correct single URL for its context.
+- [ ] Clicking any docs link from inside the dashboard (sidebar, footer "Integration Guide", Finish setup, Settings → Integrations) never logs the user out or requires logging back in.
+- [ ] Clicking "Docs" from the landing page opens the marketing docs page, no login needed.
+- [ ] Visiting either docs URL directly does not redirect to the other.
+
+---
+
+## 2. Add a "developer" path to Settings → Integrations
+
+**Current behavior:** Settings → Integrations currently only shows one setup path (presumably the self-serve/no-code walkthrough).
+
+**Required behavior:** Add a second option in that same section for users who'll hand the integration off to a developer — something like a toggle or two tabs at the top of the Integrations section: **"I'll set this up myself"** vs **"I have a developer."**
+
+Selecting "I have a developer" should show the technical integration documentation instead of the guided steps — e.g. API key/credentials, the code snippet or SDK install step, any environment variables needed, and (ideally) a "copy link" or "copy snippet" button so the user can forward it straight to their developer.
+
+**Decision needed before building:** Does developer-facing integration documentation already exist somewhere on the site (even if not linked from here)? If yes, this just needs to be surfaced in this new tab. If no, that content needs to be written first — flag this back rather than inventing placeholder API details.
+
+**Done when:**
+- [ ] Settings → Integrations shows both paths clearly labeled.
+- [ ] Switching between the two tabs doesn't lose anything the user already entered (e.g. API keys already saved).
+- [ ] The developer path shows real, accurate integration steps — not placeholder text.
+
+---
+
+## 3. Inside the dashboard, only "Sign out" should ever lead back to the landing page
+
+**Current behavior:** Not fully audited yet — likely several links inside the dashboard (logo, nav items, docs, etc.) currently point out to the landing page. Item 1 fixes the docs-specific case of this; this item covers everything else.
+
+**Required behavior:** Once a user is inside the dashboard, nothing should take them back to the public landing page except the Sign Out action. Sign Out should log the user out and land them on the landing page as expected. This is the same "seamless flow" principle as Item 1, applied to every link, not just docs: the user should only ever leave the dashboard for the landing page by choosing to sign out.
+
+**Places to check specifically:**
+- Header logo / brand click (often defaults to "go home" = landing page — this needs to point to the dashboard home instead)
+- Sidebar or top nav items
+- Any "back to home" or footer links that might exist inside dashboard views (besides the "Integration Guide" note already covered in Item 1)
+- Onboarding steps other than "Finish setup" (already covered in Item 1)
+
+**Done when:**
+- [ ] Every link/button inside the dashboard has been checked.
+- [ ] None of them navigate to the landing page except Sign Out.
+- [ ] Sign Out still correctly logs the user out and lands on the landing page.
+
+---
+
+## 4. More animation on the landing page
+
+**Required behavior:** Add motion that makes the page feel professionally built, without overdoing it (keep it subtle — this should read as polish, not flash). Suggested places to add it:
+
+- **Hero section:** a gentle entrance animation on load (fade/slide up for heading, subheading, and CTA button, staggered slightly rather than all at once).
+- **Feature sections:** scroll-triggered reveal — sections fade/slide into view as the user scrolls down, rather than being static.
+- **Buttons and cards:** small hover micro-interactions (slight scale, shadow, or color shift on hover) rather than instant/no feedback.
+- **Stats or numbers (if any exist on the page):** animate counting up when they scroll into view, instead of appearing as static text.
+- **Background:** if there's a gradient or shape in the hero, a very slow, subtle drift/shift is enough — avoid anything busy or distracting.
+
+**Constraints:**
+- Keep animations smooth (60fps) and non-blocking — nothing should delay the page becoming interactive.
+- Respect the browser's "reduce motion" accessibility setting — users with that enabled should see little to no motion.
+- Favor subtlety over quantity — a few well-placed animations read as more professional than motion on every element.
+
+**Done when:**
+- [ ] Hero, feature sections, and buttons all have at least light motion.
+- [ ] Nothing feels laggy or gets in the way of using the page.
+- [ ] Reduced-motion users see a static (or near-static) experience.
+
+---
+
+## 5. Footer CTA copy change
+
+**Current text:** "Get early access"
+**New text:** "Start monitoring now"
+
+**Decision needed before building:** Does "Get early access" appear anywhere else on the site (hero CTA, nav bar, pricing section, etc.), or only in the footer? This spec is written for the footer instance specifically — if you want it changed everywhere it appears, say so explicitly; otherwise only the footer CTA should change so the two aren't assumed to be the same request.
+
+**Done when:**
+- [ ] Footer CTA button now reads "Start monitoring now" and still functions exactly as it did before (same destination/action, just new label).
+
+---
+
+## 6. New Profile section inside the dashboard
+
+**Required behavior:** Add a Profile section reachable from inside the dashboard (e.g. from the sidebar or a user avatar/menu), living at its own URL (e.g. `/dashboard/profile`). It should show:
+
+- **Name** — the logged-in user's name.
+- **Email** — the logged-in user's email address.
+- **Manage Plan** — a button/link.
+
+Clicking **Manage Plan** should open a **dialog/modal** (not a full page navigation) that shows:
+- The plan the user is currently on, with its price/limits.
+- The next tier up from their current plan, with its price/features, and an **Upgrade** button.
+- The dialog should be closable via an X button, clicking outside it, or the Escape key.
+
+**Decisions needed before building:**
+- Should **Name** be editable in this section, or just displayed read-only? (Email is presumably read-only since it's tied to login.)
+- What should the dialog show if the user is already on the highest available plan? (Recommend: hide the Upgrade button and show something like "You're on our top plan" instead of showing a nonexistent "next tier.")
+- Does clicking **Upgrade** need to trigger an actual billing/checkout flow, or just navigate to a billing page for now? If real billing infrastructure isn't wired up yet, that should be flagged rather than faked.
+
+**Done when:**
+- [ ] Profile section is reachable from inside the dashboard and shows real name/email for the logged-in user (not placeholder data).
+- [ ] Manage Plan opens a dialog (doesn't navigate away from the page underneath it).
+- [ ] The dialog correctly shows the user's actual current plan, not a hardcoded one.
+- [ ] The next-tier plan and Upgrade option display correctly, with the top-plan edge case handled.
+
+---
+
+## Before starting
+
+Three things are worth confirming rather than guessing on:
+1. Does developer-facing integration documentation already exist anywhere on the site? (Item 2)
+2. Is there existing billing/subscription infrastructure to hook the Upgrade button into, or does that need a placeholder for now? (Item 6)
+3. After Item 1's audit, if any other docs links turn up beyond the four named ones (sidebar, footer "Integration Guide", Finish setup, Settings → Integrations), fix them the same way rather than leaving them pointed at the landing page.

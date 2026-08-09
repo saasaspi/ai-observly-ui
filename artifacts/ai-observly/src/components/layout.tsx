@@ -11,22 +11,26 @@ import {
   Zap,
   Menu,
   X,
+  User,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
 
 const navItems = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/customers", label: "Customers", icon: Users },
   { href: "/features", label: "Features", icon: Zap },
   { href: "/settings", label: "Settings", icon: Settings },
-  { href: "/docs", label: "Docs", icon: BookOpen },
+  { href: "/dashboard/profile", label: "Profile", icon: User },
+  { href: "/dashboard/docs", label: "Docs", icon: BookOpen },
 ];
 
 function NavLinks({ pathname, onNavigate }: { pathname: string | null; onNavigate?: () => void }) {
   return (
     <>
       {navItems.map((item) => {
-        const isActive = pathname === item.href || pathname?.startsWith(item.href + "/");
+        const isActive = item.exact
+          ? pathname === item.href
+          : pathname === item.href || pathname?.startsWith(item.href + "/");
         return (
           <Link
             key={item.href}

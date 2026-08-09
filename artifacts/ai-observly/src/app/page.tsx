@@ -496,7 +496,7 @@ export default function LandingPage() {
                   </FormItem>
                 )} />
                 <button type="submit" className="h-12 px-6 rounded-md bg-primary text-primary-foreground font-medium hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 whitespace-nowrap shadow-sm" disabled={submitWaitlist.isPending} data-testid="btn-waitlist-submit-bottom">
-                  {submitWaitlist.isPending ? "Joining..." : "Get Early Access"}
+                  {submitWaitlist.isPending ? "Joining..." : "Start monitoring now"}
                 </button>
               </form>
             </Form>
