@@ -1,12 +1,7 @@
 {
-  "/napi/login/route": "app/napi/login/route.js",
-  "/napi/history/route": "app/napi/history/route.js",
-  "/napi/dashboard-summary/route": "app/napi/dashboard-summary/route.js",
   "/page": "app/page.js",
-  "/docs/page": "app/docs/page.js",
-  "/login/page": "app/login/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
   "/dashboard/docs/page": "app/dashboard/docs/page.js",
+  "/settings/page": "app/settings/page.js",
   "/dashboard/profile/page": "app/dashboard/profile/page.js",
-  "/settings/page": "app/settings/page.js"
+  "/dashboard/page": "app/dashboard/page.js"
 }

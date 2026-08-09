@@ -11,8 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useSubmitWaitlist } from "@/hooks/use-api";
 import {
   ArrowRight, CheckCircle2, AlertCircle, TrendingDown, DollarSign,
-  Zap, Bell, BarChart2, Users, ChevronDown, ChevronUp,
-  ArrowUpRight, GitBranch, Clock, MessageSquare,
+  Zap, BarChart2, Users, ChevronDown, ChevronUp,
+  ArrowUpRight, GitBranch, CreditCard, MessageSquare,
 } from "lucide-react";
 
 const waitlistSchema = z.object({
@@ -20,11 +20,22 @@ const waitlistSchema = z.object({
 });
 
 const faqs = [
-  { q: "Do I need to change my code or rewrite anything?", a: "No rewrites needed. You add one background fetch() call after each AI response — your existing AI calls, API keys, and logic stay exactly the same. If you use an AI coding tool like Cursor, Replit, or Lovable, we give you a copy-paste prompt that makes the change for you." },
-  { q: "Which AI providers do you support?", a: "OpenAI, Anthropic, Google Gemini, Mistral, and any provider that returns token counts in their API response. If you're using OpenRouter or a custom endpoint, you can pass the token counts manually." },
-  { q: "Is my data secure? Do you see my prompts?", a: "We never see your prompts or completions. We only receive metadata: model name, token counts, customer ID, and feature label — the same information you'd see on your OpenAI billing page. No message content ever touches our servers." },
-  { q: "What if AI Observly goes down — will my app break?", a: "No. AI Observly sits completely outside your request path. Your app calls OpenAI/Anthropic directly with your own key; we only receive a background fire-and-forget report. If we're ever unavailable, the .catch(() => {}) on that fetch means your users never see an error." },
-  { q: "Can I cancel or get a refund?", a: "Yes. Cancel any time from your settings — no questions asked. If you're on the Pro plan and unhappy within the first 14 days, we'll refund you in full." },
+  {
+    q: "Isn't this the same as the usage dashboard my provider already gives me?",
+    a: "No. Your provider dashboard shows you total tokens and total spend. It has no idea which customer, feature, or plan generated that spend — that mapping has to happen on your side, which is exactly what AI Observly does automatically.",
+  },
+  {
+    q: "Do I need to rebuild anything to set this up?",
+    a: "No. If you can pass a customer_id (or similar identifier) alongside your existing API calls, you can get customer- and feature-level breakdowns without a rebuild.",
+  },
+  {
+    q: "What LLM providers do you support?",
+    a: "OpenAI, Anthropic, and Gemini today, with more being added.",
+  },
+  {
+    q: "Can this actually help with pricing, or just reporting?",
+    a: "Both. Once you can see which plans and which customers are margin-negative, you have the numbers to reprice a tier, add a usage cap, or have a direct conversation with a specific account — instead of raising prices across the board and hoping it fixes itself.",
+  },
 ];
 
 function FaqItem({ q, a }: { q: string; a: string }) {
@@ -121,7 +132,7 @@ function DashboardMockup() {
           {[
             { label: "Total AI Cost", value: `$${cost.toLocaleString()}`, sub: "this month", color: "text-foreground" },
             { label: "Total Revenue", value: `$${revenue.toLocaleString()}`, sub: "attributed", color: "text-foreground" },
-            { label: "Net Profit", value: `+$${profit.toLocaleString()}`, sub: "from AI features", color: "text-green-600" },
+            { label: "Net Margin", value: `+$${profit.toLocaleString()}`, sub: "from AI features", color: "text-green-600" },
           ].map((s) => (
             <div key={s.label} className="bg-background border border-border rounded-lg p-3">
               <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{s.label}</p>
@@ -133,7 +144,7 @@ function DashboardMockup() {
 
         {/* Bar chart with grow-up animation */}
         <div className="bg-background border border-border rounded-lg p-4">
-          <p className="text-xs font-semibold text-muted-foreground mb-3">Monthly AI Cost Trend</p>
+          <p className="text-xs font-semibold text-muted-foreground mb-3">Monthly AI Cost vs Revenue</p>
           <div className="flex items-end gap-1.5 h-20">
             {bars.map((h, i) => (
               <div
@@ -156,7 +167,7 @@ function DashboardMockup() {
         {/* Customer rows */}
         <div className="bg-background border border-border rounded-lg overflow-hidden">
           <div className="px-4 py-2 border-b border-border flex justify-between text-[10px] font-semibold text-muted-foreground uppercase">
-            <span>Customer</span><span>Cost</span><span>Margin</span>
+            <span>Customer</span><span>AI Cost</span><span>Margin</span>
           </div>
           {[
             { name: "Acme Corp", cost: "$380", margin: "-$60", status: "bg-red-500", neg: true },
@@ -205,18 +216,18 @@ export default function LandingPage() {
           {/* Badge — entrance d0 */}
           <div className="animate-hero animate-hero-d0 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-8 shadow-sm">
             <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse" />
-            AI observability for founders, not engineers
+            AI cost &amp; margin visibility for founders
           </div>
 
           {/* Headline — entrance d1 */}
           <h1 className="animate-hero animate-hero-d1 text-5xl md:text-7xl font-bold tracking-tight mb-6 font-outfit text-foreground leading-[1.08]">
-            See what your AI is{" "}
-            <span className="text-primary">actually costing you</span>
+            Your AI bill keeps climbing.{" "}
+            <span className="text-primary">Do you know who&apos;s driving it up?</span>
           </h1>
 
           {/* Subtext — entrance d2 */}
           <p className="animate-hero animate-hero-d2 text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            Track cost, latency, and errors across every AI API call — broken down by customer and feature — in minutes. No SDK rewrites. No DevOps.
+            AI Observly attributes every OpenAI, Anthropic, and Gemini call to a customer, a feature, and a plan — so you can see margin, not just spend.
           </p>
 
           {/* CTAs — entrance d3 */}
@@ -226,15 +237,20 @@ export default function LandingPage() {
               className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 w-full sm:w-auto shadow-sm"
               data-testid="hero-cta"
             >
-              Start monitoring free <ArrowRight className="ml-2 w-5 h-5" />
+              Start monitoring now <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
             <a
               href="#how-it-works"
               className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg border border-border bg-card hover:bg-muted hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 w-full sm:w-auto"
             >
-              See how it works
+              See a live dashboard
             </a>
           </div>
+
+          {/* Optional note under CTAs */}
+          <p className="animate-hero animate-hero-d3 text-sm text-muted-foreground mt-5">
+            No data engineer required — one identifier per call is all it takes.
+          </p>
 
           {/* Dashboard mockup — entrance d4 */}
           <div className="animate-hero animate-hero-d4">
@@ -249,14 +265,44 @@ export default function LandingPage() {
           <div className="text-center mb-14">
             <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Sound familiar?</p>
             <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit">
-              You shipped an AI feature. Now you&apos;re flying blind.
+              The total bill was never the problem. The blind spot is.
             </h2>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+
+          <div className="grid md:grid-cols-2 gap-6">
             {[
-              { icon: AlertCircle, color: "text-red-500", bg: "bg-red-50 border-red-100", title: "Surprise $800 OpenAI bill", desc: "You check your invoice at the end of the month and one customer has been hammering your chatbot — you had no idea until the charge hit.", delay: "0s" },
-              { icon: TrendingDown, color: "text-yellow-600", bg: "bg-yellow-50 border-yellow-100", title: "No idea which feature is burning tokens", desc: "You have four AI features. One of them is unprofitable. You have no way to know which one — so you can't fix it, reprice it, or kill it.", delay: "0.1s" },
-              { icon: Clock, color: "text-blue-500", bg: "bg-blue-50 border-blue-100", title: "Users complain about slowness — you can't tell why", desc: "Latency spikes when your app hits OpenAI during peak hours. Users churn. You don't have a latency breakdown by model or endpoint to debug it.", delay: "0.2s" },
+              {
+                icon: DollarSign,
+                color: "text-red-500",
+                bg: "bg-red-50 border-red-100",
+                title: "Invoice up, MRR flat — no explanation",
+                desc: "Your provider invoice goes up every month, faster than MRR — and the total number alone can't tell you why.",
+                delay: "0s",
+              },
+              {
+                icon: AlertCircle,
+                color: "text-yellow-600",
+                bg: "bg-yellow-50 border-yellow-100",
+                title: "One customer costs more than they pay",
+                desc: "One customer could be costing you more than they pay you, and you won't find out until months of margin have already leaked away.",
+                delay: "0.1s",
+              },
+              {
+                icon: TrendingDown,
+                color: "text-blue-500",
+                bg: "bg-blue-50 border-blue-100",
+                title: "Free-tier users eating your AI budget",
+                desc: "Trial and low-tier users might be quietly eating a disproportionate share of your AI spend, with zero revenue to show for it.",
+                delay: "0s",
+              },
+              {
+                icon: BarChart2,
+                color: "text-purple-500",
+                bg: "bg-purple-50 border-purple-100",
+                title: "You don't know which plan covers its AI cost",
+                desc: "You don't actually know which pricing plan covers its own AI cost — and which one is subsidized by every other customer.",
+                delay: "0.1s",
+              },
             ].map(({ icon: Icon, color, bg, title, desc, delay }) => (
               <div
                 key={title}
@@ -269,7 +315,39 @@ export default function LandingPage() {
                 <p className="text-muted-foreground leading-relaxed text-sm">{desc}</p>
               </div>
             ))}
+
+            {/* 5th card — spans full width */}
+            <div
+              data-reveal
+              style={{ transitionDelay: "0.1s" }}
+              className="md:col-span-2 rounded-xl border bg-foreground/5 border-foreground/10 p-6 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+            >
+              <Zap className="w-8 h-8 text-primary shrink-0" />
+              <div>
+                <h3 className="font-bold text-lg mb-1 text-foreground">Some features are cash cows. Others lose money on every call.</h3>
+                <p className="text-muted-foreground leading-relaxed text-sm">Some of your AI features are probably cash cows. Others are losing money on every call. Right now, you can&apos;t tell which is which.</p>
+              </div>
+            </div>
           </div>
+
+          {/* Closing line */}
+          <p data-reveal style={{ transitionDelay: "0.2s" }} className="text-center text-muted-foreground text-lg mt-12 max-w-2xl mx-auto font-medium">
+            Total bill is one number. MRR is another.{" "}
+            <span className="text-foreground font-semibold">AI Observly is the bridge between them.</span>
+          </p>
+        </div>
+      </section>
+
+      {/* ── SOLUTION OVERVIEW ── */}
+      <section id="solution" className="py-20 px-6 bg-primary/5 border-y border-primary/10">
+        <div className="max-w-3xl mx-auto text-center">
+          <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">The fix</p>
+          <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-6">
+            From &ldquo;here&apos;s the invoice&rdquo; to &ldquo;here&apos;s the margin&rdquo;
+          </h2>
+          <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg leading-relaxed">
+            AI Observly sits between your LLM provider and your product, tagging every request with a <code className="text-primary bg-primary/10 px-1.5 py-0.5 rounded text-sm font-mono">customer_id</code>, a feature, and a plan. Instead of one flat number at the end of the month, you get a live P&amp;L for your AI spend — who costs you the most, what it costs to run each feature, and whether each pricing tier is actually profitable.
+          </p>
         </div>
       </section>
 
@@ -278,15 +356,15 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Setup in minutes</p>
-            <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">How it works</h2>
-            <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">No SDK rewrite. No DevOps. Three steps to clear AI margins.</p>
+            <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Three steps from raw invoice to real margin</h2>
+            <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">No rebuild required. No data engineering stack. One identifier per call is all it takes.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-12 relative">
             <div className="hidden md:block absolute top-6 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-border" />
             {[
-              { num: "1", title: "Generate your API key", desc: "Sign up, get your obs_live_... key in under two minutes. No credit card required for the free tier.", note: "~2 minutes", delay: "0s" },
-              { num: "2", title: "Drop in one background call", desc: "After each AI response, fire a single fetch() to our endpoint — it never blocks your users and never touches your AI traffic.", note: "~5 lines of code", delay: "0.1s" },
-              { num: "3", title: "See cost, latency & profit", desc: "Your dashboard shows every customer and feature: what it costs, what it earns, and whether it's actually worth keeping — in plain dollars.", note: "Live in seconds", delay: "0.2s" },
+              { num: "1", title: "Connect", desc: "Point AI Observly at your OpenAI, Anthropic, or Gemini usage. Attach a customer_id, feature tag, and plan to your existing calls — no rebuild required.", note: "~2 minutes", delay: "0s" },
+              { num: "2", title: "Attribute", desc: "Every request is automatically mapped to the customer, feature, and plan that generated it. No spreadsheets, no manual tagging after the fact.", note: "~5 lines of code", delay: "0.1s" },
+              { num: "3", title: "Decide", desc: "Your dashboard surfaces cost, margin, and ROI at the customer, feature, and plan level — so pricing, roadmap, and account decisions are based on data, not a hunch.", note: "Live in seconds", delay: "0.2s" },
             ].map(({ num, title, desc, note, delay }) => (
               <div key={num} data-reveal style={{ transitionDelay: delay }} className="relative flex flex-col items-start">
                 <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold font-outfit mb-6 shadow-md z-10">{num}</div>
@@ -308,16 +386,36 @@ export default function LandingPage() {
       <section id="features" className="py-24 px-6 bg-background">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
-            <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Everything you need</p>
-            <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">One dashboard. Every AI metric that matters.</h2>
-            <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">Stop guessing. Start knowing which features and customers are actually profitable.</p>
+            <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Core features</p>
+            <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Built for the questions your invoice can&apos;t answer</h2>
+            <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">Every feature is designed around the cost and margin questions your provider dashboard was never built to answer.</p>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {[
-              { icon: DollarSign, title: "Cost breakdown by customer, feature & endpoint", desc: "See exactly how much each customer costs you in AI, and which feature is the biggest spend — so you can reprice, optimize, or cut the losers.", delay: "0s" },
-              { icon: Zap, title: "Latency & error monitoring", desc: "Track p50/p95 latency per model and endpoint. Get alerted when error rates spike before users start tweeting about it.", delay: "0.1s" },
-              { icon: Bell, title: "Alerts for spend spikes & failure rates", desc: "Set monthly cost limits or error thresholds per customer. Get a Slack or email alert the moment a customer starts burning through tokens.", delay: "0s" },
-              { icon: BarChart2, title: "Model comparison", desc: "Running GPT-4o alongside Claude? See cost and latency side-by-side so you can pick the right model for each feature — and save money doing it.", delay: "0.1s" },
+              {
+                icon: Users,
+                title: "Per-Customer Cost Attribution",
+                desc: "Every API call gets mapped to the customer_id that triggered it. Instantly see your top spenders, find the small slice of users eating most of your bill, and catch a margin-negative account before it costs you a full quarter.",
+                delay: "0s",
+              },
+              {
+                icon: Zap,
+                title: "Per-Feature Margins & ROI",
+                desc: "See exactly what each AI feature costs to run against what it earns you. Spot the feature that's a genuine cash cow, and the one that's technically 'used' but quietly losing money on every invocation — so you know what to double down on and what to re-scope or retire.",
+                delay: "0.1s",
+              },
+              {
+                icon: CreditCard,
+                title: "Plan & Pricing Profitability",
+                desc: "Break down AI cost by pricing tier. See which plans generate enough revenue to cover the AI cost they create, and which ones are being subsidized by your other customers — so your next pricing change is based on actual unit economics, not a guess.",
+                delay: "0s",
+              },
+              {
+                icon: TrendingDown,
+                title: "Trial & Free-Tier Cost Tracking",
+                desc: "Isolate how much of your total AI spend is going to trial and free-tier users before they ever convert. Set usage guardrails with real numbers instead of finding out after the invoice lands.",
+                delay: "0.1s",
+              },
             ].map(({ icon: Icon, title, desc, delay }) => (
               <div
                 key={title}
@@ -343,31 +441,37 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Built for</p>
-            <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">The lightweight option for AI builders</h2>
-            <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-2xl mx-auto">Indie hackers, solo SaaS founders, and small teams shipping AI features without a dedicated data engineering stack.</p>
+            <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">
+              Built for the people who have to answer<br className="hidden md:block" /> &ldquo;why did the AI bill go up again?&rdquo;
+            </h2>
           </div>
           <div className="grid md:grid-cols-2 gap-8 items-start">
             <div data-reveal className="bg-primary/5 border border-primary/20 rounded-2xl p-8 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
               <div className="flex items-center gap-3 mb-6">
                 <Users className="w-6 h-6 text-primary" />
-                <h3 className="text-xl font-bold font-outfit text-primary">AI Observly is for you if…</h3>
+                <h3 className="text-xl font-bold font-outfit text-primary">Who this is for</h3>
               </div>
-              <ul className="space-y-3">
-                {["You're a solo founder or small team shipping AI features","You're using OpenAI, Anthropic, or any major LLM provider","You want to know if your AI costs are eating your margins","You're non-technical or just don't want to maintain a metrics stack","You want setup in minutes, not a two-week integration sprint"].map((item) => (
-                  <li key={item} className="flex items-start gap-3 text-sm text-foreground">
-                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />{item}
+              <ul className="space-y-4">
+                {[
+                  { label: "Founders of B2B SaaS with AI features", detail: "who need to know which customers, features, and plans are margin-negative before it shows up in the burn rate." },
+                  { label: "Product managers", detail: "deciding which AI feature to invest in next — and which one to quietly sunset." },
+                  { label: "Anyone pricing an AI product", detail: "who wants their tiers to actually cover the AI cost they create, instead of finding out at renewal." },
+                ].map(({ label, detail }) => (
+                  <li key={label} className="flex items-start gap-3 text-sm text-foreground">
+                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                    <span><strong>{label}</strong> {detail}</span>
                   </li>
                 ))}
               </ul>
             </div>
             <div data-reveal style={{ transitionDelay: "0.1s" }} className="bg-muted/50 border border-border rounded-2xl p-8 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
               <h3 className="text-xl font-bold font-outfit mb-2">How we compare</h3>
-              <p className="text-muted-foreground text-sm mb-6">Tools like <strong>Langfuse</strong>, <strong>Helicone</strong>, and <strong>Datadog</strong> are powerful — but they&apos;re built for engineering teams. We&apos;re the plain-English option for founders who just want to know if their AI is making money.</p>
+              <p className="text-muted-foreground text-sm mb-6">Tools like <strong>Langfuse</strong>, <strong>Helicone</strong>, and <strong>Datadog</strong> are powerful — but they&apos;re built for engineering teams. We&apos;re the plain-English margin visibility tool for founders who need to know if their AI is making money.</p>
               <div className="space-y-3 text-sm">
                 {[
                   { them: "Complex setup & SDKs", us: "One fire-and-forget call" },
-                  { them: "Traces, spans, waterfall views", us: "Profit & cost in plain dollars" },
-                  { them: "Built for DevOps teams", us: "Built for solo founders" },
+                  { them: "Traces, spans, waterfall views", us: "Margin & cost in plain dollars" },
+                  { them: "Built for DevOps teams", us: "Built for founders & PMs" },
                   { them: "Starts at $100+/mo", us: "Free tier, then $29/mo" },
                 ].map((row) => (
                   <div key={row.them} className="grid grid-cols-2 gap-3">
@@ -391,9 +495,9 @@ export default function LandingPage() {
           <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg mb-12 max-w-lg mx-auto">Join 143+ founders already on the waitlist — and growing.</p>
           <div className="grid md:grid-cols-3 gap-6 text-left mb-12">
             {[
-              { quote: "Finally. I've been staring at my OpenAI bill every month wondering which feature is eating it. This is exactly what I needed.", name: "Sarah K.", role: "Solo founder, AI writing tool", avatar: "SK", delay: "0s" },
-              { quote: "I repriced my Pro plan within a week of seeing the real cost breakdown. Already back in the black on AI.", name: "Marcus T.", role: "Indie hacker, productivity SaaS", avatar: "MT", delay: "0.1s" },
-              { quote: "Langfuse was overkill for what I needed. AI Observly took 10 minutes to set up and showed me the numbers I actually care about.", name: "Priya R.", role: "Founder, AI customer support tool", avatar: "PR", delay: "0.2s" },
+              { quote: "Finally. I've been staring at my OpenAI bill every month wondering which customer is eating it. This is exactly what I needed.", name: "Sarah K.", role: "Solo founder, AI writing tool", avatar: "SK", delay: "0s" },
+              { quote: "I repriced my Pro plan within a week of seeing the real cost breakdown by tier. Already back in the black on AI.", name: "Marcus T.", role: "Indie hacker, productivity SaaS", avatar: "MT", delay: "0.1s" },
+              { quote: "Langfuse was overkill for what I needed. AI Observly took 10 minutes to set up and showed me which features were losing money.", name: "Priya R.", role: "Founder, AI customer support tool", avatar: "PR", delay: "0.2s" },
             ].map(({ quote, name, role, avatar, delay }) => (
               <div
                 key={name}
@@ -411,7 +515,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="flex items-center justify-center gap-8 flex-wrap">
-            {[{ label: "Waitlist signups", value: "143+" },{ label: "AI providers supported", value: "6+" },{ label: "Avg setup time", value: "< 10 min" }].map(({ label, value }) => (
+            {[{ label: "Waitlist signups", value: "143+" },{ label: "AI providers supported", value: "3+" },{ label: "Avg setup time", value: "< 10 min" }].map(({ label, value }) => (
               <div key={label} data-reveal className="text-center">
                 <p className="text-3xl font-bold font-outfit text-primary">{value}</p>
                 <p className="text-sm text-muted-foreground">{label}</p>
@@ -437,7 +541,7 @@ export default function LandingPage() {
                 <div className="flex items-baseline gap-1"><span className="text-4xl font-bold font-outfit">$0</span><span className="text-muted-foreground">/month</span></div>
               </div>
               <ul className="space-y-3 flex-1 mb-8">
-                {["10,000 AI events/month","Up to 3 customers","Up to 3 features","7-day data history","Cost tracking","Basic latency stats"].map((f) => (
+                {["10,000 AI events/month","Up to 3 customers","Up to 3 features","7-day data history","Per-customer cost breakdown","Cost & margin tracking"].map((f) => (
                   <li key={f} className="flex items-center gap-3 text-sm text-foreground"><CheckCircle2 className="w-4 h-4 text-green-500 shrink-0" />{f}</li>
                 ))}
               </ul>
@@ -449,11 +553,11 @@ export default function LandingPage() {
               <div className="absolute top-4 right-4 bg-white/20 text-white text-xs font-bold px-3 py-1 rounded-full">Most popular</div>
               <div className="mb-6">
                 <h3 className="text-xl font-bold font-outfit mb-1">Pro</h3>
-                <p className="text-primary-foreground/70 text-sm mb-4">For founders who&apos;ve validated the product and need the full picture.</p>
+                <p className="text-primary-foreground/70 text-sm mb-4">For founders who&apos;ve validated the product and need the full margin picture.</p>
                 <div className="flex items-baseline gap-1"><span className="text-4xl font-bold font-outfit">$29</span><span className="text-primary-foreground/70">/month</span></div>
               </div>
               <ul className="space-y-3 flex-1 mb-8">
-                {["Unlimited AI events","Unlimited customers & features","90-day data history","Cost, latency & error tracking","Slack & email spend alerts","Model comparison charts","Priority email support","14-day money-back guarantee"].map((f) => (
+                {["Unlimited AI events","Unlimited customers & features","90-day data history","Full cost & margin breakdown","Per-plan profitability tracking","Slack & email spend alerts","Model comparison charts","Priority email support","14-day money-back guarantee"].map((f) => (
                   <li key={f} className="flex items-center gap-3 text-sm text-primary-foreground"><CheckCircle2 className="w-4 h-4 text-white/80 shrink-0" />{f}</li>
                 ))}
               </ul>
@@ -482,8 +586,8 @@ export default function LandingPage() {
           <div data-reveal className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-6 shadow-sm">
             <ArrowUpRight className="w-8 h-8" />
           </div>
-          <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Stop guessing your AI margins</h2>
-          <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg mb-10 max-w-lg mx-auto">Join the waitlist and be first to know when early access opens. Free tier available from day one.</p>
+          <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Stop finding out about margin-negative customers three months late.</h2>
+          <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg mb-10 max-w-lg mx-auto">See your AI spend broken down by customer, feature, and plan — not just as one line on an invoice.</p>
           <div data-reveal style={{ transitionDelay: "0.24s" }}>
             <Form {...formBottom}>
               <form onSubmit={formBottom.handleSubmit(handleWaitlist(formBottom))} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-6">

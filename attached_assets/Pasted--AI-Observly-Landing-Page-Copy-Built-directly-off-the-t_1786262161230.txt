@@ -1,0 +1,124 @@
+# AI Observly — Landing Page Copy
+
+Built directly off the three Reddit threads: the "total bill vs. per-customer black box" problem, the "how do you allocate AI cost to customers" question, and the "which features/plans are actually margin-negative" question. Every section below answers one of those questions by name. No latency or API-uptime messaging anywhere — this is a cost/margin story only.
+
+---
+
+## 1. Hero
+
+**Headline:**
+Your AI bill keeps climbing. Do you know who's actually driving it up?
+
+**Subheadline:**
+AI Observly attributes every OpenAI, Anthropic, and Gemini call to a customer, a feature, and a plan — so you can see margin, not just spend.
+
+**Primary CTA:** Start monitoring now
+**Secondary CTA:** See a live dashboard
+
+*(Optional line under the CTAs, small text):* No data engineer required — one identifier per call is all it takes.
+
+---
+
+## 2. The Problem — "Sound familiar?"
+
+**Section header:** The total bill was never the problem. The blind spot is.
+
+Body copy (use as 4–5 short stacked statements or a 2x2 grid):
+
+- Your provider invoice goes up every month, faster than MRR — and the total number alone can't tell you why.
+- One customer could be costing you more than they pay you, and you won't find out until months of margin have already leaked away.
+- Free trial and low-tier users might be quietly eating a disproportionate share of your AI spend, with zero revenue to show for it.
+- You don't actually know which pricing plan covers its own AI cost — and which one is subsidized by every other customer.
+- Some of your AI features are probably cash cows. Others are losing money on every call. Right now, you can't tell which is which.
+
+**Closing line:** Total bill is one number. MRR is another. AI Observly is the bridge between them.
+
+---
+
+## 3. Solution overview
+
+**Section header:** From "here's the invoice" to "here's the margin"
+
+Body copy:
+AI Observly sits between your LLM provider and your product, tagging every request with a customer_id, a feature, and a plan. Instead of one flat number at the end of the month, you get a live P&L for your AI spend — who costs you the most, what it costs to run each feature, and whether each pricing tier is actually profitable.
+
+---
+
+## 4. Core Features
+
+**Section header:** Built for the questions your invoice can't answer
+
+**Card 1 — Per-Customer Cost Attribution**
+Every API call gets mapped to the customer_id that triggered it. Instantly see your top spenders, find the small slice of users eating most of your bill, and catch a margin-negative account before it costs you a full quarter.
+
+**Card 2 — Per-Feature Margins & ROI**
+See exactly what each AI feature costs to run against what it earns you. Spot the feature that's a genuine cash cow, and the one that's technically "used" but quietly losing money on every invocation — so you know what to double down on and what to re-scope or retire.
+
+**Card 3 — Plan & Pricing Profitability**
+Break down AI cost by pricing tier. See which plans generate enough revenue to cover the AI cost they create, and which ones are being subsidized by your other customers — so your next pricing change is based on actual unit economics, not a guess.
+
+**Card 4 — Trial & Free-Tier Cost Tracking**
+Isolate how much of your total AI spend is going to trial and free-tier users before they ever convert. Set usage guardrails with real numbers instead of finding out after the invoice lands.
+
+---
+
+## 5. How It Works
+
+**Section header:** Three steps from raw invoice to real margin
+
+**Step 1 — Connect**
+Point AI Observly at your OpenAI, Anthropic, or Gemini usage. Attach a customer_id, feature tag, and plan to your existing calls — no rebuild required.
+
+**Step 2 — Attribute**
+Every request is automatically mapped to the customer, feature, and plan that generated it. No spreadsheets, no manual tagging after the fact.
+
+**Step 3 — Decide**
+Your dashboard surfaces cost, margin, and ROI at the customer, feature, and plan level — so pricing, roadmap, and "who do we talk to about their usage" decisions are based on data, not a hunch.
+
+---
+
+## 6. Who It's For
+
+**Section header:** Built for the people who have to answer "why did the AI bill go up again"
+
+- **Founders of B2B SaaS with AI features** who need to know which customers, features, and plans are margin-negative before it shows up in the burn rate.
+- **Product managers** deciding which AI feature to invest in next — and which one to quietly sunset.
+- **Anyone pricing an AI product** who wants their tiers to actually cover the AI cost they create, instead of finding out at renewal.
+
+---
+
+## 7. FAQ
+
+**"Isn't this the same as the usage dashboard my provider already gives me?"**
+No. Your provider dashboard shows you total tokens and total spend. It has no idea which customer, feature, or plan generated that spend — that mapping has to happen on your side, which is exactly what AI Observly does automatically.
+
+**"Do I need to rebuild anything to set this up?"**
+No. If you can pass a customer_id (or similar identifier) alongside your existing API calls, you can get customer- and feature-level breakdowns without a rebuild.
+
+**"What LLM providers do you support?"**
+OpenAI, Anthropic, and Gemini today, with more being added.
+
+**"Can this actually help with pricing, or just reporting?"**
+Both. Once you can see which plans and which customers are margin-negative, you have the numbers to reprice a tier, add a usage cap, or have a direct conversation with a specific account — instead of raising prices across the board and hoping it fixes itself.
+
+---
+
+## 8. Final CTA
+
+**Headline:** Stop finding out about margin-negative customers three months late.
+
+**Subhead:** See your AI spend broken down by customer, feature, and plan — not just as one line on an invoice.
+
+**CTA button:** Start monitoring now
+
+---
+
+# Suggested edits to the existing site (beyond new copy)
+
+1. **Kill all latency/uptime/API-error language.** If any current section mentions monitoring for latency, errors, or reliability, cut it — it dilutes the "margin visibility" positioning and doesn't match what your ICP is actually asking for on Reddit.
+2. **Replace whatever the current hero says with the cost/margin framing above.** The Reddit threads show people arriving with a very specific mental model ("total bill vs. per-customer black box") — the hero should mirror that language back to them in the first five seconds.
+3. **Lead with the pain, not the product.** Put the "Sound familiar?" section directly under the hero, before any feature list. People self-select in once they see their exact problem described.
+4. **Make the 80/20 framing a visual, not just a line of copy.** A simple bar chart mockup ("Top 10% of customers = 60% of AI spend") on the hero or problem section would do more than any headline — it's the exact "aha" moment the first Redditor described.
+5. **Add a pricing-decision angle somewhere visible**, not buried in features — several of the Reddit questions are really pricing questions ("which plans cover their AI cost"), so a specific "Pricing & Margin" mention in the nav or hero subhead will resonate.
+6. **Consider a short "built after reading these questions" note or FAQ entry** that's honest about the origin — B2B SaaS founders trust "we built this because we had the same blind spot" more than generic feature marketing.
+7. Keep your existing "Start monitoring now" CTA — it already fits this positioning well, no change needed there.
