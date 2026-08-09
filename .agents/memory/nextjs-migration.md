@@ -6,6 +6,13 @@ description: Key decisions from converting AI Observly from React Vite to Next.j
 ## Summary
 AI Observly was fully migrated from React Vite + wouter to Next.js 15 App Router.
 
+## Critical: /api/* path conflict
+The `api-server` artifact in this monorepo owns the `/api` path in the Replit proxy. Any `fetch('/api/...')` call from the Next.js app browser code gets intercepted by the api-server (returning 404), NOT by Next.js's own API routes. Fix: all Next.js internal API routes must use a prefix other than `/api/` — this project uses `/napi/`. Files live in `src/app/napi/*/route.ts` and `src/lib/api.ts` calls `/napi/...`.
+
+**Why:** Replit path-based routing at the proxy level takes precedence over Next.js internal routing.
+
+**How to apply:** Any new Next.js API route must go under `src/app/napi/`, not `src/app/api/`.
+
 ## Key decisions
 
 **Why:** User explicitly requested Next.js App Router migration.

@@ -1,5 +1,6 @@
 // Helper for JSON API calls
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  // Routes under /napi/* are served by Next.js (avoids conflict with /api/* api-server artifact)
   const res = await fetch(path, {
     headers: { "Content-Type": "application/json" },
     ...options,
@@ -10,38 +11,38 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
 export async function getDashboardSummary() {
   return apiFetch<{ totalRevenue: number; totalCost: number; totalProfit: number }>(
-    "/api/dashboard-summary"
+    "/napi/dashboard-summary"
   );
 }
 
 export async function getCustomers() {
   return apiFetch<
     { id: string; name: string; cost: number; revenue: number; margin: number; status: "red" | "yellow" | "green" }[]
-  >("/api/customers");
+  >("/napi/customers");
 }
 
 export async function getFeatureBreakdown() {
   return apiFetch<
     { name: string; cost: number; revenueEstimate: number; roi: number }[]
-  >("/api/features");
+  >("/napi/features");
 }
 
 export async function getTechnicalDetails(id: string) {
   return apiFetch<{ tokens: number; models: string[]; requestCount: number }>(
-    `/api/technical-details/${id}`
+    `/napi/technical-details/${id}`
   );
 }
 
 export async function generateKey() {
-  return apiFetch<{ keyDisplay: string }>("/api/generate-key", { method: "POST" });
+  return apiFetch<{ keyDisplay: string }>("/napi/generate-key", { method: "POST" });
 }
 
 export async function regenerateKey() {
-  return apiFetch<{ keyDisplay: string }>("/api/regenerate-key", { method: "POST" });
+  return apiFetch<{ keyDisplay: string }>("/napi/regenerate-key", { method: "POST" });
 }
 
 export async function revokeKey() {
-  return apiFetch<{ keyDisplay: string }>("/api/revoke-key", { method: "POST" });
+  return apiFetch<{ keyDisplay: string }>("/napi/revoke-key", { method: "POST" });
 }
 
 // Custom feature/plan management — localStorage-based (no backend yet)
@@ -71,22 +72,22 @@ export async function saveCustomPlans(plans: CustomPlan[]): Promise<{ success: b
 }
 
 export async function sendTestEvent() {
-  return apiFetch<{ success: boolean }>("/api/send-test-event", { method: "POST" });
+  return apiFetch<{ success: boolean }>("/napi/send-test-event", { method: "POST" });
 }
 
 export async function recalculateNow() {
-  return apiFetch<{ lastCalculated: Date }>("/api/recalculate", { method: "POST" });
+  return apiFetch<{ lastCalculated: Date }>("/napi/recalculate", { method: "POST" });
 }
 
 export async function submitWaitlist(email: string) {
-  return apiFetch<{ success: boolean }>("/api/waitlist", {
+  return apiFetch<{ success: boolean }>("/napi/waitlist", {
     method: "POST",
     body: JSON.stringify({ email }),
   });
 }
 
 export async function signup(email: string, password: string) {
-  const data = await apiFetch<{ success: boolean; userId: string }>("/api/signup", {
+  const data = await apiFetch<{ success: boolean; userId: string }>("/napi/signup", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
@@ -97,7 +98,7 @@ export async function signup(email: string, password: string) {
 }
 
 export async function login(email: string, password: string) {
-  const data = await apiFetch<{ success: boolean; userId: string }>("/api/login", {
+  const data = await apiFetch<{ success: boolean; userId: string }>("/napi/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
@@ -113,7 +114,7 @@ export async function logout() {
 }
 
 export async function requestPasswordReset(email: string) {
-  return apiFetch<{ success: boolean }>("/api/request-password-reset", {
+  return apiFetch<{ success: boolean }>("/napi/request-password-reset", {
     method: "POST",
     body: JSON.stringify({ email }),
   });
