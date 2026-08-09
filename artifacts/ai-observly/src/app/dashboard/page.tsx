@@ -4,7 +4,7 @@ import Link from "next/link";
 import { DashboardLayout } from "@/components/layout";
 import { ProtectedRoute } from "@/components/protected-route";
 import { ChartPanel } from "@/components/charts";
-import { OnboardingDialog, useOnboardingDialog, useIntegrationBanner } from "@/components/onboarding-dialog";
+import { useIntegrationBanner } from "@/components/onboarding-dialog";
 import { useDashboardSummary } from "@/hooks/use-api";
 import { TrendingUp, TrendingDown, DollarSign, Loader2, AlertCircle, Info, X } from "lucide-react";
 
@@ -47,16 +47,12 @@ function IntegrationBanner() {
 
 function OverviewContent() {
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary();
-  const { show: showOnboarding, close: closeOnboarding } = useOnboardingDialog();
-
   const costTrend = [820, 910, 755, 985, 1040, 890, 970, 1100, 1055, 1140];
   const revTrend  = [2800, 3100, 2950, 3400, 3600, 3300, 3800, 3900, 4050, 4200];
   const profitTrend = [1980, 2190, 2195, 2415, 2560, 2410, 2830, 2800, 2995, 3060];
 
   return (
     <>
-      {showOnboarding && <OnboardingDialog onClose={closeOnboarding} />}
-
       <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold font-outfit text-foreground">Overview</h1>

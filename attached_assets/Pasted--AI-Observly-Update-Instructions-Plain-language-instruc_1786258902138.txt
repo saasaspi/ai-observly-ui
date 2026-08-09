@@ -1,0 +1,54 @@
+# AI Observly — Update Instructions
+
+Plain-language instructions you can hand to whoever (or whatever AI tool) is editing the project in Replit. No code included — just what should change and why.
+
+---
+
+## PART 1 — Visual polish (color + animation)
+
+### 1. Fix the main color first
+The site is currently using the default blue theme that comes standard with a very common web-app template — this is the biggest giveaway that it's AI-built, more than the lack of animation. Ask for the main blue color to be swapped for a deeper, richer, less generic blue, and ask for the two-tone gradient effect on the hero headline ("actually costing you") to be replaced with a single solid color instead. Do this before anything else — it's a small change with the biggest visual payoff.
+
+### 2. Add a "fade in on scroll" effect to each section
+Each section of the page (the pain-point cards, the feature cards, the testimonials, etc.) should fade and slide gently upward into view the first time it scrolls into the visible part of the screen, then stay in place — it shouldn't repeat or loop. When a section has multiple cards side by side, have them appear one after another with a short delay between each, instead of all at once.
+
+### 3. Animate the hero section on page load
+When someone first lands on the page, have the badge, the headline, the subtext, the buttons, and the dashboard preview image fade upward into place in a quick sequence — one right after another, not all at the same instant. This should only happen once, right when the page loads.
+
+### 4. Add hover feedback to buttons and cards
+Buttons and cards should lift very slightly and gain a soft shadow when the cursor hovers over them, with a smooth, quick transition. This is a small detail that does a lot of work — it's often the single biggest reason a static page feels unfinished.
+
+### 5. Bring the dashboard preview to life
+This is the one "showpiece" animation worth having, since it matches what the product actually does. When the dashboard mockup section scrolls into view, have the bar chart bars grow upward from the bottom, and have the dollar figures ($1,140, $4,200, etc.) count upward from zero instead of just appearing. Keep this contained to that one section rather than applying it elsewhere.
+
+### 6. Add a subtle scroll effect to the navigation bar
+Once the user scrolls down even a little, the top navigation bar should gain a soft shadow and a slightly frosted/blurred background, so it feels anchored to the page rather than floating there unchanged.
+
+**Notes:**
+- Skip the FAQ accordion — if it already opens and closes smoothly, leave it alone.
+- Don't add anything beyond this list (no card-stacking, no looping/bouncing effects, no parallax) — the goal is restrained and professional, not flashy.
+
+---
+
+## PART 2 — Functional fixes
+
+### 7. Add a custom time-range option everywhere 7d / 30d / 90d appears
+Wherever the dashboard currently shows preset time-range buttons for 7 days / 30 days / 90 days (cost breakdown, latency & error charts, model comparison, and anywhere else this pattern is used), add a fourth "Custom" option alongside them. Selecting Custom should let the person pick their own start and end date instead of being limited to the three presets, and the rest of that view — charts, tables, totals — should update to reflect whatever custom range is chosen, exactly the way it already updates for the preset ranges. Apply this consistently everywhere the pattern shows up, not just on one screen.
+
+### 8. Fix where the "Docs" link on the landing page goes
+I checked this directly: right now, for a logged-out visitor, the "Docs" link in the landing page's top navigation correctly opens a standalone integration guide page — that part is working as intended. The problem you're describing happens when a logged-in user clicks that same "Docs" link — instead of opening that standalone integration guide, it's taking them into a docs view inside the dashboard itself.
+
+Ask for the "Docs" link in the landing page's top navigation to always open the standalone public integration guide page, regardless of whether the visitor is logged in or logged out — it should never redirect into the dashboard's internal layout. If there's a separate "Docs" link inside the dashboard's own sidebar or menu for logged-in users browsing the app, that one can stay as it is — this fix is only for the link in the landing page's top navigation.
+
+### 9. Only show the onboarding dialog to brand-new accounts
+The onboarding dialog should only appear the very first time someone finishes creating a brand-new account through the sign-up form — not every time someone logs into an existing account. Ask for it to trigger once, immediately after a successful sign-up, and never appear again for that account afterward — including on future logins, page refreshes, or logging out and back in. Someone signing in through the existing "Sign in" flow should never see it at all, even if they've never dismissed it before (e.g. accounts that existed before this fix was made).
+
+*Note: I checked the site directly and confirmed there are already two distinct entry points to work with — "Get Started" leads to a sign-up form, and there's a separate "Sign in" flow for existing users — so the fix can key off of which flow was used. I wasn't able to check the actual onboarding dialog or the dashboard's time-range selectors myself since they're behind account login; test both a brand-new sign-up and a returning login afterward to confirm the fix worked.*
+
+---
+
+## Suggested order
+1. Color fix (#1) and hover states (#4) — cheapest, highest visual impact
+2. Docs link fix (#8) and onboarding fix (#9) — functional bugs, worth fixing early
+3. Custom time range (#7) — feature addition
+4. Scroll reveals, hero entrance, dashboard animation, navbar effect (#2, #3, #5, #6) — polish pass last

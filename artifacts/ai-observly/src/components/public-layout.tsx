@@ -1,5 +1,5 @@
 "use client";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
@@ -15,13 +15,20 @@ const sectionLinks = [
 export function PublicLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const isHome = pathname === "/";
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const sectionHref = (anchor: string) => (isHome ? `#${anchor}` : `/#${anchor}`);
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col font-sans">
-      <header className="border-b border-border/40 backdrop-blur-md sticky top-0 z-50 bg-background/90">
+      <header className={`border-b sticky top-0 z-50 transition-all duration-300 ${scrolled ? "border-border/60 bg-background/95 backdrop-blur-lg shadow-md shadow-black/5" : "border-border/40 bg-background/90 backdrop-blur-md"}`}>
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-bold text-lg font-outfit shrink-0" data-testid="link-home">
             <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">

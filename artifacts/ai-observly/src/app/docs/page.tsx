@@ -1,6 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
-import { DashboardLayout } from "@/components/layout";
+import { useState } from "react";
 import { PublicLayout } from "@/components/public-layout";
 import { Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -152,29 +151,8 @@ fetch("https://[your-ai-observly-domain]/api/log-usage", {
 }
 
 export default function Docs() {
-  const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    setIsAuthed(localStorage.getItem("ai_observly_authed") === "true");
-  }, []);
-
-  // Avoid hydration mismatch — render a minimal shell until we know auth state
-  if (isAuthed === null) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-background">
-        <div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-      </div>
-    );
-  }
-
-  if (isAuthed) {
-    return (
-      <DashboardLayout>
-        <DocsContent />
-      </DashboardLayout>
-    );
-  }
-
+  // Always render as a standalone public page, regardless of auth state.
+  // The dashboard sidebar also links here — both views show the same public layout.
   return (
     <PublicLayout>
       <div className="max-w-5xl mx-auto px-6 py-12">

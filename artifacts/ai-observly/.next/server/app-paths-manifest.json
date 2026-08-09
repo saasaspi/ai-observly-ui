@@ -1,10 +1,4 @@
 {
   "/page": "app/page.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/docs/page": "app/docs/page.js",
-  "/customers/page": "app/customers/page.js",
-  "/features/page": "app/features/page.js",
-  "/settings/page": "app/settings/page.js",
-  "/signup/page": "app/signup/page.js",
-  "/login/page": "app/login/page.js"
+  "/docs/page": "app/docs/page.js"
 }

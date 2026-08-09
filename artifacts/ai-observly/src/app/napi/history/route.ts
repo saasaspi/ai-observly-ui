@@ -48,8 +48,20 @@ export async function GET(req: Request) {
   const section = searchParams.get("section") ?? "overview";
   const range = searchParams.get("range") ?? "30d";
 
-  const weeksMap: Record<string, number> = { "7d": 1, "30d": 4, "90d": 12 };
-  const weeks = weeksMap[range] ?? 4;
+  let weeks = 4;
+
+  if (range.startsWith("custom:")) {
+    const parts = range.split(":");
+    const startDate = new Date(parts[1]);
+    const endDate = new Date(parts[2]);
+    if (!isNaN(startDate.getTime()) && !isNaN(endDate.getTime())) {
+      const diffDays = Math.max(1, Math.round((endDate.getTime() - startDate.getTime()) / 86400000));
+      weeks = Math.max(1, Math.ceil(diffDays / 7));
+    }
+  } else {
+    const weeksMap: Record<string, number> = { "7d": 1, "30d": 4, "90d": 12 };
+    weeks = weeksMap[range] ?? 4;
+  }
 
   const barData = generateWeeklyData(weeks, 4200, 1140);
   const pieData = generatePieSlices(section);

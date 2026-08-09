@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useId } from "react";
 import {
   BarChart,
   Bar,
@@ -19,6 +19,7 @@ const RANGES = [
   { label: "7d", value: "7d" },
   { label: "30d", value: "30d" },
   { label: "90d", value: "90d" },
+  { label: "Custom", value: "custom" },
 ];
 
 interface ChartPanelProps {
@@ -61,7 +62,20 @@ function PieTooltip({ active, payload }: { active?: boolean; payload?: { name: s
 
 export function ChartPanel({ section, pieTitle, barTitle, overrideBarData, overridePieData }: ChartPanelProps) {
   const [range, setRange] = useState("30d");
-  const { data, isLoading } = useHistory(section, range);
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const startId = useId();
+  const endId = useId();
+
+  // Build the effective range string for the API call
+  const effectiveRange =
+    range === "custom" && customStart && customEnd
+      ? `custom:${customStart}:${customEnd}`
+      : range === "custom"
+      ? "30d" // fallback until both dates are picked
+      : range;
+
+  const { data, isLoading } = useHistory(section, effectiveRange);
 
   const barData = overrideBarData ?? data?.barData ?? [];
   const pieData = overridePieData ?? data?.pieData ?? [];
@@ -70,9 +84,9 @@ export function ChartPanel({ section, pieTitle, barTitle, overrideBarData, overr
     <div className="space-y-5">
       {/* Time range selector */}
       {!overrideBarData && (
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-muted-foreground font-medium">Range:</span>
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             {RANGES.map((r) => (
               <button
                 key={r.value}
@@ -87,6 +101,32 @@ export function ChartPanel({ section, pieTitle, barTitle, overrideBarData, overr
               </button>
             ))}
           </div>
+          {range === "custom" && (
+            <div className="flex items-center gap-2 mt-1 sm:mt-0">
+              <div className="flex items-center gap-1">
+                <label htmlFor={startId} className="text-xs text-muted-foreground">From</label>
+                <input
+                  id={startId}
+                  type="date"
+                  value={customStart}
+                  max={customEnd || undefined}
+                  onChange={(e) => setCustomStart(e.target.value)}
+                  className="text-xs border border-border rounded-md px-2 py-1 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <label htmlFor={endId} className="text-xs text-muted-foreground">To</label>
+                <input
+                  id={endId}
+                  type="date"
+                  value={customEnd}
+                  min={customStart || undefined}
+                  onChange={(e) => setCustomEnd(e.target.value)}
+                  className="text-xs border border-border rounded-md px-2 py-1 bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 

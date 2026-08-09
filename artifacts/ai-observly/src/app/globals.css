@@ -100,7 +100,7 @@
   --popover-foreground: 222 47% 11%;
   --popover-border: 214 32% 91%;
 
-  --primary: 221 83% 53%;
+  --primary: 222 88% 40%;
   --primary-foreground: 0 0% 100%;
   
   --secondary: 210 40% 96%;
@@ -164,6 +164,28 @@
     font-family: 'Outfit', sans-serif;
   }
 }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Hero entrance — apply animate-hero + animate-hero-dN */
+.animate-hero { animation: fadeUp 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-hero-d0 { animation-delay: 0ms; }
+.animate-hero-d1 { animation-delay: 90ms; }
+.animate-hero-d2 { animation-delay: 190ms; }
+.animate-hero-d3 { animation-delay: 290ms; }
+.animate-hero-d4 { animation-delay: 430ms; }
+
+/* Scroll reveal — JS adds .is-revealed when el enters viewport */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+[data-reveal].is-revealed { opacity: 1; transform: translateY(0); }
 
 @layer utilities {
   input[type='search']::-webkit-search-cancel-button { @apply hidden; }
