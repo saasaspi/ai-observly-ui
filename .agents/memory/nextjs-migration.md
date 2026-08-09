@@ -13,6 +13,16 @@ The `api-server` artifact in this monorepo owns the `/api` path in the Replit pr
 
 **How to apply:** Any new Next.js API route must go under `src/app/napi/`, not `src/app/api/`.
 
+## Stale .next cache causes 500s after heavy refactors
+When many new pages/components are added in one session, the dev server can serve from a stale `.next` chunk manifest and throw `Cannot find module './NNN.js'` 500s. Fix: `rm -rf .next` then restart the workflow. The build will recompile from scratch cleanly.
+
+**Why:** Next.js dev mode caches chunk IDs; adding many new imports shifts IDs, making old cached references invalid.
+
+**How to apply:** After any large batch of file additions/changes, if 500s appear with "Cannot find module" errors, clear `.next` and restart before debugging further.
+
+## recharts SSR note
+recharts works fine in `"use client"` pages (Next.js still hydrates them server-side). No `dynamic(() => import(...), { ssr: false })` needed as long as all chart-containing components carry `"use client"`.
+
 ## Key decisions
 
 **Why:** User explicitly requested Next.js App Router migration.

@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -8,6 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useSignup } from "@/hooks/use-api";
+import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Sparkles } from "lucide-react";
 
 const signupSchema = z.object({
@@ -23,6 +25,7 @@ export default function Signup() {
   const router = useRouter();
   const { toast } = useToast();
   const signupMutation = useSignup();
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
@@ -34,7 +37,8 @@ export default function Signup() {
       { email: data.email, password: data.password },
       {
         onSuccess: () => {
-          router.push("/onboarding");
+          // Show onboarding dialog before navigating to dashboard
+          setShowOnboarding(true);
         },
         onError: () => {
           toast({ title: "Signup failed", description: "Something went wrong. Please try again.", variant: "destructive" });
@@ -43,8 +47,15 @@ export default function Signup() {
     );
   };
 
+  const handleOnboardingClose = () => {
+    setShowOnboarding(false);
+    router.push("/dashboard");
+  };
+
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 bg-background">
+      {showOnboarding && <OnboardingDialog onClose={handleOnboardingClose} />}
+
       <Link href="/" className="flex items-center gap-2 font-bold text-xl font-outfit mb-8" data-testid="link-home">
         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
           <Sparkles className="w-5 h-5" />

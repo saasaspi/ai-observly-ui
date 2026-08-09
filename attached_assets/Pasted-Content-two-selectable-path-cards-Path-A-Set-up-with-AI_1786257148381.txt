@@ -1,0 +1,99 @@
+Content — two selectable path cards:
+
+Path A: "Set up with AI Assistant"
+Opens an embedded conversational assistant (chat panel or modal) that references the product docs and walks a non-technical user step-by-step through integration (e.g., connecting an API key, installing the SDK/widget snippet).
+Assistant should be able to generate copy-pasteable code snippets and confirm when a step is verified (e.g., "we've detected your first event").
+Path B: "I Have a Developer"
+Captures developer name + email in a small form.
+On submit, sends the developer an email containing: the account's API key, a link to integration docs, and basic setup instructions.
+Primary (non-technical) user is returned to the app immediately — they should not be blocked waiting for the developer.
+
+Dismissal behavior:
+
+Modal must have a "Skip for now" / close option — it should never fully block access to the app.
+If skipped or if Path B is chosen, show a persistent (dismissible-per-session, but reappearing until resolved) banner on the Overview page: "Integration pending — no data yet" until the first real event/data point is received from the account.
+
+Data to store: chosen path (ai_assistant / developer_handoff / skipped), developer contact info (if Path B), timestamp, and integration-complete status (boolean, flipped by backend once first data arrives).
+
+Acceptance criteria:
+
+Modal never reappears after first login once a path is chosen (unless explicitly skipped, in which case it can be re-triggered from a "Finish setup" prompt).
+Path A progress should persist if the user closes and reopens the assistant (resume, don't restart).
+2. Left Navigation Restructure — Add "Customers" and "Features"
+
+Current state: "Customers" and "Features" exist as tabs inside the Dashboard page.
+
+Change:
+
+Add "Customers" and "Features" as standalone top-level items in the left sidebar, positioned directly below the Overview (formerly Dashboard) item.
+Remove them as tabs from within the Overview page — that content moves entirely to their own dedicated pages/routes.
+
+Resulting nav order (top to bottom):
+
+Overview
+Customers
+Features
+(any other existing sections, unchanged)
+Settings
+
+Each new page (Customers, Features) is a full section, not a modal or drawer — it gets its own URL/route, its own filters (e.g., date range), and its own charts per Section 4 below.
+
+Acceptance criteria:
+
+No duplicate "Customers"/"Features" tabs remain inside Overview.
+Deep links to the old in-dashboard tabs (if any existed) should redirect to the new standalone pages, not 404.
+3. Rename "Dashboard" → "Overview"
+Change the display label only from "Dashboard" to "Overview" in the left sidebar and any page headers/breadcrumbs.
+Keep the underlying route/URL and internal identifier unchanged (e.g., if the route is /dashboard, leave it as /dashboard) to avoid breaking bookmarks, saved links, or any backend references keyed to that route name. Only the user-facing text changes.
+Update this label everywhere it appears in copy (empty states, tooltips, onboarding references), not just the sidebar.
+4. Historical Trend Charts (Pie + Bar) Under Each Nav Section
+
+Where: Every data-bearing left-nav section — Overview, Customers, Features (and any future sections with metrics). Settings does not need charts.
+
+What to build per section:
+
+One pie chart — current-period breakdown/distribution relevant to that section (e.g., on Features: cost distribution across features; on Customers: customer segment or usage-tier breakdown).
+One bar chart — historical trend over time (e.g., weekly or monthly buckets) for that section's core metric(s).
+Both charts need a time-range selector (e.g., 7d / 30d / 90d / custom range) that updates both charts together.
+
+Interactivity requirements (hover behavior):
+
+Hovering a pie slice or bar shows a tooltip with the exact value, label, and percentage/period.
+Hovering a segment highlights it (e.g., slight scale-up, opacity change on other segments) to visually isolate it.
+Optional but recommended: clicking a segment/bar filters the underlying data list on that page (drill-down).
+
+Data requirement: This implies the backend must store/aggregate metrics over time, not just current snapshots — a time-series or periodic-rollup table is needed to power the bar chart's historical view. Flag this to Replit explicitly since it's a data-model change, not just a UI change.
+
+Acceptance criteria:
+
+Charts render with empty/placeholder states when no historical data exists yet (ties into the "integration pending" state from Section 1).
+Chart data respects the selected time range on every load and on every range change.
+5. New Settings Tab: "Add-on Cost"
+
+Location: New tab inside the existing Settings section, labeled "Add-on Cost."
+
+Purpose: Let the user manually log additional costs that aren't automatically tracked (e.g., infra cost, third-party resource cost) and have those costs flow into ROI/margin calculations per feature.
+
+UI — form fields for logging a cost:
+
+Cost type (dropdown: e.g., Infra, Resource, Other — configurable list)
+Amount + currency
+Associated feature (dropdown — must map to an existing entry on the Features page)
+Date incurred
+Recurrence: one-time vs. recurring (if recurring, specify frequency — monthly/weekly)
+Optional notes field
+
+UI — below the form: a table listing all logged add-on costs (type, amount, feature, date, recurring flag) with edit and delete actions.
+
+Business logic (critical — this is what makes the feature functional, not just a log):
+
+When a cost is added, edited, or deleted, recalculate the associated feature's ROI and margin:
+Feature Margin = Revenue attributed to feature − (existing tracked costs + logged add-on costs)
+Feature ROI = (Revenue − Total Cost) / Total Cost
+Recurring costs must be included in every subsequent period's calculation automatically until removed or ended, not just the period they were logged in.
+These recalculated numbers must propagate to wherever ROI/margin is displayed — the Features page and any relevant Overview widgets — not just live in Settings.
+
+Acceptance criteria:
+
+Deleting a logged cost immediately reverts the affected feature's ROI/margin to reflect its removal.
+A cost logged against a feature with no revenue data yet should not crash the calculation — handle divide-by-zero gracefully (e.g., show "N/A" for ROI until revenue exists).

@@ -1,11 +1,15 @@
-// Helper for JSON API calls
+// API client — all internal routes use /napi/* to avoid conflict with the api-server artifact at /api/*
+
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   // Routes under /napi/* are served by Next.js (avoids conflict with /api/* api-server artifact)
   const res = await fetch(path, {
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,
   });
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  if (!res.ok) {
+    const text = await res.text().catch(() => res.statusText);
+    throw new Error(text || `Request failed: ${res.status}`);
+  }
   return res.json();
 }
 
@@ -21,10 +25,35 @@ export async function getCustomers() {
   >("/napi/customers");
 }
 
+export async function getCustomerDetail(id: string) {
+  return apiFetch<{
+    id: string; name: string; cost: number; revenue: number; margin: number; status: string;
+    tokens: number; requestCount: number; models: string[];
+    barData: { period: string; cost: number; revenue: number }[];
+    pieData: { name: string; value: number; color: string }[];
+  }>(`/napi/customers/${id}`);
+}
+
 export async function getFeatureBreakdown() {
   return apiFetch<
-    { name: string; cost: number; revenueEstimate: number; roi: number }[]
+    { id: string; name: string; cost: number; revenueEstimate: number; roi: number }[]
   >("/napi/features");
+}
+
+export async function getFeatureDetail(id: string) {
+  return apiFetch<{
+    id: string; name: string; cost: number; revenueEstimate: number; roi: number; margin: number;
+    tokenCount: number; requestCount: number; models: string[];
+    barData: { period: string; cost: number; revenue: number }[];
+    pieData: { name: string; value: number; color: string }[];
+  }>(`/napi/features/${id}`);
+}
+
+export async function getHistory(section: string, range: string) {
+  return apiFetch<{
+    barData: { period: string; cost: number; revenue: number; profit: number }[];
+    pieData: { name: string; value: number; color: string }[];
+  }>(`/napi/history?section=${section}&range=${range}`);
 }
 
 export async function getTechnicalDetails(id: string) {
@@ -43,32 +72,6 @@ export async function regenerateKey() {
 
 export async function revokeKey() {
   return apiFetch<{ keyDisplay: string }>("/napi/revoke-key", { method: "POST" });
-}
-
-// Custom feature/plan management — localStorage-based (no backend yet)
-export type CustomFeature = { id: string; name: string; label: string };
-export type CustomPlan = { id: string; name: string; includedFeatureIds: string[] };
-
-export async function getCustomFeatures(): Promise<CustomFeature[]> {
-  const stored = localStorage.getItem("ai_observly_features");
-  if (stored) return JSON.parse(stored);
-  return [];
-}
-
-export async function saveCustomFeatures(features: CustomFeature[]): Promise<{ success: boolean }> {
-  localStorage.setItem("ai_observly_features", JSON.stringify(features));
-  return { success: true };
-}
-
-export async function getCustomPlans(): Promise<CustomPlan[]> {
-  const stored = localStorage.getItem("ai_observly_plans");
-  if (stored) return JSON.parse(stored);
-  return [];
-}
-
-export async function saveCustomPlans(plans: CustomPlan[]): Promise<{ success: boolean }> {
-  localStorage.setItem("ai_observly_plans", JSON.stringify(plans));
-  return { success: true };
 }
 
 export async function sendTestEvent() {
@@ -118,4 +121,69 @@ export async function requestPasswordReset(email: string) {
     method: "POST",
     body: JSON.stringify({ email }),
   });
+}
+
+// Add-on costs (localStorage-backed for demo)
+export interface AddonCost {
+  id: string;
+  costType: string;
+  amount: number;
+  currency: string;
+  featureId: string;
+  featureName: string;
+  dateIncurred: string;
+  recurrence: "one-time" | "monthly" | "weekly";
+  notes?: string;
+}
+
+export function getAddonCosts(): AddonCost[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem("ai_observly_addon_costs") ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function saveAddonCosts(costs: AddonCost[]): void {
+  localStorage.setItem("ai_observly_addon_costs", JSON.stringify(costs));
+}
+
+// Custom features / plans (localStorage)
+export interface CustomFeature {
+  id: string;
+  name: string;
+  label: string;
+}
+
+export interface CustomPlan {
+  id: string;
+  name: string;
+  includedFeatureIds: string[];
+}
+
+export function getCustomFeatures(): CustomFeature[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem("ai_observly_features") ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function saveCustomFeatures(features: CustomFeature[]): void {
+  localStorage.setItem("ai_observly_features", JSON.stringify(features));
+}
+
+export function getCustomPlans(): CustomPlan[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem("ai_observly_plans") ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+export function saveCustomPlans(plans: CustomPlan[]): void {
+  localStorage.setItem("ai_observly_plans", JSON.stringify(plans));
 }

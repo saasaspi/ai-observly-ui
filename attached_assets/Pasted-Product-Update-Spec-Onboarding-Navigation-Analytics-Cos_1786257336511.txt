@@ -1,0 +1,142 @@
+Product Update Spec — Onboarding, Navigation, Analytics & Cost Tracking
+
+This document expands five change requests into implementation-ready specs. Each section includes: what to build, exact UI behavior, data/logic requirements, and edge cases — so there's nothing left to infer.
+
+1. Post-Signup Onboarding Dialog
+
+⚠️ Assumption flagged — the original note was unclear on structure. I've interpreted it as: a modal shown right after account creation, offering the user two distinct integration paths. If you meant something else (e.g., both options should be visible as tabs inside one flow, or the "developer" option is a separate step later), correct this before handing off.
+
+Trigger: Modal opens automatically once, immediately after a new account is created and before the user lands on the main app (i.e., first login only, not on every login).
+
+Content — two selectable path cards:
+
+Path A: "Set up with AI Assistant"
+Opens an embedded conversational assistant (chat panel or modal) that references the product docs and walks a non-technical user step-by-step through integration (e.g., connecting an API key, installing the SDK/widget snippet).
+Assistant should be able to generate copy-pasteable code snippets and confirm when a step is verified (e.g., "we've detected your first event").
+Path B: "I Have a Developer"
+Captures developer name + email in a small form.
+On submit, sends the developer an email containing: the account's API key, a link to integration docs, and basic setup instructions.
+Primary (non-technical) user is returned to the app immediately — they should not be blocked waiting for the developer.
+
+Dismissal behavior:
+
+Modal must have a "Skip for now" / close option — it should never fully block access to the app.
+If skipped or if Path B is chosen, show a persistent (dismissible-per-session, but reappearing until resolved) banner on the Overview page: "Integration pending — no data yet" until the first real event/data point is received from the account.
+
+Data to store: chosen path (ai_assistant / developer_handoff / skipped), developer contact info (if Path B), timestamp, and integration-complete status (boolean, flipped by backend once first data arrives).
+
+Acceptance criteria:
+
+Modal never reappears after first login once a path is chosen (unless explicitly skipped, in which case it can be re-triggered from a "Finish setup" prompt).
+Path A progress should persist if the user closes and reopens the assistant (resume, don't restart).
+2. Left Navigation Restructure — Add "Customers" and "Features"
+
+Current state: "Customers" and "Features" exist as tabs inside the Dashboard page.
+
+Change:
+
+Add "Customers" and "Features" as standalone top-level items in the left sidebar, positioned directly below the Overview (formerly Dashboard) item.
+Remove them as tabs from within the Overview page — that content moves entirely to their own dedicated pages/routes.
+
+Resulting nav order (top to bottom):
+
+Overview
+Customers
+Features
+(any other existing sections, unchanged)
+Settings
+
+Each new page (Customers, Features) is a full section, not a modal or drawer — it gets its own URL/route, its own filters (e.g., date range), and its own charts per Section 4 below.
+
+Acceptance criteria:
+
+No duplicate "Customers"/"Features" tabs remain inside Overview.
+Deep links to the old in-dashboard tabs (if any existed) should redirect to the new standalone pages, not 404.
+3. Rename "Dashboard" → "Overview"
+Change the display label only from "Dashboard" to "Overview" in the left sidebar and any page headers/breadcrumbs.
+Keep the underlying route/URL and internal identifier unchanged (e.g., if the route is /dashboard, leave it as /dashboard) to avoid breaking bookmarks, saved links, or any backend references keyed to that route name. Only the user-facing text changes.
+Update this label everywhere it appears in copy (empty states, tooltips, onboarding references), not just the sidebar.
+4. Historical Trend Charts (Pie + Bar) Under Each Nav Section
+
+Where: Every data-bearing left-nav section — Overview, Customers, Features (and any future sections with metrics). Settings does not need charts.
+
+What to build per section:
+
+One pie chart — current-period breakdown/distribution relevant to that section (e.g., on Features: cost distribution across features; on Customers: customer segment or usage-tier breakdown).
+One bar chart — historical trend over time (e.g., weekly or monthly buckets) for that section's core metric(s).
+Both charts need a time-range selector (e.g., 7d / 30d / 90d / custom range) that updates both charts together.
+
+Interactivity requirements (hover behavior):
+
+Hovering a pie slice or bar shows a tooltip with the exact value, label, and percentage/period.
+Hovering a segment highlights it (e.g., slight scale-up, opacity change on other segments) to visually isolate it.
+Optional but recommended: clicking a segment/bar filters the underlying data list on that page (drill-down).
+
+Data requirement: This implies the backend must store/aggregate metrics over time, not just current snapshots — a time-series or periodic-rollup table is needed to power the bar chart's historical view. Flag this to Replit explicitly since it's a data-model change, not just a UI change.
+
+Acceptance criteria:
+
+Charts render with empty/placeholder states when no historical data exists yet (ties into the "integration pending" state from Section 1).
+Chart data respects the selected time range on every load and on every range change.
+5. New Settings Tab: "Add-on Cost"
+
+Location: New tab inside the existing Settings section, labeled "Add-on Cost."
+
+Purpose: Let the user manually log additional costs that aren't automatically tracked (e.g., infra cost, third-party resource cost) and have those costs flow into ROI/margin calculations per feature.
+
+UI — form fields for logging a cost:
+
+Cost type (dropdown: e.g., Infra, Resource, Other — configurable list)
+Amount + currency
+Associated feature (dropdown — must map to an existing entry on the Features page)
+Date incurred
+Recurrence: one-time vs. recurring (if recurring, specify frequency — monthly/weekly)
+Optional notes field
+
+UI — below the form: a table listing all logged add-on costs (type, amount, feature, date, recurring flag) with edit and delete actions.
+
+Business logic (critical — this is what makes the feature functional, not just a log):
+
+When a cost is added, edited, or deleted, recalculate the associated feature's ROI and margin:
+Feature Margin = Revenue attributed to feature − (existing tracked costs + logged add-on costs)
+Feature ROI = (Revenue − Total Cost) / Total Cost
+Recurring costs must be included in every subsequent period's calculation automatically until removed or ended, not just the period they were logged in.
+These recalculated numbers must propagate to wherever ROI/margin is displayed — the Features page and any relevant Overview widgets — not just live in Settings.
+
+Acceptance criteria:
+
+Deleting a logged cost immediately reverts the affected feature's ROI/margin to reflect its removal.
+A cost logged against a feature with no revenue data yet should not crash the calculation — handle divide-by-zero gracefully (e.g., show "N/A" for ROI until revenue exists).
+6. Per-Feature Drill-Down Analytics
+
+Clarifies Section 4 for the Features page specifically: the Features page itself should stay high-level — it is a list/overview only, not a place to show every feature's full chart set at once.
+
+Behavior:
+
+The Features page shows a list (or card grid) of all features with a lightweight summary per row/card — e.g., feature name, current ROI, current margin, and a small at-a-glance sparkline or mini-indicator (not a full chart).
+Clicking on a specific feature opens that feature's own detail view (a dedicated page or a full-screen panel — recommend a dedicated route like /features/:featureId so it's linkable/bookmarkable).
+All the in-depth charts and statistics — the historical pie chart, the historical bar/trend chart from Section 4, plus any feature-specific stats (cost breakdown over time, ROI trend, margin trend, revenue attributed) — live inside this per-feature detail view only, not on the main Features list page.
+Each feature's detail view should have its own independent time-range selector (7d/30d/90d/custom), scoped to that feature only.
+This same drill-down pattern should apply consistently wherever a "list vs. detail" structure makes sense — e.g., Customers page: list/overview at the top level, click a customer to see their individual historical charts and stats.
+
+Acceptance criteria:
+
+Navigating away from a feature's detail view and back (or reloading the URL directly) returns to the same feature's data — state must be route-driven, not just client-side memory.
+The top-level Features (and Customers) list must remain fast/lightweight — it should not fetch or render every feature's full historical dataset just to display the list; detailed data loads only when a specific feature is opened.
+7. Full Mobile Responsiveness
+
+Scope: The entire application — not just the pages touched in this spec — must be responsive across mobile, tablet, and desktop breakpoints.
+
+Specific areas that need explicit attention given the changes above:
+
+Left sidebar navigation: must collapse into a mobile-friendly pattern (e.g., hamburger menu / bottom nav / slide-out drawer) below a defined breakpoint — it cannot remain a fixed-width sidebar on small screens.
+Onboarding modal (Section 1): both path cards and the developer-email form must stack vertically and remain fully usable on small screens; the AI assistant chat panel must be usable in a mobile viewport (full-screen on mobile rather than a small embedded panel).
+Charts (pie + bar, Sections 4 & 6): must resize/reflow for narrow viewports — avoid fixed pixel widths; hover-tooltip interactions on desktop should have a touch-equivalent (tap-to-show-tooltip) on mobile, since hover doesn't exist on touchscreens.
+Add-on Cost form and table (Section 5): the table must remain usable on mobile — either horizontal scroll with sticky first column, or a stacked/card layout on small screens, rather than a squeezed unreadable table.
+Feature/Customer list and detail views (Section 6): list should reflow from a grid/table on desktop to a stacked card list on mobile; detail view charts follow the same responsive rules as above.
+
+Acceptance criteria:
+
+No horizontal page-level scrolling on any screen at any breakpoint (component-level scroll, like a wide table, is acceptable if intentional).
+All interactive elements (buttons, form fields, chart tap-targets) meet a minimum comfortable touch-target size on mobile.
+Test breakpoints at minimum: ~375px (mobile), ~768px (tablet), ~1280px+ (desktop).

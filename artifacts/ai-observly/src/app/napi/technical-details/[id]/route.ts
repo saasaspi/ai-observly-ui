@@ -2,8 +2,10 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   const mockData: Record<string, { tokens: number; models: string[]; requestCount: number }> = {
     cust_001: { tokens: 1_840_000, models: ["gpt-4o", "gpt-4o-mini"], requestCount: 3420 },
     cust_002: { tokens: 1_250_000, models: ["gpt-4o-mini"], requestCount: 2810 },
@@ -12,6 +14,6 @@ export async function GET(
     cust_005: { tokens: 560_000, models: ["gpt-4o"], requestCount: 1240 },
   };
 
-  const data = mockData[params.id] ?? { tokens: 100_000, models: ["gpt-4o-mini"], requestCount: 200 };
+  const data = mockData[id] ?? { tokens: 100_000, models: ["gpt-4o-mini"], requestCount: 200 };
   return NextResponse.json(data);
 }
