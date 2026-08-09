@@ -1,18 +1,19 @@
+"use client";
 import { useEffect, useState, ReactNode } from "react";
-import { useLocation } from "wouter";
+import { useRouter } from "next/navigation";
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
-  const [, setLocation] = useLocation();
+  const router = useRouter();
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
 
   useEffect(() => {
     const authed = localStorage.getItem("ai_observly_authed") === "true";
     if (!authed) {
-      setLocation("/login");
+      router.push("/login");
     } else {
       setIsAuthed(true);
     }
-  }, [setLocation]);
+  }, [router]);
 
   if (isAuthed === null) {
     return (

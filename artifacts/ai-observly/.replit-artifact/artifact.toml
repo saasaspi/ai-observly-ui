@@ -16,12 +16,7 @@ run = "pnpm --filter @workspace/ai-observly run dev"
 
 [services.production]
 build = [ "pnpm", "--filter", "@workspace/ai-observly", "run", "build" ]
-serve = "static"
-publicDir = "artifacts/ai-observly/dist/public"
-
-[[services.production.rewrites]]
-from = "/*"
-to = "/index.html"
+run = "pnpm --filter @workspace/ai-observly run start"
 
 [services.env]
 PORT = "23329"

@@ -1,15 +1,18 @@
-import { Link, useLocation } from "wouter";
-import { 
-  LayoutDashboard, 
-  Settings, 
+"use client";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  LayoutDashboard,
+  Settings,
   LogOut,
   Sparkles,
-  BookOpen
+  BookOpen,
 } from "lucide-react";
 import { ReactNode } from "react";
 
 export function DashboardLayout({ children }: { children: ReactNode }) {
-  const [location, setLocation] = useLocation();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -19,7 +22,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
 
   const handleLogout = () => {
     localStorage.removeItem("ai_observly_authed");
-    setLocation("/");
+    router.push("/");
   };
 
   return (
@@ -33,17 +36,17 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
             <span className="font-bold text-lg tracking-tight font-outfit">AI Observly</span>
           </Link>
         </div>
-        
+
         <nav className="flex-1 px-4 space-y-1 mt-4">
           {navItems.map((item) => {
-            const isActive = location.startsWith(item.href);
+            const isActive = pathname?.startsWith(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors ${
-                  isActive 
-                    ? "bg-primary/10 text-primary" 
+                  isActive
+                    ? "bg-primary/10 text-primary"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 }`}
                 data-testid={`nav-${item.label.toLowerCase()}`}
@@ -56,7 +59,7 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="p-4 mt-auto border-t border-border">
-          <button 
+          <button
             onClick={handleLogout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground w-full transition-colors"
             data-testid="btn-logout"
@@ -76,21 +79,23 @@ export function DashboardLayout({ children }: { children: ReactNode }) {
             <span className="font-bold tracking-tight">AI Observly</span>
           </Link>
           <div className="flex gap-4">
-            {navItems.map(item => (
+            {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`text-sm ${location.startsWith(item.href) ? "text-primary font-medium" : "text-muted-foreground"}`}
+                className={`text-sm ${
+                  pathname?.startsWith(item.href)
+                    ? "text-primary font-medium"
+                    : "text-muted-foreground"
+                }`}
               >
                 {item.label}
               </Link>
             ))}
           </div>
         </div>
-        
-        <div className="max-w-6xl mx-auto p-4 md:p-8">
-          {children}
-        </div>
+
+        <div className="max-w-6xl mx-auto p-4 md:p-8">{children}</div>
       </main>
     </div>
   );

@@ -1,0 +1,1 @@
+- [Next.js Migration](nextjs-migration.md) — AI Observly converted from React Vite to Next.js 15 App Router; key decisions and patterns documented.

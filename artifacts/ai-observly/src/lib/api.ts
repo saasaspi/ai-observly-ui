@@ -1,90 +1,120 @@
+// Helper for JSON API calls
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(path, {
+    headers: { "Content-Type": "application/json" },
+    ...options,
+  });
+  if (!res.ok) throw new Error(`API error: ${res.status}`);
+  return res.json();
+}
+
 export async function getDashboardSummary() {
-  return { totalRevenue: 4200, totalCost: 1140, totalProfit: 3060 };
+  return apiFetch<{ totalRevenue: number; totalCost: number; totalProfit: number }>(
+    "/api/dashboard-summary"
+  );
 }
 
 export async function getCustomers() {
-  return [
-    { id: "c1", name: "Acme Corp", cost: 380, revenue: 320, margin: -60, status: "red" as const },
-    { id: "c2", name: "BuildFast Inc", cost: 210, revenue: 680, margin: 470, status: "yellow" as const },
-    { id: "c3", name: "Moonshot AI", cost: 95, revenue: 410, margin: 315, status: "green" as const },
-    { id: "c4", name: "DataPulse", cost: 140, revenue: 520, margin: 380, status: "green" as const },
-    { id: "c5", name: "Verity Labs", cost: 315, revenue: 410, margin: 95, status: "yellow" as const },
-  ];
+  return apiFetch<
+    { id: string; name: string; cost: number; revenue: number; margin: number; status: "red" | "yellow" | "green" }[]
+  >("/api/customers");
 }
 
 export async function getFeatureBreakdown() {
-  return [
-    { name: "Feature A", cost: 520, revenueEstimate: 1120, roi: 600 },
-    { name: "Feature B", cost: 310, revenueEstimate: 840, roi: 530 },
-    { name: "Feature C", cost: 220, revenueEstimate: 600, roi: 380 },
-    { name: "Feature D", cost: 290, revenueEstimate: 180, roi: -110 },
-  ];
+  return apiFetch<
+    { name: string; cost: number; revenueEstimate: number; roi: number }[]
+  >("/api/features");
 }
 
 export async function getTechnicalDetails(id: string) {
-  return { tokens: 142000, models: ["gpt-4o", "gpt-3.5-turbo"], requestCount: 847 };
+  return apiFetch<{ tokens: number; models: string[]; requestCount: number }>(
+    `/api/technical-details/${id}`
+  );
 }
 
 export async function generateKey() {
-  return { keyDisplay: "obs_live_" + Math.random().toString(36).slice(2, 18) };
-}
-export async function regenerateKey() {
-  return { keyDisplay: "obs_live_" + Math.random().toString(36).slice(2, 18) };
-}
-export async function revokeKey() {
-  return { keyDisplay: "" };
+  return apiFetch<{ keyDisplay: string }>("/api/generate-key", { method: "POST" });
 }
 
-// Custom feature management (stored in localStorage for now)
+export async function regenerateKey() {
+  return apiFetch<{ keyDisplay: string }>("/api/regenerate-key", { method: "POST" });
+}
+
+export async function revokeKey() {
+  return apiFetch<{ keyDisplay: string }>("/api/revoke-key", { method: "POST" });
+}
+
+// Custom feature/plan management — localStorage-based (no backend yet)
 export type CustomFeature = { id: string; name: string; label: string };
 export type CustomPlan = { id: string; name: string; includedFeatureIds: string[] };
 
 export async function getCustomFeatures(): Promise<CustomFeature[]> {
-  const stored = localStorage.getItem('ai_observly_features');
+  const stored = localStorage.getItem("ai_observly_features");
   if (stored) return JSON.parse(stored);
   return [];
 }
 
 export async function saveCustomFeatures(features: CustomFeature[]): Promise<{ success: boolean }> {
-  localStorage.setItem('ai_observly_features', JSON.stringify(features));
+  localStorage.setItem("ai_observly_features", JSON.stringify(features));
   return { success: true };
 }
 
 export async function getCustomPlans(): Promise<CustomPlan[]> {
-  const stored = localStorage.getItem('ai_observly_plans');
+  const stored = localStorage.getItem("ai_observly_plans");
   if (stored) return JSON.parse(stored);
   return [];
 }
 
 export async function saveCustomPlans(plans: CustomPlan[]): Promise<{ success: boolean }> {
-  localStorage.setItem('ai_observly_plans', JSON.stringify(plans));
+  localStorage.setItem("ai_observly_plans", JSON.stringify(plans));
   return { success: true };
 }
 
 export async function sendTestEvent() {
-  return { success: true };
+  return apiFetch<{ success: boolean }>("/api/send-test-event", { method: "POST" });
 }
 
 export async function recalculateNow() {
-  return { lastCalculated: new Date() };
+  return apiFetch<{ lastCalculated: Date }>("/api/recalculate", { method: "POST" });
 }
 
 export async function submitWaitlist(email: string) {
-  return { success: true };
+  return apiFetch<{ success: boolean }>("/api/waitlist", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
 }
 
 export async function signup(email: string, password: string) {
-  localStorage.setItem("ai_observly_authed", "true");
-  return { success: true, userId: "u_demo" };
+  const data = await apiFetch<{ success: boolean; userId: string }>("/api/signup", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+  if (data.success) {
+    localStorage.setItem("ai_observly_authed", "true");
+  }
+  return data;
 }
+
 export async function login(email: string, password: string) {
-  localStorage.setItem("ai_observly_authed", "true");
-  return { success: true, userId: "u_demo" };
+  const data = await apiFetch<{ success: boolean; userId: string }>("/api/login", {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+  if (data.success) {
+    localStorage.setItem("ai_observly_authed", "true");
+  }
+  return data;
 }
+
 export async function logout() {
   localStorage.removeItem("ai_observly_authed");
   return { success: true };
 }
+
 export async function requestPasswordReset(email: string) {
-  return { success: true };
+  return apiFetch<{ success: boolean }>("/api/request-password-reset", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
 }

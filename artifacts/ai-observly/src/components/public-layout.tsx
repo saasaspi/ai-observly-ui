@@ -1,5 +1,7 @@
+"use client";
 import { ReactNode, useState } from "react";
-import { Link, useLocation } from "wouter";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 
 const sectionLinks = [
@@ -11,18 +13,16 @@ const sectionLinks = [
 ];
 
 export function PublicLayout({ children }: { children: ReactNode }) {
-  const [location] = useLocation();
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isHome = location === "/";
+  const isHome = pathname === "/";
 
-  // Build a section href: if on home page, just scroll; if on another page go to /#section
   const sectionHref = (anchor: string) => (isHome ? `#${anchor}` : `/#${anchor}`);
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col font-sans">
       <header className="border-b border-border/40 backdrop-blur-md sticky top-0 z-50 bg-background/90">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-bold text-lg font-outfit shrink-0" data-testid="link-home">
             <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -52,7 +52,6 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             </Link>
           </nav>
 
-          {/* Desktop auth */}
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/login"
@@ -70,7 +69,6 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             </Link>
           </div>
 
-          {/* Mobile menu toggle */}
           <button
             className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
@@ -80,7 +78,6 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        {/* Mobile menu */}
         {mobileOpen && (
           <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-md px-6 py-4 flex flex-col gap-1">
             {sectionLinks.map(({ label, anchor }) => (
@@ -112,14 +109,11 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         )}
       </header>
 
-      <main className="flex-1 flex flex-col">
-        {children}
-      </main>
+      <main className="flex-1 flex flex-col">{children}</main>
 
       <footer className="border-t border-border py-12 bg-card">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-            {/* Brand */}
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-3 font-outfit font-semibold text-foreground">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
@@ -128,10 +122,9 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 AI Observly
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                AI cost & margin tracking for founders who ship fast.
+                AI cost &amp; margin tracking for founders who ship fast.
               </p>
             </div>
-            {/* Product */}
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
@@ -140,7 +133,6 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 <li><a href="/#how-it-works" className="hover:text-foreground transition-colors">How it works</a></li>
               </ul>
             </div>
-            {/* Resources */}
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">Resources</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
@@ -148,7 +140,6 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 <li><a href="/#faq" className="hover:text-foreground transition-colors">FAQ</a></li>
               </ul>
             </div>
-            {/* Account */}
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">Account</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
