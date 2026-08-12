@@ -10,13 +10,12 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useLogin, useRequestPasswordReset } from "@/hooks/use-api";
 import { Sparkles } from "lucide-react";
+import { GoogleSignInButton } from "@/components/google-sign-in-button";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),
 });
-
-const GOOGLE_ENABLED = !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
 export default function Login() {
   const router = useRouter();
@@ -77,16 +76,16 @@ export default function Login() {
             </div>
 
             {/* Google sign-in */}
-            {GOOGLE_ENABLED && (
-              <>
-                <GoogleButton label="Sign in with Google" onSuccess={handleGoogleSuccess} />
-                <div className="flex items-center gap-3 my-5">
-                  <div className="flex-1 h-px bg-border" />
-                  <span className="text-xs text-muted-foreground font-medium">or continue with email</span>
-                  <div className="flex-1 h-px bg-border" />
-                </div>
-              </>
-            )}
+            <GoogleSignInButton
+              label="Sign in with Google"
+              onSuccess={handleGoogleSuccess}
+              onError={() => toast({ title: "Google sign-in failed", description: "Please try again.", variant: "destructive" })}
+            />
+            <div className="flex items-center gap-3 my-5">
+              <div className="flex-1 h-px bg-border" />
+              <span className="text-xs text-muted-foreground font-medium">or continue with email</span>
+              <div className="flex-1 h-px bg-border" />
+            </div>
 
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -151,17 +150,3 @@ export default function Login() {
   );
 }
 
-// Isolated component so useGoogleLogin hook is only called when GoogleOAuthProvider is in the tree
-function GoogleButton({ label, onSuccess }: { label: string; onSuccess: (name: string, email: string) => void }) {
-  // Dynamic import at runtime so the hook only executes if this component renders
-  const { GoogleSignInButton } = require("@/components/google-sign-in-button");
-  const { useToast } = require("@/hooks/use-toast");
-  const { toast } = useToast();
-  return (
-    <GoogleSignInButton
-      label={label}
-      onSuccess={onSuccess}
-      onError={() => toast({ title: "Google sign-in failed", description: "Please try again.", variant: "destructive" })}
-    />
-  );
-}

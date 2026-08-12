@@ -4,7 +4,7 @@ import { PublicLayout } from "@/components/public-layout";
 import Link from "next/link";
 import Papa from "papaparse";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer,
   LineChart, Line, ReferenceDot,
 } from "recharts";
 import {
@@ -510,7 +510,7 @@ export default function SpendCheckupPage() {
               <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)", opacity: 0.5 }} />
               <Bar dataKey="cost" radius={[4, 4, 0, 0]}>
                 {report.chartData.map((entry, i) => (
-                  <rect key={i} fill={entry.isSpike ? "#ef4444" : "var(--primary)"} />
+                  <Cell key={i} fill={entry.isSpike ? "#ef4444" : "#2563eb"} />
                 ))}
               </Bar>
             </BarChart>

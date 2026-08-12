@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSignup } from "@/hooks/use-api";
 import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Sparkles } from "lucide-react";
+import { GoogleSignInButton } from "@/components/google-sign-in-button";
 
 const signupSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -21,8 +22,6 @@ const signupSchema = z.object({
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
-
-const GOOGLE_ENABLED = !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
 export default function Signup() {
   const router = useRouter();
@@ -80,16 +79,16 @@ export default function Signup() {
         </div>
 
         {/* Google sign-up */}
-        {GOOGLE_ENABLED && (
-          <>
-            <GoogleButton label="Sign up with Google" onSuccess={handleGoogleSuccess} />
-            <div className="flex items-center gap-3 my-5">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted-foreground font-medium">or continue with email</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
-          </>
-        )}
+        <GoogleSignInButton
+          label="Sign up with Google"
+          onSuccess={handleGoogleSuccess}
+          onError={() => toast({ title: "Google sign-up failed", description: "Please try again.", variant: "destructive" })}
+        />
+        <div className="flex items-center gap-3 my-5">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground font-medium">or continue with email</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -148,16 +147,3 @@ export default function Signup() {
   );
 }
 
-// Isolated component so useGoogleLogin hook only runs when GoogleOAuthProvider is present
-function GoogleButton({ label, onSuccess }: { label: string; onSuccess: (name: string, email: string) => void }) {
-  const { GoogleSignInButton } = require("@/components/google-sign-in-button");
-  const { useToast } = require("@/hooks/use-toast");
-  const { toast } = useToast();
-  return (
-    <GoogleSignInButton
-      label={label}
-      onSuccess={onSuccess}
-      onError={() => toast({ title: "Google sign-up failed", description: "Please try again.", variant: "destructive" })}
-    />
-  );
-}

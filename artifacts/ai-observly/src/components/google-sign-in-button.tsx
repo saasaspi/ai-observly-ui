@@ -1,5 +1,7 @@
 "use client";
-import { useGoogleLogin } from "@react-oauth/google";
+import { useToast } from "@/hooks/use-toast";
+
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
 interface Props {
   onSuccess: (name: string, email: string) => void;
@@ -20,25 +22,46 @@ function GoogleLogo() {
 }
 
 export function GoogleSignInButton({ onSuccess, onError, label = "Continue with Google" }: Props) {
-  const login = useGoogleLogin({
-    flow: "implicit",
-    onSuccess: async (tokenResponse) => {
-      try {
-        const info = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
-        }).then((r) => r.json());
-        onSuccess(info.name || info.email?.split("@")[0] || "User", info.email || "");
-      } catch {
-        onError();
-      }
-    },
-    onError: () => onError(),
-  });
+  const { toast } = useToast();
+
+  const handleClick = async () => {
+    if (!GOOGLE_CLIENT_ID) {
+      toast({
+        title: "Google sign-in not configured",
+        description: "Add your Google Client ID to enable this feature.",
+      });
+      return;
+    }
+
+    const g = (window as { google?: { accounts?: { oauth2?: { initTokenClient: (cfg: unknown) => { requestAccessToken: () => void } } } } }).google;
+    const initTokenClient = g?.accounts?.oauth2?.initTokenClient;
+    if (!initTokenClient) {
+      toast({ title: "Google SDK not loaded", description: "Please refresh and try again.", variant: "destructive" });
+      return;
+    }
+
+    const client = initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: "openid email profile",
+      callback: async (tokenResponse: { error?: string; access_token?: string }) => {
+        if (tokenResponse.error || !tokenResponse.access_token) { onError(); return; }
+        try {
+          const info = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+            headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+          }).then((r) => r.json());
+          onSuccess(info.name || info.email?.split("@")[0] || "User", info.email || "");
+        } catch {
+          onError();
+        }
+      },
+    });
+    client.requestAccessToken();
+  };
 
   return (
     <button
       type="button"
-      onClick={() => login()}
+      onClick={handleClick}
       className="w-full h-12 border border-border bg-card rounded-lg font-medium flex items-center justify-center gap-3 hover:bg-muted hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200 text-sm text-foreground"
     >
       <GoogleLogo />

@@ -1,1 +1,3 @@
 - [Next.js Migration](nextjs-migration.md) — AI Observly converted from React Vite to Next.js 15 App Router; key decisions and patterns documented.
+- [Google Auth GIS approach](google-auth-gis.md) — React OAuth provider crashes with empty clientId; use GIS script directly instead.
+- [Recharts SVG fill](recharts-svg-fill.md) — CSS vars don't work as SVG fill; use hex colors + Cell component.
