@@ -219,7 +219,7 @@ export default function LandingPage() {
               href="#how-it-works"
               className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg border border-border bg-card hover:bg-muted hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 w-full sm:w-auto"
             >
-              See a live dashboard
+              See how to integrate
             </a>
           </div>
 
@@ -491,7 +491,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div className="flex items-center justify-center gap-8 flex-wrap">
-            {[{ label: "Waitlist signups", value: "143+" },{ label: "AI providers supported", value: "3+" },{ label: "Avg setup time", value: "< 10 min" }].map(({ label, value }) => (
+            {[{ label: "AI providers supported", value: "3+" },{ label: "Avg setup time", value: "< 10 min" }].map(({ label, value }) => (
               <div key={label} data-reveal className="text-center">
                 <p className="text-3xl font-bold font-outfit text-primary">{value}</p>
                 <p className="text-sm text-muted-foreground">{label}</p>

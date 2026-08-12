@@ -64,7 +64,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               Log in
             </Link>
             <Link href="/signup" className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity shadow-sm" data-testid="link-signup">
-              Start Monitoring now
+              Sign up
             </Link>
           </div>
 

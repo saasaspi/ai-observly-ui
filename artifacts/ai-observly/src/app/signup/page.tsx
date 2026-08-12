@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,7 +8,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useSignup } from "@/hooks/use-api";
-import { OnboardingDialog } from "@/components/onboarding-dialog";
 import { Sparkles } from "lucide-react";
 import { GoogleSignInButton } from "@/components/google-sign-in-button";
 
@@ -27,8 +25,6 @@ export default function Signup() {
   const router = useRouter();
   const { toast } = useToast();
   const signupMutation = useSignup();
-  const [showOnboarding, setShowOnboarding] = useState(false);
-
   const form = useForm<z.infer<typeof signupSchema>>({
     resolver: zodResolver(signupSchema),
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
@@ -40,7 +36,7 @@ export default function Signup() {
       {
         onSuccess: () => {
           localStorage.setItem("ai_observly_user_name", data.name.trim());
-          setShowOnboarding(true);
+          router.push("/dashboard");
         },
         onError: () => {
           toast({ title: "Signup failed", description: "Something went wrong. Please try again.", variant: "destructive" });
@@ -49,16 +45,11 @@ export default function Signup() {
     );
   };
 
-  const handleOnboardingClose = () => {
-    setShowOnboarding(false);
-    router.push("/dashboard");
-  };
-
   const handleGoogleSuccess = (name: string, email: string) => {
     localStorage.setItem("ai_observly_authed", "true");
     localStorage.setItem("ai_observly_user_name", name);
     localStorage.setItem("ai_observly_user_email", email);
-    setShowOnboarding(true);
+    router.push("/dashboard");
   };
 
   return (
