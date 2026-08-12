@@ -849,7 +849,7 @@ export default function SpendCheckupPage() {
 
         {/* ── What you can't see yet ── */}
         <div className="bg-primary/5 border border-primary/15 rounded-3xl p-8 mb-10">
-          <h2 className="text-2xl font-bold font-outfit mb-2">What you can&apos;t see yet</h2>
+          <h2 className="text-3xl font-bold font-outfit mb-3">What you can&apos;t see for LLM Spend Reports, but you can see in AI Observly</h2>
           <p className="text-muted-foreground text-sm mb-8 max-w-2xl">
             This report is a one-time snapshot of your invoice. The full product shows the same numbers live, broken down by customer and feature, updating automatically.
           </p>
@@ -897,7 +897,7 @@ export default function SpendCheckupPage() {
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 border-t border-primary/15">
             <p className="text-sm text-muted-foreground flex-1">The full product shows these numbers live — updating automatically as your product runs, broken down by every customer and feature.</p>
-            <Link href="/signup" className="shrink-0 inline-flex items-center gap-2 h-12 px-7 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 text-sm">
+            <Link href="/#pricing" className="shrink-0 inline-flex items-center gap-2 h-12 px-7 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 text-sm">
               Start monitoring now <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

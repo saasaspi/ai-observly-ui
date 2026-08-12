@@ -64,7 +64,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               Log in
             </Link>
             <Link href="/signup" className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity shadow-sm" data-testid="link-signup">
-              Get Started
+              Start Monitoring now
             </Link>
           </div>
 
@@ -92,7 +92,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 Log in
               </Link>
               <Link href="/signup" className="px-3 py-2.5 rounded-md text-sm font-medium bg-primary text-primary-foreground text-center hover:opacity-90 transition-opacity" onClick={() => setMobileOpen(false)}>
-                Get Started
+                Start Monitoring now
               </Link>
             </div>
           </div>
@@ -133,7 +133,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               <h4 className="text-sm font-semibold text-foreground mb-3">Account</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/login" className="hover:text-foreground transition-colors">Log in</Link></li>
-                <li><Link href="/signup" className="hover:text-foreground transition-colors">Get started</Link></li>
+                <li><Link href="/signup" className="hover:text-foreground transition-colors">Start Monitoring now</Link></li>
               </ul>
             </div>
           </div>
