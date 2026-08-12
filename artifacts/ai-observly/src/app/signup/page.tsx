@@ -54,8 +54,6 @@ export default function Signup() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 bg-background">
-      {showOnboarding && <OnboardingDialog onClose={handleOnboardingClose} />}
-
       <Link href="/" className="flex items-center gap-2 font-bold text-xl font-outfit mb-8" data-testid="link-home">
         <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
           <Sparkles className="w-5 h-5" />
