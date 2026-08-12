@@ -164,6 +164,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../src/app/spend-checkup/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/spend-checkup">> = Specific
+  const handler = {} as typeof import("../../src/app/spend-checkup/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../src/app/napi/addon-costs/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/napi/addon-costs">> = Specific

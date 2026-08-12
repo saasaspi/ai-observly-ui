@@ -2,7 +2,7 @@
 import { ReactNode, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 
 const sectionLinks = [
   { label: "How it works", anchor: "how-it-works" },
@@ -42,45 +42,33 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
             {sectionLinks.map(({ label, anchor }) => (
-              <a
-                key={anchor}
-                href={sectionHref(anchor)}
-                className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              >
+              <a key={anchor} href={sectionHref(anchor)} className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                 {label}
               </a>
             ))}
-            <Link
-              href="/docs"
-              className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              data-testid="link-docs"
-            >
+            <Link href="/docs" className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" data-testid="link-docs">
               Docs
+            </Link>
+            <Link
+              href="/spend-checkup"
+              className="px-3 py-2 rounded-md font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5"
+              data-testid="link-spend-checkup"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Free Spend Check-up
             </Link>
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted"
-              data-testid="link-login"
-            >
+            <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted" data-testid="link-login">
               Log in
             </Link>
-            <Link
-              href="/signup"
-              className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity shadow-sm"
-              data-testid="link-signup"
-            >
+            <Link href="/signup" className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity shadow-sm" data-testid="link-signup">
               Get Started
             </Link>
           </div>
 
-          <button
-            className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
-          >
+          <button className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
@@ -88,21 +76,16 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         {mobileOpen && (
           <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-md px-6 py-4 flex flex-col gap-1">
             {sectionLinks.map(({ label, anchor }) => (
-              <a
-                key={anchor}
-                href={sectionHref(anchor)}
-                className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                onClick={() => setMobileOpen(false)}
-              >
+              <a key={anchor} href={sectionHref(anchor)} className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
                 {label}
               </a>
             ))}
-            <Link
-              href="/docs"
-              className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-              onClick={() => setMobileOpen(false)}
-            >
+            <Link href="/docs" className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
               Docs
+            </Link>
+            <Link href="/spend-checkup" className="px-3 py-2.5 rounded-md text-sm font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+              <Sparkles className="w-3.5 h-3.5" />
+              Free Spend Check-up
             </Link>
             <div className="border-t border-border mt-2 pt-3 flex flex-col gap-2">
               <Link href="/login" className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
@@ -128,9 +111,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 </svg>
                 AI Observly
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                AI cost &amp; margin tracking for founders who ship fast.
-              </p>
+              <p className="text-sm text-muted-foreground leading-relaxed">AI cost &amp; margin tracking for founders who ship fast.</p>
             </div>
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">Product</h4>
@@ -144,6 +125,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               <h4 className="text-sm font-semibold text-foreground mb-3">Resources</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="/docs" className="hover:text-foreground transition-colors">Docs</Link></li>
+                <li><Link href="/spend-checkup" className="hover:text-foreground transition-colors font-medium text-primary">Free Spend Check-up</Link></li>
                 <li><a href="/#faq" className="hover:text-foreground transition-colors">FAQ</a></li>
               </ul>
             </div>

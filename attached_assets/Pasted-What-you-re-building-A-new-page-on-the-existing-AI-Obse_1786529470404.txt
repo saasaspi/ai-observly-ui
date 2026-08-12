@@ -1,0 +1,88 @@
+What you're building
+
+A new page on the existing AI Observly site: a free, no-login tool where a visitor uploads their Claude/OpenAI/Gemini billing CSV and gets back a plain-English cost report. It's a lead-generation page, not a separate app — it needs to look like it belongs on aiobservly.replit.app, not like a standalone tool with its own branding.
+
+Step 1: Match the site's existing visual system exactly
+
+Before writing any new styles, look at the existing landing page and dashboard and reuse what's already there:
+
+Use the same color palette already defined in the project (the current white-and-blue theme) — don't introduce a new palette for this page.
+Use the same fonts, font sizes, and heading styles already used elsewhere in the app.
+Use the same button styles (shape, color, hover state) as the landing page's existing buttons, including the footer CTA style ("Start monitoring now").
+Use the same card style (corner radius, border, shadow, padding) as the cards already used on the dashboard.
+Reuse the site's existing header/nav and footer on this page, so it reads as part of the same product, not an embedded external tool.
+If the project has shared components (buttons, cards, inputs) already built, reuse those components directly instead of writing new ones.
+
+The goal: someone should not be able to tell, from the visual design alone, that this page was built separately from the rest of the site.
+
+Step 2: Where it lives
+Add this as a new page/route, something like /tools/ai-spend-checkup or /spend-checkup — whichever matches how other pages are routed in this project.
+Add a link to it from the main navigation or footer, labeled something like "Free AI Spend Check-up."
+This page does not require login. It should be fully usable by an anonymous visitor.
+Step 3: What the page contains, top to bottom
+
+Hero / upload area
+
+Headline: "The AI Spend Check-up"
+Subhead: "Upload your Claude, OpenAI, or Gemini billing CSV. Get the plain-English version — no token jargon, just what it means for your business."
+A drag-and-drop upload area for a .csv file, also clickable to open a file picker.
+A secondary link/button: "Don't have a file handy? Try it with sample data →" that runs the whole report on a built-in sample dataset, so visitors can see the tool work before uploading anything real.
+A collapsible "Not sure where to find this file?" section with short, correct instructions for each provider:
+Claude: Console → Usage & Cost → pick a month → export the CSV.
+OpenAI: platform.openai.com → Usage → Export → download the cost CSV.
+Gemini: Google Cloud Billing → Reports → set to your billing period → download CSV.
+Each one should link out to that provider's real help documentation (not a guessed URL — search for the current official doc page for each).
+
+Once a file is processed, show the full report immediately — no email required, no gate of any kind.
+
+Score + top stats
+
+A "Cost Health Score" out of 100, with a short grade label under it (e.g. "Good — a few things worth tightening").
+Three stat cards: total spend for the period covered by the file, projected spend for the current month at the current daily pace, and projected spend for the year if nothing changes. If the file covers fewer than 3 days, show "—" for the projections instead of guessing from too little data.
+A "Copy summary" button that copies a short plain-text version of the score and key numbers to the clipboard.
+
+Where your money's going
+
+A simple horizontal bar for each AI model found in the file, showing its dollar cost and percentage share of total spend, largest first.
+
+Spend over time
+
+A bar chart of daily spend. If the file covers more than two weeks, group the bars by week instead of by day so it stays readable.
+
+What we noticed — the core value section. Each item is a card showing:
+
+The technical term as a small label (e.g. cache_hit_rate: 12%) — shown plainly, not crossed out.
+Directly below it, the plain-English explanation of what that number means for a non-technical founder, in one or two sentences.
+Where it adds real value, a small supporting visual — not on every card, only where a number benefits from being seen rather than just read:
+Cache efficiency: a two-segment bar showing % of requests reused vs. rebuilt from scratch. Flag as a problem if reuse is low, note it as healthy if reuse is high.
+Premium-model spend: a two-segment bar showing % of spend on the most expensive model(s) vs. everything else. Only show this insight at all if that share is 20% or more — otherwise skip it, it's not worth flagging.
+Spend spikes: a small day-by-day line/sparkline with any spike day(s) marked, plus a sentence naming the date, the percentage jump versus the day before, and which model drove it. If there were no spikes, say so as a short positive note with no chart.
+Key/customer concentration: a two-segment bar showing the top access key's share of total spend vs. everything else. If the file only has one key or no key column at all, skip the chart and instead explain in plain language that there's no way to tell which customer, feature, or workflow the cost belongs to.
+Always include a "biggest cost driver" card naming the top model and its share — no chart needed here since the bars above already show it.
+
+What you can't see yet — this is the section that should connect most directly to what's already on the landing page. Reuse the exact same language already used there for per-customer cost attribution, per-feature margin, and plan-level profitability — don't invent new phrasing for this section.
+
+Three sample/preview cards, clearly and visibly labeled as sample data (not computed from the uploaded file): attributed revenue, net AI margin, and cost broken down by feature.
+A closing call-to-action block: a short line explaining that this report is a one-time snapshot and the full product shows the same numbers live, broken down by customer and feature, updating automatically — with a button linking to the main product / sign-up.
+
+Footer note
+
+A small disclaimer that figures are estimates based on the uploaded file, that the premium-model and spend-spike flags are heuristics meant to point in the right direction rather than exact audits, and that the file is processed entirely in the browser and never uploaded anywhere (true only if you keep the parsing client-side — see Step 5).
+Step 4: How the file gets read and scored
+Accept a .csv file. Look for a date column and a cost column at minimum — try common header variations (e.g. "Date"; "Total Cost (USD)", "Cost", "Amount"). If neither can be found, show a clear error explaining what column names it expected.
+Model and API-key/project columns are optional — if missing, skip the insights that depend on them rather than guessing.
+Token columns (input, output, cache read, cache write) are optional too — only show the cache-efficiency insight if a cache-read column is present.
+Compute: total spend, spend by model, spend by day, spend by key, average daily spend, and a projected monthly/annual figure from that average (only if the file covers at least 3 days).
+Cache efficiency = cached tokens reused ÷ (cached tokens reused + fresh input tokens), as a percentage.
+Premium-model share = spend on any model whose name suggests a top-tier/expensive model (e.g. contains "opus," "ultra," "gpt-5," "gpt-4," "o1," "o3," "pro") divided by total spend.
+A spend spike = a day whose cost is more than 50% higher than the day before it, and which is also a meaningful dollar amount (not just noise on a tiny number).
+Key concentration = the single largest key's share of total spend.
+Health score starts at 100 and loses points for: low cache efficiency, high premium-model share, each spend spike (capped), and high key concentration. Floor at 0, cap at 100. Map the final score to a grade label (roughly: 90+ excellent, 75–89 good, 55–74 needs attention, below 55 high risk).
+Step 5: Technical notes
+All of this can run entirely in the visitor's browser — parse the CSV and do the math client-side, with no file ever sent to a server. This is both simpler to build and a genuine trust point worth keeping in the footer copy.
+Handle CSV files that use quoted fields (commas inside a quoted value) correctly, not just a naive comma split.
+Make sure the page works and looks right on mobile — the upload area, stat cards, bars, and charts should all stack and stay readable on a narrow screen.
+Step 6: What NOT to include
+No email gate or sign-up wall in front of any part of the report — the full report should be visible immediately after upload.
+No raw/technical data table view — no "show me the raw numbers" link or expandable table. Keep everything in the plain-English report format described above.
+Don't add lead capture to this page unless asked for separately — if there's ever a lead-capture mechanism elsewhere in the project, don't wire this page into it without being told to.

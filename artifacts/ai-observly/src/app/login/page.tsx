@@ -16,6 +16,8 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+const GOOGLE_ENABLED = !!process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
 export default function Login() {
   const router = useRouter();
   const { toast } = useToast();
@@ -32,9 +34,7 @@ export default function Login() {
 
   const onSubmit = (data: z.infer<typeof loginSchema>) => {
     loginMutation.mutate(data, {
-      onSuccess: () => {
-        router.push("/dashboard");
-      },
+      onSuccess: () => { router.push("/dashboard"); },
       onError: () => {
         toast({ title: "Login failed", description: "Invalid credentials.", variant: "destructive" });
       },
@@ -50,6 +50,13 @@ export default function Login() {
         setShowForgot(false);
       },
     });
+  };
+
+  const handleGoogleSuccess = (name: string, email: string) => {
+    localStorage.setItem("ai_observly_authed", "true");
+    localStorage.setItem("ai_observly_user_name", name);
+    localStorage.setItem("ai_observly_user_email", email);
+    router.push("/dashboard");
   };
 
   return (
@@ -69,52 +76,46 @@ export default function Login() {
               <p className="text-muted-foreground">Sign in to your account</p>
             </div>
 
+            {/* Google sign-in */}
+            {GOOGLE_ENABLED && (
+              <>
+                <GoogleButton label="Sign in with Google" onSuccess={handleGoogleSuccess} />
+                <div className="flex items-center gap-3 my-5">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-xs text-muted-foreground font-medium">or continue with email</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+              </>
+            )}
+
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="founder@startup.com" {...field} data-testid="input-email" autoComplete="email" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={form.control} name="email" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="founder@startup.com" {...field} data-testid="input-email" autoComplete="email" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
 
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <div className="flex items-center justify-between">
-                        <FormLabel>Password</FormLabel>
-                        <button
-                          type="button"
-                          onClick={() => setShowForgot(true)}
-                          className="text-sm text-primary hover:underline"
-                          data-testid="btn-forgot-password"
-                        >
-                          Forgot password?
-                        </button>
-                      </div>
-                      <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} data-testid="input-password" autoComplete="current-password" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormField control={form.control} name="password" render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Password</FormLabel>
+                      <button type="button" onClick={() => setShowForgot(true)} className="text-sm text-primary hover:underline" data-testid="btn-forgot-password">
+                        Forgot password?
+                      </button>
+                    </div>
+                    <FormControl>
+                      <Input type="password" placeholder="••••••••" {...field} data-testid="input-password" autoComplete="current-password" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
 
-                <button
-                  type="submit"
-                  className="w-full h-12 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity mt-6"
-                  disabled={loginMutation.isPending}
-                  data-testid="btn-submit-login"
-                >
+                <button type="submit" className="w-full h-12 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity mt-6" disabled={loginMutation.isPending} data-testid="btn-submit-login">
                   {loginMutation.isPending ? "Signing in..." : "Sign in"}
                 </button>
               </form>
@@ -126,35 +127,15 @@ export default function Login() {
               <h1 className="text-2xl font-bold font-outfit mb-2">Reset Password</h1>
               <p className="text-muted-foreground">We'll send you a link to reset it.</p>
             </div>
-
             <form onSubmit={onReset} className="space-y-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Email</label>
-                <Input
-                  type="email"
-                  placeholder="founder@startup.com"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  required
-                  data-testid="input-reset-email"
-                />
+                <Input type="email" placeholder="founder@startup.com" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} required data-testid="input-reset-email" />
               </div>
-
-              <button
-                type="submit"
-                className="w-full h-12 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity mt-4"
-                disabled={resetMutation.isPending}
-                data-testid="btn-submit-reset"
-              >
+              <button type="submit" className="w-full h-12 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity mt-4" disabled={resetMutation.isPending} data-testid="btn-submit-reset">
                 {resetMutation.isPending ? "Sending..." : "Send Reset Link"}
               </button>
-
-              <button
-                type="button"
-                onClick={() => setShowForgot(false)}
-                className="w-full h-12 text-muted-foreground hover:text-foreground transition-colors mt-2"
-                data-testid="btn-back-to-login"
-              >
+              <button type="button" onClick={() => setShowForgot(false)} className="w-full h-12 text-muted-foreground hover:text-foreground transition-colors mt-2" data-testid="btn-back-to-login">
                 Back to login
               </button>
             </form>
@@ -163,11 +144,24 @@ export default function Login() {
       </div>
 
       <p className="mt-8 text-muted-foreground text-sm">
-        Don't have an account?{" "}
-        <Link href="/signup" className="text-primary hover:underline font-medium" data-testid="link-signup">
-          Sign up
-        </Link>
+        Don&apos;t have an account?{" "}
+        <Link href="/signup" className="text-primary hover:underline font-medium" data-testid="link-signup">Sign up</Link>
       </p>
     </div>
+  );
+}
+
+// Isolated component so useGoogleLogin hook is only called when GoogleOAuthProvider is in the tree
+function GoogleButton({ label, onSuccess }: { label: string; onSuccess: (name: string, email: string) => void }) {
+  // Dynamic import at runtime so the hook only executes if this component renders
+  const { GoogleSignInButton } = require("@/components/google-sign-in-button");
+  const { useToast } = require("@/hooks/use-toast");
+  const { toast } = useToast();
+  return (
+    <GoogleSignInButton
+      label={label}
+      onSuccess={onSuccess}
+      onError={() => toast({ title: "Google sign-in failed", description: "Please try again.", variant: "destructive" })}
+    />
   );
 }

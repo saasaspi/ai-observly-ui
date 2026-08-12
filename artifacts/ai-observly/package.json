@@ -9,7 +9,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.13.5",
+    "@types/papaparse": "^5.5.2",
     "next": "^15.3.0",
+    "papaparse": "^5.5.4",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
