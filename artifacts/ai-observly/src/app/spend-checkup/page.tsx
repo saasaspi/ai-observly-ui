@@ -5,11 +5,13 @@ import Link from "next/link";
 import Papa from "papaparse";
 import {
   BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  LineChart, Line, ReferenceDot,
+  AreaChart, Area, LineChart, Line, ReferenceDot,
+  PieChart, Pie, Legend,
 } from "recharts";
 import {
   Upload, ChevronDown, ChevronUp, CheckCircle2, AlertCircle,
   Copy, ArrowRight, ExternalLink, RefreshCw, TrendingUp, Shield, Zap,
+  DollarSign, Calendar, TrendingDown,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -53,6 +55,8 @@ const INPUT_COLS = ["input tokens", "input_tokens", "prompt tokens", "prompt_tok
 const CACHE_COLS = ["cache read tokens", "cache_read_tokens", "cached tokens", "cached_input_tokens", "cache read input tokens"];
 const PREMIUM_TERMS = ["opus", "ultra", "gpt-5", "gpt-4", "o1", "o3", "pro", "sonnet", "haiku", "gemini-1.5-pro", "claude-3"];
 
+const MODEL_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#d97706", "#dc2626", "#db2777"];
+
 const norm = (s: string) => s.toLowerCase().trim().replace(/\s+/g, " ");
 const findCol = (headers: string[], variants: string[]) => headers.find(h => variants.includes(norm(h)));
 
@@ -60,16 +64,13 @@ const findCol = (headers: string[], variants: string[]) => headers.find(h => var
 function parseDate(s: string): string | null {
   if (!s) return null;
   s = String(s).trim();
-  // YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0, 10);
-  // MM/DD/YYYY or DD/MM/YYYY
   const parts = s.split(/[\/\-\.\s]/);
   if (parts.length >= 3) {
     const nums = parts.map(Number);
     if (nums[2] > 1000) return `${nums[2]}-${String(nums[0]).padStart(2, "0")}-${String(nums[1]).padStart(2, "0")}`;
     if (nums[0] > 1000) return `${nums[0]}-${String(nums[1]).padStart(2, "0")}-${String(nums[2]).padStart(2, "0")}`;
   }
-  // ISO date-time
   const d = new Date(s);
   if (!isNaN(d.getTime())) return d.toISOString().substring(0, 10);
   return null;
@@ -84,7 +85,7 @@ function fmtDate(iso: string): string {
 function fmtDollar(n: number) { return "$" + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
 
 // ── Health score ───────────────────────────────────────────────────────────────
-function calcHealth(cacheEff: number | null, premShare: number | null, spikes: number, keyShare: number | null): { score: number; grade: string; gradeColor: string } {
+function calcHealth(cacheEff: number | null, premShare: number | null, spikes: number, keyShare: number | null): { score: number; grade: string; gradeColor: string; gradeBg: string } {
   let score = 100;
   if (cacheEff !== null) {
     if (cacheEff < 0.20) score -= 15;
@@ -100,13 +101,12 @@ function calcHealth(cacheEff: number | null, premShare: number | null, spikes: n
     else if (keyShare > 0.60) score -= 8;
   }
   score = Math.max(0, Math.min(100, score));
-  let grade: string;
-  let gradeColor: string;
-  if (score >= 90) { grade = "Excellent — you're running a tight ship"; gradeColor = "text-green-600"; }
-  else if (score >= 75) { grade = "Good — a few things worth tightening"; gradeColor = "text-blue-600"; }
-  else if (score >= 55) { grade = "Needs attention — some margin leaks worth fixing"; gradeColor = "text-yellow-600"; }
-  else { grade = "High risk — significant cost inefficiencies detected"; gradeColor = "text-red-600"; }
-  return { score, grade, gradeColor };
+  let grade: string, gradeColor: string, gradeBg: string;
+  if (score >= 90) { grade = "Excellent — running a tight ship"; gradeColor = "text-green-700"; gradeBg = "bg-green-50 border-green-200"; }
+  else if (score >= 75) { grade = "Good — a few things worth tightening"; gradeColor = "text-blue-700"; gradeBg = "bg-blue-50 border-blue-200"; }
+  else if (score >= 55) { grade = "Needs attention — some margin leaks to fix"; gradeColor = "text-amber-700"; gradeBg = "bg-amber-50 border-amber-200"; }
+  else { grade = "High risk — significant cost inefficiencies"; gradeColor = "text-red-700"; gradeBg = "bg-red-50 border-red-200"; }
+  return { score, grade, gradeColor, gradeBg };
 }
 
 // ── CSV parsing + analysis ─────────────────────────────────────────────────────
@@ -118,8 +118,8 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
   const headers = parsed.meta.fields ?? [];
   const dateCol = findCol(headers, DATE_COLS);
   const costCol = findCol(headers, COST_COLS);
-  if (!dateCol) return { error: `Couldn't find a date column. Expected one of: ${DATE_COLS.slice(0, 5).join(", ")}.` };
-  if (!costCol) return { error: `Couldn't find a cost column. Expected one of: ${COST_COLS.slice(0, 5).join(", ")}.` };
+  if (!dateCol) return { error: "Couldn't find a date column. Expected one of: " + DATE_COLS.slice(0, 5).join(", ") + "." };
+  if (!costCol) return { error: "Couldn't find a cost column. Expected one of: " + COST_COLS.slice(0, 5).join(", ") + "." };
 
   const modelCol = findCol(headers, MODEL_COLS);
   const keyCol = findCol(headers, KEY_COLS);
@@ -132,8 +132,7 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
     const cost = parseFloat(raw[costCol!] ?? "0");
     if (!date || isNaN(cost) || cost < 0) continue;
     rows.push({
-      date,
-      cost,
+      date, cost,
       model: modelCol ? raw[modelCol]?.trim() : undefined,
       key: keyCol ? raw[keyCol]?.trim() : undefined,
       inputTokens: inputCol ? parseInt(raw[inputCol] ?? "0") || undefined : undefined,
@@ -143,7 +142,6 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
 
   if (rows.length === 0) return { error: "The file was parsed but no valid rows were found. Make sure it has date and cost columns with data." };
 
-  // Aggregate by day
   const byDayMap = new Map<string, number>();
   rows.forEach(r => byDayMap.set(r.date, (byDayMap.get(r.date) ?? 0) + r.cost));
   const byDay = Array.from(byDayMap.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([date, cost]) => ({ date, label: fmtDate(date), cost }));
@@ -154,32 +152,26 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
   const projectedMonth = dayCount >= 3 ? avgDaily * 30 : null;
   const projectedYear = dayCount >= 3 ? avgDaily * 365 : null;
 
-  // Detect spikes (>50% jump over previous day, meaningful dollar amount)
   const spikes: DailyData[] = [];
   for (let i = 1; i < byDay.length; i++) {
     const prev = byDay[i - 1].cost;
     const curr = byDay[i].cost;
-    if (prev > 0 && curr / prev - 1 > 0.5 && curr - prev > 5) {
-      spikes.push(byDay[i]);
-    }
+    if (prev > 0 && curr / prev - 1 > 0.5 && curr - prev > 5) spikes.push(byDay[i]);
   }
 
-  // Model breakdown
   const modelMap = new Map<string, number>();
   rows.forEach(r => { if (r.model) modelMap.set(r.model, (modelMap.get(r.model) ?? 0) + r.cost); });
   const byModel = Array.from(modelMap.entries())
     .map(([model, cost]) => ({ model, cost, share: totalSpend > 0 ? cost / totalSpend : 0 }))
     .sort((a, b) => b.cost - a.cost);
 
-  // Premium model share
   let premiumShare: number | null = null;
   if (byModel.length > 0) {
     const premiumCost = byModel.filter(m => PREMIUM_TERMS.some(t => m.model.toLowerCase().includes(t))).reduce((s, m) => s + m.cost, 0);
     premiumShare = totalSpend > 0 ? premiumCost / totalSpend : 0;
-    if (premiumShare < 0.20) premiumShare = null; // skip if <20%
+    if (premiumShare < 0.20) premiumShare = null;
   }
 
-  // Cache efficiency
   let cacheEfficiency: number | null = null;
   if (inputCol && cacheCol) {
     const totalInput = rows.reduce((s, r) => s + (r.inputTokens ?? 0), 0);
@@ -187,7 +179,6 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
     if (totalInput + totalCache > 0) cacheEfficiency = totalCache / (totalInput + totalCache);
   }
 
-  // Key concentration
   let keyConc: { topKey: string; share: number } | null = null;
   if (keyCol) {
     const keyMap = new Map<string, number>();
@@ -198,10 +189,8 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
     }
   }
 
-  // Top model
   const topModel = byModel.length > 0 ? { model: byModel[0].model, share: byModel[0].share } : null;
 
-  // Chart data (weekly grouping if >14 days)
   const isWeekly = dayCount > 14;
   let chartData: { label: string; cost: number; isSpike: boolean }[];
   const spikeSet = new Set(spikes.map(s => s.date));
@@ -222,7 +211,7 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
     chartData = Array.from(weekMap.values()).map(w => ({ label: w.label, cost: parseFloat(w.cost.toFixed(2)), isSpike: w.hasSpike }));
   }
 
-  const { score, grade, gradeColor } = calcHealth(cacheEfficiency, premiumShare, spikes.length, keyConc?.share ?? null);
+  const { score, grade, gradeColor, gradeBg } = calcHealth(cacheEfficiency, premiumShare, spikes.length, keyConc?.share ?? null);
 
   return {
     report: {
@@ -230,7 +219,7 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
       byModel, byDay, chartData, isWeekly,
       cacheEfficiency, premiumShare, spikes,
       keyConc, hasKeyCol: !!keyCol,
-      topModel, healthScore: score, grade, gradeColor,
+      topModel, healthScore: score, grade, gradeColor: gradeColor + " " + gradeBg,
       startDate: byDay[0]?.date ?? "", endDate: byDay[byDay.length - 1]?.date ?? "",
     }
   };
@@ -255,28 +244,25 @@ function generateSampleCSV(): string {
 }
 
 // ── Recharts custom tooltip ────────────────────────────────────────────────────
-function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string }) {
+function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number; name?: string }[]; label?: string }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-card border border-border rounded-lg px-3 py-2 shadow-lg text-sm">
-      <p className="text-muted-foreground mb-0.5">{label}</p>
-      <p className="font-bold text-foreground">{fmtDollar(payload[0].value)}</p>
+    <div className="bg-card border border-border rounded-xl px-4 py-3 shadow-xl text-sm min-w-[120px]">
+      <p className="text-muted-foreground text-xs mb-1.5 font-medium">{label}</p>
+      {payload.map((p, i) => (
+        <p key={i} className="font-bold text-foreground">{fmtDollar(p.value)}</p>
+      ))}
     </div>
   );
 }
 
-// ── Two-segment bar ────────────────────────────────────────────────────────────
-function SegmentBar({ share, leftColor, leftLabel, rightLabel }: { share: number; leftColor: string; leftLabel: string; rightLabel: string }) {
-  const pct = Math.round(share * 100);
+function PieTooltip({ active, payload }: { active?: boolean; payload?: { name: string; value: number; payload: { cost: number } }[] }) {
+  if (!active || !payload?.length) return null;
   return (
-    <div className="space-y-2">
-      <div className="flex items-center h-5 rounded-full overflow-hidden bg-muted w-full">
-        <div className={`h-full ${leftColor} transition-all duration-700`} style={{ width: `${pct}%` }} />
-      </div>
-      <div className="flex justify-between text-xs text-muted-foreground">
-        <span className="font-medium">{leftLabel} — {pct}%</span>
-        <span>{rightLabel} — {100 - pct}%</span>
-      </div>
+    <div className="bg-card border border-border rounded-xl px-4 py-3 shadow-xl text-sm">
+      <p className="font-medium text-foreground mb-0.5 truncate max-w-[180px]">{payload[0].name}</p>
+      <p className="font-bold text-foreground">{fmtDollar(payload[0].payload.cost)}</p>
+      <p className="text-xs text-muted-foreground">{Math.round(payload[0].value)}% of spend</p>
     </div>
   );
 }
@@ -372,7 +358,6 @@ export default function SpendCheckupPage() {
             </p>
           </div>
 
-          {/* Upload area */}
           <div
             className={`relative border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-200 ${isDragging ? "border-primary bg-primary/5 scale-[1.01]" : "border-border hover:border-primary/50 hover:bg-muted/30"}`}
             onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -391,7 +376,7 @@ export default function SpendCheckupPage() {
           {errorMsg && (
             <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex gap-3 text-sm text-red-700">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <div><strong>Couldn't parse this file.</strong> {errorMsg}</div>
+              <div><strong>Couldn&apos;t parse this file.</strong> {errorMsg}</div>
             </div>
           )}
 
@@ -413,265 +398,513 @@ export default function SpendCheckupPage() {
 
   if (!report) return null;
 
-  // ── Report stage ──
+  // ── Derived values for report ──
   const topKeyShare = report.keyConc?.share ?? 0;
+  const [gradeTextClass, ...gradeBgParts] = report.gradeColor.split(" ");
+  const gradeBgClass = gradeBgParts.join(" ");
+
+  // Pie chart data for model breakdown
+  const pieData = report.byModel.slice(0, 6).map((m, i) => ({
+    name: m.model.length > 22 ? m.model.slice(0, 20) + "…" : m.model,
+    value: Math.round(m.share * 100),
+    cost: m.cost,
+    fill: MODEL_COLORS[i % MODEL_COLORS.length],
+  }));
+
+  // Health score ring stroke values
+  const circumference = 2 * Math.PI * 45;
+  const strokeDash = (report.healthScore / 100) * circumference;
+  const ringColor = report.healthScore >= 75 ? "#16a34a" : report.healthScore >= 55 ? "#d97706" : "#dc2626";
+
+  // Daily area chart data
+  const areaData = report.byDay.map(d => ({
+    label: d.label,
+    cost: parseFloat(d.cost.toFixed(2)),
+    isSpike: report.spikes.some(s => s.date === d.date),
+  }));
 
   return (
     <PublicLayout>
-      <div className="max-w-3xl mx-auto px-6 py-12 w-full space-y-10">
+      <div className="max-w-4xl mx-auto px-6 py-14 w-full">
 
-        {/* Header + reset */}
-        <div className="flex items-start justify-between gap-4 flex-wrap">
+        {/* ── Header ── */}
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-12">
           <div>
             {isSample && (
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 border border-yellow-200 text-yellow-700 text-xs font-semibold px-3 py-1 mb-3">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 border border-yellow-200 text-yellow-700 text-xs font-semibold px-3 py-1 mb-4">
                 Sample data — upload your own CSV to analyse your real spend
               </div>
             )}
-            <h1 className="text-2xl font-bold font-outfit mb-1">AI Spend Check-up Report</h1>
-            <p className="text-muted-foreground text-sm">{fmtDate(report.startDate)} – {fmtDate(report.endDate)} · {report.dayCount} day{report.dayCount !== 1 ? "s" : ""}</p>
+            <h1 className="text-3xl font-bold font-outfit mb-2">AI Spend Check-up Report</h1>
+            <p className="text-muted-foreground">{fmtDate(report.startDate)} – {fmtDate(report.endDate)} · {report.dayCount} day{report.dayCount !== 1 ? "s" : ""}</p>
           </div>
-          <button onClick={() => { setStage("upload"); setReport(null); setErrorMsg(null); }} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground border border-border rounded-lg px-4 py-2 hover:bg-muted transition-colors">
-            <RefreshCw className="w-4 h-4" /> New file
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={copySummary} className="inline-flex items-center gap-2 text-sm font-medium border border-border rounded-xl px-4 py-2.5 hover:bg-muted transition-colors">
+              {copied ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+              {copied ? "Copied!" : "Copy summary"}
+            </button>
+            <button onClick={() => { setStage("upload"); setReport(null); setErrorMsg(null); }} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground border border-border rounded-xl px-4 py-2.5 hover:bg-muted transition-colors">
+              <RefreshCw className="w-4 h-4" /> New file
+            </button>
+          </div>
         </div>
 
-        {/* Score + stats */}
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-          <div className="flex items-start gap-6 flex-wrap">
-            {/* Score circle */}
+        {/* ── Health Score + Stats ── */}
+        <div className="bg-card border border-border rounded-3xl p-8 shadow-sm mb-10">
+          <div className="flex items-start gap-8 flex-wrap">
+            {/* Score ring */}
             <div className="flex flex-col items-center shrink-0">
-              <div className="relative w-24 h-24">
-                <svg viewBox="0 0 36 36" className="w-24 h-24 -rotate-90">
-                  <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-muted/30" />
-                  <circle cx="18" cy="18" r="15.9" fill="none" stroke="currentColor" strokeWidth="2.5" strokeDasharray={`${report.healthScore} ${100 - report.healthScore}`} strokeLinecap="round" className={report.healthScore >= 75 ? "text-green-500" : report.healthScore >= 55 ? "text-yellow-500" : "text-red-500"} />
+              <div className="relative w-36 h-36">
+                <svg viewBox="0 0 100 100" className="w-36 h-36 -rotate-90">
+                  <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="6" className="text-muted/20" />
+                  <circle
+                    cx="50" cy="50" r="45" fill="none"
+                    stroke={ringColor} strokeWidth="6"
+                    strokeDasharray={`${strokeDash} ${circumference - strokeDash}`}
+                    strokeLinecap="round"
+                    style={{ transition: "stroke-dasharray 1s ease" }}
+                  />
                 </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl font-bold font-outfit">{report.healthScore}</span>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-3xl font-bold font-outfit leading-none">{report.healthScore}</span>
+                  <span className="text-xs text-muted-foreground mt-1">/ 100</span>
                 </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-1 font-medium">out of 100</p>
             </div>
-            {/* Grade + actions */}
-            <div className="flex-1 min-w-0">
-              <p className={`text-base font-semibold mb-1 ${report.gradeColor}`}>{report.grade}</p>
-              <p className="text-sm text-muted-foreground mb-4">Cost Health Score based on cache efficiency, model mix, spend spikes, and cost concentration.</p>
-              <button onClick={copySummary} className="inline-flex items-center gap-2 text-sm font-medium border border-border rounded-lg px-4 py-2 hover:bg-muted transition-colors">
-                {copied ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-                {copied ? "Copied!" : "Copy summary"}
-              </button>
+            {/* Grade */}
+            <div className="flex-1 min-w-[200px]">
+              <div className={`inline-flex items-center gap-2 rounded-xl border px-4 py-2 mb-4 ${gradeBgClass}`}>
+                <span className={`text-sm font-semibold ${gradeTextClass}`}>{report.grade}</span>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed max-w-md">
+                Cost Health Score based on cache efficiency, model mix, spend spikes, and cost concentration. Each factor contributes to how well your AI spend is under control.
+              </p>
             </div>
           </div>
 
-          {/* 3 stat cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-border">
+          {/* Stat cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 pt-8 border-t border-border">
             {[
-              { label: "Total spend", value: fmtDollar(report.totalSpend), sub: `over ${report.dayCount} days` },
-              { label: "Projected this month", value: report.projectedMonth ? fmtDollar(report.projectedMonth) : "—", sub: report.projectedMonth ? "at current daily pace" : "need ≥3 days of data" },
-              { label: "Projected annual", value: report.projectedYear ? fmtDollar(report.projectedYear) : "—", sub: report.projectedYear ? "if nothing changes" : "need ≥3 days of data" },
+              { label: "Total spend", value: fmtDollar(report.totalSpend), sub: `across ${report.dayCount} days`, icon: <DollarSign className="w-5 h-5" />, color: "text-blue-600 bg-blue-50" },
+              { label: "Projected this month", value: report.projectedMonth ? fmtDollar(report.projectedMonth) : "—", sub: report.projectedMonth ? "at current daily pace" : "need ≥3 days of data", icon: <Calendar className="w-5 h-5" />, color: "text-violet-600 bg-violet-50" },
+              { label: "Projected annual", value: report.projectedYear ? fmtDollar(report.projectedYear) : "—", sub: report.projectedYear ? "if nothing changes" : "need ≥3 days of data", icon: <TrendingDown className="w-5 h-5" />, color: "text-amber-600 bg-amber-50" },
             ].map(s => (
-              <div key={s.label} className="bg-background border border-border rounded-xl p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">{s.label}</p>
-                <p className="text-2xl font-bold font-outfit text-foreground">{s.value}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{s.sub}</p>
+              <div key={s.label} className="bg-background border border-border rounded-2xl p-5 flex items-start gap-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${s.color}`}>{s.icon}</div>
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">{s.label}</p>
+                  <p className="text-2xl font-bold font-outfit text-foreground leading-none mb-1">{s.value}</p>
+                  <p className="text-xs text-muted-foreground">{s.sub}</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Where your money's going (model bars) */}
-        {report.byModel.length > 0 && (
-          <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-            <h2 className="font-bold text-lg font-outfit mb-5">Where your money&apos;s going</h2>
-            <div className="space-y-4">
-              {report.byModel.map(m => (
-                <div key={m.model}>
-                  <div className="flex justify-between text-sm mb-1.5">
-                    <span className="font-medium text-foreground truncate max-w-[60%]">{m.model}</span>
-                    <span className="text-muted-foreground shrink-0">{fmtDollar(m.cost)} <span className="text-foreground font-semibold">({Math.round(m.share * 100)}%)</span></span>
-                  </div>
-                  <div className="h-3 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full bg-primary rounded-full transition-all duration-700" style={{ width: `${m.share * 100}%` }} />
-                  </div>
-                </div>
-              ))}
+        {/* ── Spend over time ── */}
+        <div className="bg-card border border-border rounded-3xl p-8 shadow-sm mb-10">
+          <div className="flex items-start justify-between gap-4 mb-6">
+            <div>
+              <h2 className="text-xl font-bold font-outfit mb-1">Spend over time</h2>
+              <p className="text-sm text-muted-foreground">{report.isWeekly ? "Grouped by week — 30+ days of data" : "Daily spend across your data range"}</p>
             </div>
+            {report.spikes.length > 0 && (
+              <div className="flex items-center gap-2 text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2 shrink-0">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0" />
+                {report.spikes.length} spike{report.spikes.length > 1 ? "s" : ""} detected
+              </div>
+            )}
           </div>
-        )}
-
-        {/* Spend over time chart */}
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-sm">
-          <h2 className="font-bold text-lg font-outfit mb-1">Spend over time</h2>
-          <p className="text-sm text-muted-foreground mb-5">{report.isWeekly ? "Grouped by week (30+ days of data)" : "Daily spend"}</p>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={report.chartData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
-              <XAxis dataKey="label" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-              <YAxis tickFormatter={(v) => `$${v}`} tick={{ fontSize: 10 }} tickLine={false} axisLine={false} width={48} />
-              <Tooltip content={<ChartTooltip />} cursor={{ fill: "var(--muted)", opacity: 0.5 }} />
-              <Bar dataKey="cost" radius={[4, 4, 0, 0]}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={report.chartData} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+              <defs>
+                <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#2563eb" stopOpacity={1} />
+                  <stop offset="100%" stopColor="#2563eb" stopOpacity={0.7} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+              <YAxis tickFormatter={(v) => `$${v}`} tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} width={52} />
+              <Tooltip content={<ChartTooltip />} cursor={{ fill: "#f1f5f9", opacity: 0.8 }} />
+              <Bar dataKey="cost" radius={[6, 6, 0, 0]}>
                 {report.chartData.map((entry, i) => (
-                  <Cell key={i} fill={entry.isSpike ? "#ef4444" : "#2563eb"} />
+                  <Cell key={i} fill={entry.isSpike ? "#ef4444" : "url(#barGradient)"} />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
           {report.spikes.length > 0 && (
-            <p className="text-xs text-red-600 mt-3 flex items-center gap-1.5">
+            <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0" />
-              Red bars = spend spike days (more than 50% above the previous day)
+              Red bars mark days where spend jumped more than 50% over the previous day
             </p>
           )}
         </div>
 
-        {/* What we noticed */}
-        <div>
-          <h2 className="font-bold text-xl font-outfit mb-4">What we noticed</h2>
-          <div className="space-y-4">
-
-            {/* Biggest cost driver — always shown if model data available */}
-            {report.topModel && (
-              <InsightCard
-                label={`Top model: ${Math.round(report.topModel.share * 100)}% of spend`}
-                title="Biggest cost driver"
-                body={`${report.topModel.model} accounts for ${Math.round(report.topModel.share * 100)}% of your total AI spend. If you can reduce calls to this model, route eligible requests to a cheaper alternative, or cache frequent responses, the savings will be proportional to its share.`}
-                icon={<TrendingUp className="w-5 h-5" />}
-              />
-            )}
-
-            {/* Cache efficiency */}
-            {report.cacheEfficiency !== null && (
-              <InsightCard
-                label={`cache_hit_rate: ${Math.round(report.cacheEfficiency * 100)}%`}
-                title={report.cacheEfficiency < 0.25 ? "Low prompt cache reuse — you're rebuilding context from scratch most of the time" : "Cache efficiency is reasonable"}
-                body={report.cacheEfficiency < 0.25
-                  ? `Only ${Math.round(report.cacheEfficiency * 100)}% of your input tokens are being served from cache. The other ${Math.round((1 - report.cacheEfficiency) * 100)}% are re-sent on every request. For any workflow that re-uses the same system prompt or context, enabling prompt caching can cut input costs by 50–90%.`
-                  : `${Math.round(report.cacheEfficiency * 100)}% of your input tokens are being served from cache — that means less than half are being rebuilt from scratch on each request. There's still room to improve, but you're not starting from zero.`}
-                icon={<Shield className="w-5 h-5" />}
-                visual={<SegmentBar share={report.cacheEfficiency} leftColor="bg-primary" leftLabel="Cached" rightLabel="Fresh input" />}
-              />
-            )}
-
-            {/* Premium model share — only if ≥20% */}
-            {report.premiumShare !== null && (
-              <InsightCard
-                label={`premium_model_share: ${Math.round(report.premiumShare * 100)}%`}
-                title={`${Math.round(report.premiumShare * 100)}% of your spend is going to your most expensive model(s)`}
-                body={`Over half of your costs are coming from your priciest model. That's not necessarily wrong — but it's worth asking which of those calls actually need that level of capability, and which could be handled by a smaller, cheaper model for a fraction of the cost.`}
-                icon={<Zap className="w-5 h-5" />}
-                visual={<SegmentBar share={report.premiumShare} leftColor="bg-orange-400" leftLabel="Premium models" rightLabel="Other models" />}
-              />
-            )}
-
-            {/* Spend spikes */}
-            <InsightCard
-              label={report.spikes.length > 0 ? `spend_spikes: ${report.spikes.length} detected` : "spend_spikes: none"}
-              title={report.spikes.length > 0 ? `${report.spikes.length} spend spike${report.spikes.length > 1 ? "s" : ""} detected` : "No spend spikes — consistent daily usage"}
-              body={report.spikes.length > 0
-                ? `${report.spikes.map(s => {
-                    const prev = report.byDay.find(d => d.date < s.date)?.cost ?? 0;
-                    const pct = prev > 0 ? Math.round((s.cost / prev - 1) * 100) : 0;
-                    return `${s.label} was ${pct}% above the previous day (${fmtDollar(s.cost)} vs ${fmtDollar(prev)})`;
-                  }).join("; ")}. Spikes like these are worth investigating — a runaway job, a bad retry loop, or an unexpected traffic surge can inflate your bill significantly in a short window.`
-                : "Your spend was consistent across the period — no single day jumped more than 50% above the previous one. That's a sign your AI usage is predictable and well-controlled."}
-              icon={<AlertCircle className="w-5 h-5" />}
-              visual={report.spikes.length > 0 ? (
-                <div className="mt-3">
-                  <ResponsiveContainer width="100%" height={60}>
-                    <LineChart data={report.byDay.map(d => ({ ...d, value: d.cost }))}>
-                      <Line type="monotone" dataKey="value" stroke="var(--primary)" strokeWidth={1.5} dot={false} />
-                      {report.spikes.map(s => (
-                        <ReferenceDot key={s.date} x={s.label} y={s.cost} r={5} fill="#ef4444" stroke="white" strokeWidth={2} />
-                      ))}
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : undefined}
-            />
-
-            {/* Key concentration */}
-            {report.hasKeyCol && report.keyConc && (
-              <InsightCard
-                label={`key_concentration: ${Math.round(topKeyShare * 100)}% from "${report.keyConc.topKey}"`}
-                title={topKeyShare > 0.80 ? `Almost all your spend is coming from one API key` : `Most spend is concentrated in one key or project`}
-                body={`"${report.keyConc.topKey}" accounts for ${Math.round(topKeyShare * 100)}% of your total AI cost. With this level of concentration, you can't tell which customer, feature, or workflow the remaining ${Math.round((1 - topKeyShare) * 100)}% belongs to — or whether spend shifts are driven by a specific part of the product or the whole thing.`}
-                icon={<Shield className="w-5 h-5" />}
-                visual={<SegmentBar share={topKeyShare} leftColor="bg-yellow-400" leftLabel={`"${report.keyConc.topKey}"`} rightLabel="Other keys" />}
-              />
-            )}
-            {report.hasKeyCol && !report.keyConc && (
-              <InsightCard
-                label="key_concentration: single key"
-                title="All spend is on one API key — no customer attribution possible"
-                body="Your billing CSV has a single API key, so there's no way to tell from this file which customer, feature, or workflow is driving the cost. You're seeing the aggregate — not the breakdown. Adding a customer ID or feature tag to your API calls is how you go from 'here's the total' to 'here's which customer is costing you the most.'"
-                icon={<Shield className="w-5 h-5" />}
-              />
-            )}
-            {!report.hasKeyCol && (
-              <InsightCard
-                label="key_concentration: no key column found"
-                title="No API key or project column — cost attribution isn't possible from this file"
-                body="This billing export doesn't include a key, project, or user identifier column. That means there's no way to tell from the file alone which part of the product, which customer, or which workflow the cost belongs to. To get that breakdown, you need to tag your API calls with a customer ID before the request goes out."
-                icon={<Shield className="w-5 h-5" />}
-              />
+        {/* ── Daily trend (area chart) — only if ≥7 days ── */}
+        {report.byDay.length >= 7 && (
+          <div className="bg-card border border-border rounded-3xl p-8 shadow-sm mb-10">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold font-outfit mb-1">Daily cost rhythm</h2>
+              <p className="text-sm text-muted-foreground">How your spend flows day-by-day — flat lines mean predictable costs, sharp peaks mean surprises.</p>
+            </div>
+            <ResponsiveContainer width="100%" height={260}>
+              <AreaChart data={areaData} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+                <defs>
+                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity={0.25} />
+                    <stop offset="100%" stopColor="#2563eb" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                <YAxis tickFormatter={(v) => `$${v}`} tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} width={52} />
+                <Tooltip content={<ChartTooltip />} cursor={{ stroke: "#2563eb", strokeWidth: 1, strokeDasharray: "4 4" }} />
+                <Area type="monotone" dataKey="cost" stroke="#2563eb" strokeWidth={2.5} fill="url(#areaGradient)" dot={false} activeDot={{ r: 5, fill: "#2563eb", strokeWidth: 2, stroke: "white" }} />
+                {report.spikes.map((s, i) => (
+                  <ReferenceDot key={i} x={s.label} y={s.cost} r={6} fill="#ef4444" stroke="white" strokeWidth={2} />
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+            {report.spikes.length > 0 && (
+              <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 shrink-0" />
+                Red dots mark spend spike days
+              </p>
             )}
           </div>
-        </div>
+        )}
 
-        {/* What you can't see yet */}
-        <div className="bg-primary/5 border border-primary/15 rounded-2xl p-6">
-          <h2 className="font-bold text-xl font-outfit mb-1">What you can&apos;t see yet</h2>
-          <p className="text-muted-foreground text-sm mb-6">This report is a one-time snapshot of your invoice. The full product shows the same numbers live, broken down by customer and feature, updating automatically. Here&apos;s a preview:</p>
-          <div className="grid sm:grid-cols-3 gap-4 mb-6">
-            {/* Sample: Per-Customer Attribution */}
+        {/* ── Model breakdown ── */}
+        {report.byModel.length > 0 && (
+          <div className="bg-card border border-border rounded-3xl p-8 shadow-sm mb-10">
+            <div className="mb-6">
+              <h2 className="text-xl font-bold font-outfit mb-1">Where your money&apos;s going</h2>
+              <p className="text-sm text-muted-foreground">Cost breakdown by model — which AI is driving your bill.</p>
+            </div>
+            <div className="grid lg:grid-cols-2 gap-8 items-center">
+              {/* Donut chart */}
+              <div>
+                <ResponsiveContainer width="100%" height={280}>
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={72}
+                      outerRadius={110}
+                      paddingAngle={3}
+                      dataKey="value"
+                    >
+                      {pieData.map((entry, i) => (
+                        <Cell key={i} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<PieTooltip />} />
+                    <Legend
+                      formatter={(value) => <span style={{ fontSize: 11, color: "#64748b" }}>{value}</span>}
+                      iconSize={10}
+                      iconType="circle"
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              {/* Horizontal bars */}
+              <div className="space-y-5">
+                {report.byModel.map((m, i) => (
+                  <div key={m.model}>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="font-medium text-foreground truncate max-w-[55%]">{m.model}</span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-muted-foreground text-xs">{fmtDollar(m.cost)}</span>
+                        <span className="text-foreground font-bold text-xs bg-muted px-2 py-0.5 rounded-full">{Math.round(m.share * 100)}%</span>
+                      </div>
+                    </div>
+                    <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{ width: `${m.share * 100}%`, backgroundColor: MODEL_COLORS[i % MODEL_COLORS.length] }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Key metrics row (cache + premium share) ── */}
+        {(report.cacheEfficiency !== null || report.premiumShare !== null) && (
+          <div className="grid sm:grid-cols-2 gap-6 mb-10">
+            {report.cacheEfficiency !== null && (
+              <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground">Cache efficiency</p>
+                    <p className="text-xs text-muted-foreground">% of input tokens served from cache</p>
+                  </div>
+                </div>
+                <div className="flex items-end gap-3 mb-4">
+                  <span className="text-4xl font-bold font-outfit text-foreground">{Math.round(report.cacheEfficiency * 100)}%</span>
+                  <span className={`text-sm font-medium mb-1 ${report.cacheEfficiency < 0.25 ? "text-red-600" : report.cacheEfficiency < 0.5 ? "text-amber-600" : "text-green-600"}`}>
+                    {report.cacheEfficiency < 0.25 ? "Too low" : report.cacheEfficiency < 0.5 ? "Fair" : "Good"}
+                  </span>
+                </div>
+                <ResponsiveContainer width="100%" height={100}>
+                  <BarChart data={[
+                    { label: "Cached", value: Math.round(report.cacheEfficiency * 100), fill: "#2563eb" },
+                    { label: "Fresh", value: Math.round((1 - report.cacheEfficiency) * 100), fill: "#e2e8f0" },
+                  ]} margin={{ top: 0, right: 0, bottom: 0, left: 0 }} layout="vertical">
+                    <XAxis type="number" hide domain={[0, 100]} />
+                    <YAxis type="category" dataKey="label" tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} width={44} />
+                    <Bar dataKey="value" radius={[0, 4, 4, 0]}>
+                      {[{ fill: "#2563eb" }, { fill: "#e2e8f0" }].map((c, i) => (
+                        <Cell key={i} fill={c.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+                  {report.cacheEfficiency < 0.25
+                    ? "Low cache reuse — enabling prompt caching could cut input costs by 50–90%."
+                    : "Reasonable cache reuse — you're not rebuilding context from scratch every time."}
+                </p>
+              </div>
+            )}
+
+            {report.premiumShare !== null && (
+              <div className="bg-card border border-border rounded-3xl p-8 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-foreground">Premium model share</p>
+                    <p className="text-xs text-muted-foreground">% of spend on your most expensive models</p>
+                  </div>
+                </div>
+                <div className="flex items-end gap-3 mb-4">
+                  <span className="text-4xl font-bold font-outfit text-foreground">{Math.round(report.premiumShare * 100)}%</span>
+                  <span className={`text-sm font-medium mb-1 ${report.premiumShare > 0.6 ? "text-red-600" : report.premiumShare > 0.4 ? "text-amber-600" : "text-green-600"}`}>
+                    {report.premiumShare > 0.6 ? "High" : report.premiumShare > 0.4 ? "Moderate" : "Controlled"}
+                  </span>
+                </div>
+                <ResponsiveContainer width="100%" height={100}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: "Premium", value: Math.round(report.premiumShare * 100) },
+                        { name: "Other", value: Math.round((1 - report.premiumShare) * 100) },
+                      ]}
+                      cx="50%" cy="50%" innerRadius={28} outerRadius={44}
+                      startAngle={90} endAngle={-270}
+                      paddingAngle={2} dataKey="value"
+                    >
+                      <Cell fill="#f97316" />
+                      <Cell fill="#f1f5f9" />
+                    </Pie>
+                  </PieChart>
+                </ResponsiveContainer>
+                <p className="text-xs text-muted-foreground mt-3 leading-relaxed">
+                  {report.premiumShare > 0.6
+                    ? "Over half your cost is from top-tier models. Some of these calls might work with a cheaper alternative."
+                    : "Premium model usage is in a reasonable range — most spend is on cost-effective models."}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Spend spikes detail ── */}
+        {report.byDay.length >= 3 && (
+          <div className="bg-card border border-border rounded-3xl p-8 shadow-sm mb-10">
+            <div className="flex items-center gap-3 mb-5">
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${report.spikes.length > 0 ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-foreground">
+                  {report.spikes.length > 0 ? `${report.spikes.length} spend spike${report.spikes.length > 1 ? "s" : ""} detected` : "No spend spikes"}
+                </p>
+                <p className="text-xs text-muted-foreground">Days where cost jumped more than 50% over the previous day</p>
+              </div>
+            </div>
+            <ResponsiveContainer width="100%" height={180}>
+              <LineChart data={report.byDay.map(d => ({ label: d.label, cost: d.cost }))} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+                <defs>
+                  <linearGradient id="spikeLineGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#2563eb" stopOpacity={0.3} />
+                    <stop offset="100%" stopColor="#2563eb" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#94a3b8" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                <YAxis tickFormatter={(v) => `$${v}`} tick={{ fontSize: 10, fill: "#94a3b8" }} tickLine={false} axisLine={false} width={48} />
+                <Tooltip content={<ChartTooltip />} />
+                <Line type="monotone" dataKey="cost" stroke="#2563eb" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "#2563eb", strokeWidth: 2, stroke: "white" }} />
+                {report.spikes.map((s, i) => (
+                  <ReferenceDot key={i} x={s.label} y={s.cost} r={6} fill="#ef4444" stroke="white" strokeWidth={2} />
+                ))}
+              </LineChart>
+            </ResponsiveContainer>
+            {report.spikes.length > 0 ? (
+              <div className="mt-4 space-y-2">
+                {report.spikes.map(s => {
+                  const prev = report.byDay.find(d => d.date < s.date)?.cost ?? 0;
+                  const pct = prev > 0 ? Math.round((s.cost / prev - 1) * 100) : 0;
+                  return (
+                    <div key={s.date} className="flex items-center gap-3 bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm">
+                      <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+                      <span className="font-medium text-foreground">{s.label}</span>
+                      <span className="text-red-700 font-semibold">+{pct}% ({fmtDollar(s.cost)} vs {fmtDollar(prev)})</span>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-sm text-green-700 bg-green-50 border border-green-100 rounded-xl px-4 py-3 mt-4">
+                Your spend was consistent — no day jumped more than 50% above the previous one. Usage looks predictable and well-controlled.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* ── Key concentration ── */}
+        {report.hasKeyCol && (
+          <div className="bg-card border border-border rounded-3xl p-8 shadow-sm mb-10">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-yellow-50 text-yellow-600 flex items-center justify-center shrink-0">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-foreground">API key concentration</p>
+                <p className="text-xs text-muted-foreground">How spend is distributed across keys / projects</p>
+              </div>
+            </div>
+            {report.keyConc ? (
+              <>
+                <div className="flex items-end gap-3 mb-6">
+                  <span className="text-4xl font-bold font-outfit text-foreground">{Math.round(topKeyShare * 100)}%</span>
+                  <span className="text-sm text-muted-foreground mb-1">from &ldquo;{report.keyConc.topKey}&rdquo;</span>
+                </div>
+                <div className="w-full h-3 rounded-full bg-muted overflow-hidden mb-3">
+                  <div className="h-full rounded-full bg-yellow-400 transition-all duration-700" style={{ width: `${topKeyShare * 100}%` }} />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>&ldquo;{report.keyConc.topKey}&rdquo; — {Math.round(topKeyShare * 100)}%</span>
+                  <span>Other keys — {Math.round((1 - topKeyShare) * 100)}%</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-4 leading-relaxed">
+                  {topKeyShare > 0.80
+                    ? `Almost all your spend flows through a single key. You can't tell which customer, feature, or workflow the remaining ${Math.round((1 - topKeyShare) * 100)}% belongs to.`
+                    : `Most spend is concentrated in one key. This limits visibility into which parts of your product are actually driving cost.`}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Your billing export has a single API key — there&apos;s no way to tell which customer, feature, or workflow is driving cost from this file alone.
+              </p>
+            )}
+          </div>
+        )}
+
+        {!report.hasKeyCol && (
+          <div className="bg-card border border-border rounded-3xl p-8 shadow-sm mb-10">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center shrink-0">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-foreground mb-2">No API key or project column found</p>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  This billing export doesn&apos;t include a key, project, or user identifier. That means there&apos;s no way to tell from the file alone which part of the product, which customer, or which workflow the cost belongs to.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Top model insight ── */}
+        {report.topModel && (
+          <div className="bg-card border border-border rounded-3xl p-8 shadow-sm mb-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <TrendingUp className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="font-bold text-foreground">Biggest cost driver</p>
+                <p className="text-xs text-muted-foreground">Top model by spend share</p>
+              </div>
+            </div>
+            <div className="flex items-end gap-3 mb-4">
+              <span className="text-4xl font-bold font-outfit text-foreground">{Math.round(report.topModel.share * 100)}%</span>
+              <span className="text-sm text-muted-foreground mb-1 truncate max-w-[300px]">{report.topModel.model}</span>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {report.topModel.model} accounts for {Math.round(report.topModel.share * 100)}% of your total AI spend. If you can reduce calls to this model, route eligible requests to a cheaper alternative, or cache frequent responses, the savings will be proportional to its share.
+            </p>
+          </div>
+        )}
+
+        {/* ── What you can't see yet ── */}
+        <div className="bg-primary/5 border border-primary/15 rounded-3xl p-8 mb-10">
+          <h2 className="text-2xl font-bold font-outfit mb-2">What you can&apos;t see yet</h2>
+          <p className="text-muted-foreground text-sm mb-8 max-w-2xl">
+            This report is a one-time snapshot of your invoice. The full product shows the same numbers live, broken down by customer and feature, updating automatically.
+          </p>
+          <div className="grid sm:grid-cols-3 gap-5 mb-8">
             <SampleCard title="Per-Customer Cost Attribution" desc="See exactly which customer is driving your bill — not just the total.">
-              <div className="space-y-2 mt-3">
-                {[{ name: "Acme Corp", cost: "$380", margin: "-$60", c: "text-red-600" },{ name: "Verity Labs", cost: "$315", margin: "+$95", c: "text-yellow-600" },{ name: "Moonshot AI", cost: "$95", margin: "+$315", c: "text-green-600" }].map(r => (
+              <div className="space-y-3 mt-4">
+                {[
+                  { name: "Acme Corp", cost: "$380", margin: "-$60", c: "text-red-600 bg-red-50" },
+                  { name: "Verity Labs", cost: "$315", margin: "+$95", c: "text-amber-600 bg-amber-50" },
+                  { name: "Moonshot AI", cost: "$95", margin: "+$315", c: "text-green-600 bg-green-50" },
+                ].map(r => (
                   <div key={r.name} className="flex justify-between items-center text-xs">
-                    <span className="font-medium">{r.name}</span>
-                    <span className={`font-bold ${r.c}`}>{r.margin}</span>
+                    <span className="font-medium text-foreground">{r.name}</span>
+                    <span className={`font-bold px-2 py-0.5 rounded-full ${r.c}`}>{r.margin}</span>
                   </div>
                 ))}
               </div>
             </SampleCard>
-            {/* Sample: Per-Feature Margins */}
             <SampleCard title="Per-Feature Margins & ROI" desc="Which features earn their keep, and which are quietly losing money?">
-              <div className="space-y-2 mt-3">
+              <div className="space-y-3 mt-4">
                 {[{ f: "AI Search", share: 0.65, neg: false },{ f: "Summaries", share: 0.28, neg: true },{ f: "Tagging", share: 0.07, neg: false }].map(r => (
                   <div key={r.f} className="flex items-center gap-2 text-xs">
-                    <span className="w-16 shrink-0">{r.f}</span>
+                    <span className="w-16 shrink-0 font-medium">{r.f}</span>
                     <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                      <div className={`h-full ${r.neg ? "bg-red-400" : "bg-primary"}`} style={{ width: `${r.share * 100}%` }} />
+                      <div className={`h-full rounded-full ${r.neg ? "bg-red-400" : "bg-primary"}`} style={{ width: `${r.share * 100}%` }} />
                     </div>
-                    <span className={r.neg ? "text-red-600 font-semibold" : "text-muted-foreground"}>{r.neg ? "–margin" : "✓"}</span>
+                    <span className={r.neg ? "text-red-600 font-semibold text-[10px]" : "text-green-600 text-[10px] font-semibold"}>{r.neg ? "–margin" : "✓ profit"}</span>
                   </div>
                 ))}
               </div>
             </SampleCard>
-            {/* Sample: Plan Profitability */}
             <SampleCard title="Plan & Pricing Profitability" desc="Does each pricing tier actually cover the AI cost it creates?">
-              <div className="space-y-2 mt-3">
-                {[{ plan: "Free", color: "bg-red-400", cover: "12%" },{ plan: "Pro", color: "bg-green-400", cover: "94%" },{ plan: "Enterprise", color: "bg-green-500", cover: "210%" }].map(r => (
+              <div className="space-y-3 mt-4">
+                {[{ plan: "Free", color: "bg-red-400", cover: "12%", neg: true },{ plan: "Pro", color: "bg-green-400", cover: "94%", neg: false },{ plan: "Enterprise", color: "bg-green-500", cover: "210%", neg: false }].map(r => (
                   <div key={r.plan} className="flex items-center gap-2 text-xs">
                     <span className="w-16 shrink-0 font-medium">{r.plan}</span>
                     <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                      <div className={`h-full ${r.color}`} style={{ width: r.cover }} />
+                      <div className={`h-full rounded-full ${r.color}`} style={{ width: r.cover }} />
                     </div>
-                    <span className="text-muted-foreground">{r.cover}</span>
+                    <span className={`${r.neg ? "text-red-600" : "text-muted-foreground"} font-medium`}>{r.cover}</span>
                   </div>
                 ))}
               </div>
             </SampleCard>
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-4 pt-4 border-t border-primary/15">
+          <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 border-t border-primary/15">
             <p className="text-sm text-muted-foreground flex-1">The full product shows these numbers live — updating automatically as your product runs, broken down by every customer and feature.</p>
-            <Link href="/signup" className="shrink-0 inline-flex items-center gap-2 h-11 px-6 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 text-sm">
+            <Link href="/signup" className="shrink-0 inline-flex items-center gap-2 h-12 px-7 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 text-sm">
               Start monitoring now <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
 
-        {/* Footer disclaimer */}
-        <p className="text-xs text-muted-foreground text-center pb-4 leading-relaxed max-w-lg mx-auto">
+        {/* ── Footer disclaimer ── */}
+        <p className="text-xs text-muted-foreground text-center pb-6 leading-relaxed max-w-lg mx-auto">
           Figures are estimates based on the uploaded file. The premium-model and spend-spike flags are heuristics meant to point in the right direction, not exact audits. Your file is processed entirely in the browser and is never uploaded anywhere.
         </p>
       </div>
@@ -680,28 +913,12 @@ export default function SpendCheckupPage() {
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
-function InsightCard({ label, title, body, icon, visual }: { label: string; title: string; body: string; icon: React.ReactNode; visual?: React.ReactNode }) {
-  return (
-    <div className="bg-card border border-border rounded-xl p-5 shadow-sm">
-      <div className="flex items-start gap-3">
-        <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">{icon}</div>
-        <div className="flex-1 min-w-0">
-          <code className="text-[11px] text-muted-foreground font-mono bg-muted px-1.5 py-0.5 rounded mb-2 inline-block">{label}</code>
-          <p className="font-semibold text-foreground text-sm mb-2">{title}</p>
-          <p className="text-muted-foreground text-sm leading-relaxed">{body}</p>
-          {visual && <div className="mt-4">{visual}</div>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function SampleCard({ title, desc, children }: { title: string; desc: string; children: React.ReactNode }) {
   return (
-    <div className="bg-card border border-border rounded-xl p-4 relative overflow-hidden">
-      <div className="absolute top-2 right-2 text-[10px] font-bold bg-yellow-100 border border-yellow-200 text-yellow-700 px-2 py-0.5 rounded-full">SAMPLE</div>
-      <p className="text-xs font-bold text-foreground pr-12 mb-1">{title}</p>
-      <p className="text-[11px] text-muted-foreground mb-1 leading-relaxed">{desc}</p>
+    <div className="bg-card border border-border rounded-2xl p-5 relative overflow-hidden">
+      <div className="absolute top-3 right-3 text-[10px] font-bold bg-yellow-100 border border-yellow-200 text-yellow-700 px-2 py-0.5 rounded-full">SAMPLE</div>
+      <p className="text-sm font-bold text-foreground pr-14 mb-1">{title}</p>
+      <p className="text-[11px] text-muted-foreground leading-relaxed">{desc}</p>
       {children}
     </div>
   );
