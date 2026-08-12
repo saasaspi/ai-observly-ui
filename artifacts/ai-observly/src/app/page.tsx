@@ -2,22 +2,11 @@
 import { useState, useEffect, useRef } from "react";
 import { PublicLayout } from "@/components/public-layout";
 import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
-import { useSubmitWaitlist } from "@/hooks/use-api";
 import {
   ArrowRight, CheckCircle2, AlertCircle, TrendingDown, DollarSign,
   Zap, BarChart2, Users, ChevronDown, ChevronUp,
   ArrowUpRight, GitBranch, CreditCard, MessageSquare,
 } from "lucide-react";
-
-const waitlistSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-});
 
 const faqs = [
   {
@@ -192,19 +181,6 @@ function DashboardMockup() {
 // ── Landing page ───────────────────────────────────────────────────────────────
 export default function LandingPage() {
   useScrollReveal();
-
-  const { toast } = useToast();
-  const submitWaitlist = useSubmitWaitlist();
-
-  const form = useForm<z.infer<typeof waitlistSchema>>({ resolver: zodResolver(waitlistSchema), defaultValues: { email: "" } });
-  const formBottom = useForm<z.infer<typeof waitlistSchema>>({ resolver: zodResolver(waitlistSchema), defaultValues: { email: "" } });
-
-  const handleWaitlist = (formInstance: typeof form) => (data: z.infer<typeof waitlistSchema>) => {
-    submitWaitlist.mutate(data.email, {
-      onSuccess: () => { toast({ title: "You're on the list!", description: "We'll notify you when early access is ready." }); formInstance.reset(); },
-      onError: () => { toast({ title: "Something went wrong", description: "Please try again later.", variant: "destructive" }); },
-    });
-  };
 
   return (
     <PublicLayout>
@@ -589,22 +565,13 @@ export default function LandingPage() {
           <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Stop finding out about margin-negative customers three months late.</h2>
           <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg mb-10 max-w-lg mx-auto">See your AI spend broken down by customer, feature, and plan — not just as one line on an invoice.</p>
           <div data-reveal style={{ transitionDelay: "0.24s" }}>
-            <Form {...formBottom}>
-              <form onSubmit={formBottom.handleSubmit(handleWaitlist(formBottom))} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-6">
-                <FormField control={formBottom.control} name="email" render={({ field }) => (
-                  <FormItem className="flex-1 text-left">
-                    <FormControl>
-                      <Input placeholder="founder@startup.com" {...field} className="h-12 bg-background border-border focus-visible:ring-primary shadow-sm" data-testid="input-waitlist-email-bottom" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <button type="submit" className="h-12 px-6 rounded-md bg-primary text-primary-foreground font-medium hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 whitespace-nowrap shadow-sm" disabled={submitWaitlist.isPending} data-testid="btn-waitlist-submit-bottom">
-                  {submitWaitlist.isPending ? "Joining..." : "Start monitoring now"}
-                </button>
-              </form>
-            </Form>
-            <p className="text-xs text-muted-foreground">No spam. No credit card required. Unsubscribe any time.</p>
+            <Link
+              href="/#pricing"
+              className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 shadow-sm"
+              data-testid="btn-cta-bottom"
+            >
+              Start monitoring now <ArrowRight className="ml-2 w-5 h-5" />
+            </Link>
           </div>
         </div>
       </section>
