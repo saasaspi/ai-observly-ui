@@ -198,13 +198,13 @@ export default async function BlogPostPage({
         >
           {/* ── Left: Table of Contents (hidden on mobile, stacks below article) ── */}
           {hasToC && (
-            <aside className="order-2 lg:order-1">
+            <aside className="hidden lg:block">
               <TableOfContents entries={tocEntries} />
             </aside>
           )}
 
           {/* ── Center: Article body ── */}
-          <article className="order-1 lg:order-2 min-w-0">
+          <article className="min-w-0">
             {/* Meta */}
             <div className="flex flex-wrap items-center gap-3 mb-4">
               {post.topic && (
@@ -239,7 +239,7 @@ export default async function BlogPostPage({
                 Know exactly which customers and features are eroding your margins — before you find out on the invoice.
               </p>
               <Link
-                href="/signup"
+                href="/#pricing"
                 className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 shadow-sm"
               >
                 Start monitoring now <ArrowRight className="w-4 h-4" />
@@ -248,7 +248,7 @@ export default async function BlogPostPage({
           </article>
 
           {/* ── Right: Recommended Articles ── */}
-          <aside className="order-3 lg:order-3">
+          <aside>
             <div className="lg:sticky lg:top-24 lg:self-start">
               {recommended.length > 0 && (
                 <>

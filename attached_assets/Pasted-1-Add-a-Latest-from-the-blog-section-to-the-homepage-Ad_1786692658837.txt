@@ -1,0 +1,28 @@
+1. Add a "Latest from the blog" section to the homepage
+Add a new section to the homepage, positioned directly above the Pricing section.
+Show the 3 most recently published posts from Sanity as cards — cover image, title, and a short excerpt from metaDescription, each linking to that post's /blog/[slug] page.
+Style it using the site's existing section spacing and card styling conventions, so it reads as a native part of the homepage rather than a bolted-on block.
+This must fetch live from Sanity the same way the /blog page already does — the section should update automatically as new posts are published, with no manual redeploy.
+2. Fix the "Start monitoring now" CTA on blog content
+Wherever a "Start monitoring now" call-to-action button appears within the blog experience (the CTA at the bottom of each /blog/[slug] post, and on the new homepage blog section if one is present there), point it to the Pricing section of the homepage (e.g. /#pricing) instead of the signup page.
+Don't change what this button does anywhere else on the site outside the blog context.
+3. Restructure the homepage navigation bar
+
+Replace the current nav with exactly five items, in this order: Products, Docs, Blogs, Pricing, Free Spend Checkup.
+
+Products — a dropdown containing the three links that currently appear as flat top-level nav items: "How it works," "Features," and "Who it's for." Move them under this dropdown, but do not change their existing links/anchors — same destinations, just relocated into the dropdown.
+Docs — unchanged, same destination as today.
+Blogs — hovering this item reveals a dropdown listing the 5 most recently published blog posts as clickable links (post title, linking to its /blog/[slug] page). This list must be pulled live from Sanity and update automatically as new posts are published — don't hardcode it. Match the hover-triggered dropdown interaction shown in the reference screenshot (a menu that appears on hover); you don't need to replicate its multi-column layout, just the hover behavior and a clean link list.
+Pricing — unchanged, same as today.
+Free Spend Checkup — unchanged, same destination as today.
+Remove any other item currently in the nav bar that isn't one of these five (e.g. FAQ) — only Products, Docs, Blogs, Pricing, and Free Spend Checkup should remain.
+Do not change anything on the right side of the nav bar (login button, signup/CTA button) — this task is scoped to the middle nav links only.
+4. Fix the blog post page layout on mobile
+On mobile viewports, do not render the left-side table of contents at all — remove it entirely for mobile, don't just hide or stack it below the article.
+Keep the Recommended Articles section, but position it so it only appears after the full article body — i.e., after the reader has scrolled through the whole post, not floating alongside it.
+This is a mobile-only change. Leave the desktop layout (left TOC + center article + right sidebar) exactly as already built.
+What NOT to do
+Don't change the hrefs/anchors of "How it works," "Features," or "Who it's for."
+Don't modify the Sanity schema or Studio.
+Don't change the desktop table-of-contents or sidebar layout.
+Don't change the nav bar's right-side buttons.

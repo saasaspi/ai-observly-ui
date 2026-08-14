@@ -1,22 +1,24 @@
 "use client";
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 
-const sectionLinks = [
-  { label: "How it works", anchor: "how-it-works" },
-  { label: "Features", anchor: "features" },
-  { label: "Who it's for", anchor: "who-its-for" },
-  { label: "Pricing", anchor: "pricing" },
-  { label: "FAQ", anchor: "faq" },
-];
+type NavPost = { _id: string; title: string; slug: string }
 
 export function PublicLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
+  const [blogsOpen, setBlogsOpen] = useState(false);
+  const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
+  const [navPosts, setNavPosts] = useState<NavPost[]>([]);
   const isHome = pathname === "/";
+
+  // Timers to prevent flicker on hover
+  const productsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const blogsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -24,15 +26,62 @@ export function PublicLayout({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Fetch recent posts for Blogs dropdown on mount
+  useEffect(() => {
+    fetch("/napi/recent-posts?limit=5")
+      .then((r) => r.json())
+      .then((data) => setNavPosts(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  }, []);
+
   const sectionHref = (anchor: string) => (isHome ? `#${anchor}` : `/#${anchor}`);
+
+  const openProducts = () => {
+    if (productsTimer.current) clearTimeout(productsTimer.current);
+    setProductsOpen(true);
+  };
+  const closeProducts = () => {
+    productsTimer.current = setTimeout(() => setProductsOpen(false), 120);
+  };
+  const openBlogs = () => {
+    if (blogsTimer.current) clearTimeout(blogsTimer.current);
+    setBlogsOpen(true);
+  };
+  const closeBlogs = () => {
+    blogsTimer.current = setTimeout(() => setBlogsOpen(false), 120);
+  };
+
+  const dropdownBase =
+    "absolute top-full left-0 mt-1 bg-card border border-border rounded-xl shadow-lg py-1.5 z-50";
+  const dropdownLink =
+    "block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors";
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col font-sans">
-      <header className={`border-b sticky top-0 z-50 transition-all duration-300 ${scrolled ? "border-border/60 bg-background/95 backdrop-blur-lg shadow-md shadow-black/5" : "border-border/40 bg-background/90 backdrop-blur-md"}`}>
+      <header
+        className={`border-b sticky top-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? "border-border/60 bg-background/95 backdrop-blur-lg shadow-md shadow-black/5"
+            : "border-border/40 bg-background/90 backdrop-blur-md"
+        }`}
+      >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold text-lg font-outfit shrink-0" data-testid="link-home">
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-bold text-lg font-outfit shrink-0"
+            data-testid="link-home"
+          >
             <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
               </svg>
             </div>
@@ -41,17 +90,93 @@ export function PublicLayout({ children }: { children: ReactNode }) {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
-            {sectionLinks.map(({ label, anchor }) => (
-              <a key={anchor} href={sectionHref(anchor)} className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                {label}
-              </a>
-            ))}
-            <Link href="/blog" className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" data-testid="link-blog">
-              Blog
-            </Link>
-            <Link href="/docs" className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" data-testid="link-docs">
+            {/* Products dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={openProducts}
+              onMouseLeave={closeProducts}
+            >
+              <button className="flex items-center gap-1 px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                Products <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              {productsOpen && (
+                <div className={`${dropdownBase} w-44`}>
+                  <a href={sectionHref("how-it-works")} className={dropdownLink}>
+                    How it works
+                  </a>
+                  <a href={sectionHref("features")} className={dropdownLink}>
+                    Features
+                  </a>
+                  <a href={sectionHref("who-its-for")} className={dropdownLink}>
+                    Who it&apos;s for
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Docs */}
+            <Link
+              href="/docs"
+              className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              data-testid="link-docs"
+            >
               Docs
             </Link>
+
+            {/* Blogs dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={openBlogs}
+              onMouseLeave={closeBlogs}
+            >
+              <button
+                className="flex items-center gap-1 px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                data-testid="link-blog"
+              >
+                Blog <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              {blogsOpen && (
+                <div className={`${dropdownBase} w-72`}>
+                  {navPosts.length > 0 ? (
+                    <>
+                      {navPosts.map((post) => (
+                        <Link
+                          key={post._id}
+                          href={`/blog/${post.slug}`}
+                          className="block px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors leading-snug"
+                          onClick={() => setBlogsOpen(false)}
+                        >
+                          {post.title}
+                        </Link>
+                      ))}
+                      <div className="border-t border-border mt-1 pt-1">
+                        <Link
+                          href="/blog"
+                          className="block px-4 py-2 text-sm font-medium text-primary hover:bg-muted transition-colors"
+                          onClick={() => setBlogsOpen(false)}
+                        >
+                          View all posts →
+                        </Link>
+                      </div>
+                    </>
+                  ) : (
+                    <Link href="/blog" className={dropdownLink}>
+                      View all posts
+                    </Link>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Pricing */}
+            <a
+              href={sectionHref("pricing")}
+              className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              Pricing
+            </a>
+
+            {/* Free Spend Check-up */}
             <Link
               href="/spend-checkup"
               className="px-3 py-2 rounded-md font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5"
@@ -63,41 +188,122 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Link href="/login" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted" data-testid="link-login">
+            <Link
+              href="/login"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted"
+              data-testid="link-login"
+            >
               Log in
             </Link>
-            <Link href="/signup" className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity shadow-sm" data-testid="link-signup">
+            <Link
+              href="/signup"
+              className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity shadow-sm"
+              data-testid="link-signup"
+            >
               Sign up
             </Link>
           </div>
 
-          <button className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu">
+          <button
+            className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle menu"
+          >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
+        {/* Mobile menu */}
         {mobileOpen && (
           <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-md px-6 py-4 flex flex-col gap-1">
-            {sectionLinks.map(({ label, anchor }) => (
-              <a key={anchor} href={sectionHref(anchor)} className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
-                {label}
-              </a>
-            ))}
-            <Link href="/blog" className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
-              Blog
-            </Link>
-            <Link href="/docs" className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
+            {/* Products — expandable */}
+            <button
+              className="flex items-center justify-between w-full px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              onClick={() => setMobileProductsOpen(!mobileProductsOpen)}
+            >
+              Products
+              {mobileProductsOpen ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </button>
+            {mobileProductsOpen && (
+              <div className="pl-4 flex flex-col gap-0.5">
+                <a
+                  href={sectionHref("how-it-works")}
+                  className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  How it works
+                </a>
+                <a
+                  href={sectionHref("features")}
+                  className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Features
+                </a>
+                <a
+                  href={sectionHref("who-its-for")}
+                  className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  Who it&apos;s for
+                </a>
+              </div>
+            )}
+
+            {/* Docs */}
+            <Link
+              href="/docs"
+              className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
               Docs
             </Link>
-            <Link href="/spend-checkup" className="px-3 py-2.5 rounded-md text-sm font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+
+            {/* Blog */}
+            <Link
+              href="/blog"
+              className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Blog
+            </Link>
+
+            {/* Pricing */}
+            <a
+              href={sectionHref("pricing")}
+              className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              onClick={() => setMobileOpen(false)}
+            >
+              Pricing
+            </a>
+
+            {/* Free Spend Check-up */}
+            <Link
+              href="/spend-checkup"
+              className="px-3 py-2.5 rounded-md text-sm font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
+              onClick={() => setMobileOpen(false)}
+            >
               <Sparkles className="w-3.5 h-3.5" />
               Free Spend Check-up
             </Link>
+
             <div className="border-t border-border mt-2 pt-3 flex flex-col gap-2">
-              <Link href="/login" className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
+              <Link
+                href="/login"
+                className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
                 Log in
               </Link>
-              <Link href="/signup" className="px-3 py-2.5 rounded-md text-sm font-medium bg-primary text-primary-foreground text-center hover:opacity-90 transition-opacity" onClick={() => setMobileOpen(false)}>
+              <Link
+                href="/signup"
+                className="px-3 py-2.5 rounded-md text-sm font-medium bg-primary text-primary-foreground text-center hover:opacity-90 transition-opacity"
+                onClick={() => setMobileOpen(false)}
+              >
                 Start Monitoring now
               </Link>
             </div>
@@ -112,35 +318,86 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div className="col-span-2 md:col-span-1">
               <div className="flex items-center gap-2 mb-3 font-outfit font-semibold text-foreground">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-primary"
+                >
                   <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
                 </svg>
                 AI Observly
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">AI cost &amp; margin tracking for founders who ship fast.</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                AI cost &amp; margin tracking for founders who ship fast.
+              </p>
             </div>
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="/#features" className="hover:text-foreground transition-colors">Features</a></li>
-                <li><a href="/#pricing" className="hover:text-foreground transition-colors">Pricing</a></li>
-                <li><a href="/#how-it-works" className="hover:text-foreground transition-colors">How it works</a></li>
+                <li>
+                  <a href="/#features" className="hover:text-foreground transition-colors">
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a href="/#pricing" className="hover:text-foreground transition-colors">
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a href="/#how-it-works" className="hover:text-foreground transition-colors">
+                    How it works
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">Resources</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
-                <li><Link href="/docs" className="hover:text-foreground transition-colors">Docs</Link></li>
-                <li><Link href="/spend-checkup" className="hover:text-foreground transition-colors font-medium text-primary">Free Spend Check-up</Link></li>
-                <li><a href="/#faq" className="hover:text-foreground transition-colors">FAQ</a></li>
+                <li>
+                  <Link href="/blog" className="hover:text-foreground transition-colors">
+                    Blog
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/docs" className="hover:text-foreground transition-colors">
+                    Docs
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/spend-checkup"
+                    className="hover:text-foreground transition-colors font-medium text-primary"
+                  >
+                    Free Spend Check-up
+                  </Link>
+                </li>
+                <li>
+                  <a href="/#faq" className="hover:text-foreground transition-colors">
+                    FAQ
+                  </a>
+                </li>
               </ul>
             </div>
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">Account</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/login" className="hover:text-foreground transition-colors">Log in</Link></li>
-                <li><Link href="/signup" className="hover:text-foreground transition-colors">Start Monitoring now</Link></li>
+                <li>
+                  <Link href="/login" className="hover:text-foreground transition-colors">
+                    Log in
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/signup" className="hover:text-foreground transition-colors">
+                    Start Monitoring now
+                  </Link>
+                </li>
               </ul>
             </div>
           </div>

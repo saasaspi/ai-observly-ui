@@ -1,6 +1,7 @@
 {
-  "/blog/page": "app/blog/page.js",
-  "/signup/page": "app/signup/page.js",
+  "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
   "/page": "app/page.js",
-  "/blog/[slug]/page": "app/blog/[slug]/page.js"
+  "/blog/page": "app/blog/page.js",
+  "/blog/[slug]/page": "app/blog/[slug]/page.js",
+  "/signup/page": "app/signup/page.js"
 }

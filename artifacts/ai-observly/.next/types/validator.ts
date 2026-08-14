@@ -281,6 +281,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../src/app/napi/recent-posts/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/napi/recent-posts">> = Specific
+  const handler = {} as typeof import("../../src/app/napi/recent-posts/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../src/app/napi/regenerate-key/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/napi/regenerate-key">> = Specific

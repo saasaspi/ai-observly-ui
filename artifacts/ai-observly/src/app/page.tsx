@@ -7,6 +7,8 @@ import {
   Zap, BarChart2, Users, ChevronDown, ChevronUp,
   ArrowUpRight, GitBranch, CreditCard, MessageSquare,
 } from "lucide-react";
+import Image from "next/image";
+import { urlFor } from "@/lib/sanity/image";
 
 const faqs = [
   {
@@ -175,6 +177,119 @@ function DashboardMockup() {
         </div>
       </div>
     </div>
+  );
+}
+
+// ── Latest from Blog section ─────────────────────────────────────────────────
+
+type BlogPost = {
+  _id: string
+  title: string
+  slug: string
+  coverImage?: unknown
+  publishedAt: string
+  metaDescription?: string
+  topic?: string
+}
+
+function formatBlogDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function LatestFromBlog() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+
+  useEffect(() => {
+    fetch("/napi/recent-posts?limit=3")
+      .then((r) => r.json())
+      .then((data) => setPosts(Array.isArray(data) ? data.slice(0, 3) : []))
+      .catch(() => {});
+  }, []);
+
+  if (posts.length === 0) return null;
+
+  return (
+    <section id="blog-preview" className="py-24 px-6 bg-background">
+      <div className="max-w-5xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
+          <div>
+            <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">
+              From the blog
+            </p>
+            <h2
+              data-reveal
+              style={{ transitionDelay: "0.08s" }}
+              className="text-3xl md:text-4xl font-bold font-outfit"
+            >
+              Latest insights on AI cost &amp; margin
+            </h2>
+          </div>
+          <Link
+            href="/blog"
+            className="shrink-0 text-sm font-medium text-primary hover:underline underline-offset-2 flex items-center gap-1"
+          >
+            View all posts <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          {posts.map((post, i) => {
+            let imageUrl: string | null = null;
+            try {
+              if (post.coverImage) {
+                imageUrl = urlFor(post.coverImage as Parameters<typeof urlFor>[0])
+                  .width(600)
+                  .height(340)
+                  .fit("crop")
+                  .auto("format")
+                  .url();
+              }
+            } catch {}
+
+            return (
+              <Link
+                key={post._id}
+                href={`/blog/${post.slug}`}
+                data-reveal
+                style={{ transitionDelay: `${i * 0.08}s` }}
+                className="group flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+              >
+                {imageUrl ? (
+                  <div className="relative w-full aspect-[16/9] overflow-hidden bg-muted">
+                    <Image
+                      src={imageUrl}
+                      alt={post.title}
+                      fill
+                      className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-full aspect-[16/9] bg-primary/5" />
+                )}
+                <div className="p-5 flex flex-col flex-1">
+                  <p className="text-[11px] text-muted-foreground mb-2">
+                    {formatBlogDate(post.publishedAt)}
+                  </p>
+                  <h3 className="font-bold font-outfit text-foreground group-hover:text-primary transition-colors leading-snug mb-2 line-clamp-2">
+                    {post.title}
+                  </h3>
+                  {post.metaDescription && (
+                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 flex-1">
+                      {post.metaDescription}
+                    </p>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -500,6 +615,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ── LATEST FROM BLOG ── */}
+      <LatestFromBlog />
 
       {/* ── PRICING ── */}
       <section id="pricing" className="py-24 px-6 bg-card border-y border-border">
