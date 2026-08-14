@@ -46,6 +46,9 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 {label}
               </a>
             ))}
+            <Link href="/blog" className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" data-testid="link-blog">
+              Blog
+            </Link>
             <Link href="/docs" className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" data-testid="link-docs">
               Docs
             </Link>
@@ -80,6 +83,9 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 {label}
               </a>
             ))}
+            <Link href="/blog" className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
+              Blog
+            </Link>
             <Link href="/docs" className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
               Docs
             </Link>
@@ -124,6 +130,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">Resources</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="/blog" className="hover:text-foreground transition-colors">Blog</Link></li>
                 <li><Link href="/docs" className="hover:text-foreground transition-colors">Docs</Link></li>
                 <li><Link href="/spend-checkup" className="hover:text-foreground transition-colors font-medium text-primary">Free Spend Check-up</Link></li>
                 <li><a href="/#faq" className="hover:text-foreground transition-colors">FAQ</a></li>

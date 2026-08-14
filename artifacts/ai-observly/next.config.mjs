@@ -7,6 +7,14 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   allowedDevOrigins: ["*.replit.dev", "*.sisko.replit.dev", "*.pike.replit.dev"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "cdn.sanity.io",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

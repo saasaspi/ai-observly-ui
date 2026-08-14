@@ -1,0 +1,26 @@
+Task: Build the public-facing blog pages on our site that pull content from the Sanity project we already set up, and render it using our site's existing design system. Do not touch the Sanity schema or Studio — that already exists and posts are already being written there.
+
+Project details:
+
+Sanity Project ID: y4ebxpas
+Dataset: production (verify this is correct, use whatever dataset actually exists if it differs)
+Content type: Post, with fields title, slug, coverImage, publishedAt, body, seoTitle, metaDescription, topic — there is no author field; every post is attributed to the AI Observly brand only, not an individual writer.
+
+Pages to build:
+
+/blog — a listing page showing every published post (only published posts — Sanity excludes drafts from standard queries by default, so no extra "status" field is needed). Use our existing header, footer, fonts, colors, and layout components so this page is visually indistinguishable from the rest of the site — do not introduce a new visual style. Each post should appear as a card with its cover image, title, a short excerpt (from metaDescription), and published date. Include a way to filter or group posts by topic (options: "Cost & Margin Management", "Unit Economics", "Comparisons", "Data Reports").
+/blog/[slug] — an individual post page, also using our existing components, showing the cover image, title, published date, and the full body content rendered from Sanity's rich text (portable text) format. At the bottom, add a "Related posts" section showing other posts that share the same topic, and a call-to-action linking to our signup page.
+
+Technical requirements — read carefully:
+
+Fetch content at request time, or with a short revalidation window (a minute or less) — not a one-time fetch baked in at build time. A new post published in Sanity Studio must appear on the live site automatically, with no manual redeploy and no further Agent involvement. This is the most important requirement in this task — verify it works before confirming done.
+Use the seoTitle and metaDescription fields to populate each post's meta title and meta description tags.
+Add Article structured data (JSON-LD schema) to each post page, populated from the post's title, cover image, and published date.
+Add every published post to the site's XML sitemap automatically as they're published.
+Set a canonical tag on each post page pointing to its own /blog/[slug] URL.
+
+What NOT to do:
+
+Don't modify the Sanity schema or Studio — it already exists and is actively in use.
+Don't add an author field, byline, or author-related UI anywhere.
+Don't change anything on the site's existing non-blog pages.
