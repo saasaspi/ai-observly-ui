@@ -1,19 +1,38 @@
 "use client";
 import { PortableText, type PortableTextComponents } from '@portabletext/react'
+import { slugifyHeading } from '@/lib/sanity/toc'
 
 const components: PortableTextComponents = {
   block: {
     normal: ({ children }) => (
       <p className="mb-5 text-foreground leading-relaxed text-[1.0625rem]">{children}</p>
     ),
-    h2: ({ children }) => (
-      <h2 className="text-2xl font-bold font-outfit mt-10 mb-4 text-foreground">{children}</h2>
-    ),
-    h3: ({ children }) => (
-      <h3 className="text-xl font-semibold font-outfit mt-8 mb-3 text-foreground">{children}</h3>
-    ),
+    h2: ({ children, value }) => {
+      const text = (value.children ?? []).map((c: { text?: string }) => c.text ?? '').join('')
+      const id = slugifyHeading(text)
+      return (
+        <h2
+          id={id}
+          className="scroll-mt-24 text-2xl font-bold font-outfit mt-10 mb-4 text-foreground"
+        >
+          {children}
+        </h2>
+      )
+    },
+    h3: ({ children, value }) => {
+      const text = (value.children ?? []).map((c: { text?: string }) => c.text ?? '').join('')
+      const id = slugifyHeading(text)
+      return (
+        <h3
+          id={id}
+          className="scroll-mt-24 text-xl font-semibold font-outfit mt-8 mb-3 text-foreground"
+        >
+          {children}
+        </h3>
+      )
+    },
     h4: ({ children }) => (
-      <h4 className="text-lg font-semibold mt-6 mb-2 text-foreground">{children}</h4>
+      <h4 className="scroll-mt-24 text-lg font-semibold mt-6 mb-2 text-foreground">{children}</h4>
     ),
     blockquote: ({ children }) => (
       <blockquote className="border-l-4 border-primary pl-5 py-1 my-6 text-muted-foreground italic">

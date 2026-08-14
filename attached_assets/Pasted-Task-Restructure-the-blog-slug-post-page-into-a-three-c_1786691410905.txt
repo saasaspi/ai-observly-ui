@@ -1,0 +1,30 @@
+Task: Restructure the /blog/[slug] post page into a three-column layout: an auto-generated table of contents on the left, the article body in the center, and a "Recommended Articles" sidebar on the right. This fills the empty space on either side of the article and should use our existing fonts, colors, and components — no new visual style.
+
+Note: this replaces the "Related posts" section that was specified at the bottom of the post page in the previous prompt. Build the sidebar version described here instead — don't build both.
+
+1. Left column — auto-generated table of contents
+
+Parse each post's body content for its headings (H2s and H3s) and list them as clickable links in a sidebar, labeled "Contents."
+Clicking a heading in this list should jump/scroll the page to that heading in the article.
+This must work automatically for every post based on whatever headings that specific post actually contains — don't hardcode headings, and don't require any manual setup per post.
+If a post has no headings at all, don't render an empty Contents box — just show the two-column layout (article + right sidebar) for that post.
+The sidebar should stay visible as the reader scrolls down the article (sticky positioning), matching the reference layout.
+
+2. Right column — Recommended Articles sidebar
+
+Heading: "Recommended Articles" (or "Featured Articles" — pick whichever fits our existing heading style).
+Show 3–4 other posts, excluding the one currently being viewed.
+Selection logic: prioritize posts that share the current post's topic. If there are fewer than 3 other posts in the same topic, fill the remaining slots with the most recently published posts.
+Each card should show: the post's coverImage, its title, and metadata — the post's topic label and publishedAt date. Do not show an author name or byline anywhere on these cards.
+Each card should link to that post's /blog/[slug] page.
+
+Technical requirements:
+
+Keep this page fetching from Sanity the same way the previous prompt already set up — this task only changes the page's layout and adds the two new sidebar features, it doesn't change how or when content is fetched.
+On smaller screens, both sidebars should stack below the article content rather than break the layout — follow whatever responsive pattern the rest of the site already uses.
+
+What NOT to do:
+
+Don't add an author name, byline, or avatar anywhere in the new sidebar.
+Don't modify the Sanity schema or Studio.
+Don't change the /blog listing page — this task is scoped to the individual post page only.

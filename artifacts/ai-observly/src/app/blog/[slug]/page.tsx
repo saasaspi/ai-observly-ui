@@ -1,8 +1,10 @@
 import { client } from '@/lib/sanity/client'
-import { POST_QUERY, RELATED_POSTS_QUERY, type Post, type PostSummary } from '@/lib/sanity/queries'
+import { POST_QUERY, RECOMMENDED_POSTS_QUERY, type Post, type PostSummary } from '@/lib/sanity/queries'
 import { urlFor } from '@/lib/sanity/image'
 import { SanityPortableText } from '@/components/sanity-portable-text'
+import { TableOfContents } from '@/components/table-of-contents'
 import { PublicLayout } from '@/components/public-layout'
+import { extractToc } from '@/lib/sanity/toc'
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -60,12 +62,16 @@ export async function generateMetadata({
   }
 }
 
-// ── Related post mini-card ────────────────────────────────────────────────────
+// ── Recommended sidebar card ──────────────────────────────────────────────────
 
-function RelatedCard({ post }: { post: PostSummary }) {
+function RecommendedCard({ post }: { post: PostSummary }) {
   const imageUrl = post.coverImage
-    ? urlFor(post.coverImage).width(400).height(220).fit('crop').auto('format').url()
+    ? urlFor(post.coverImage).width(560).height(315).fit('crop').auto('format').url()
     : null
+
+  const topicColorCls = post.topic
+    ? (TOPIC_COLORS[post.topic] ?? 'bg-muted text-muted-foreground')
+    : 'bg-muted text-muted-foreground'
 
   return (
     <Link
@@ -79,14 +85,19 @@ function RelatedCard({ post }: { post: PostSummary }) {
             alt={post.title}
             fill
             className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
-            sizes="(max-width: 768px) 100vw, 33vw"
+            sizes="(max-width: 1024px) 100vw, 280px"
           />
         </div>
       ) : (
         <div className="w-full aspect-[16/9] bg-primary/5" />
       )}
-      <div className="p-4">
-        <p className="text-sm font-semibold font-outfit text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-1">
+      <div className="p-3.5">
+        {post.topic && (
+          <span className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mb-2 ${topicColorCls}`}>
+            {post.topic}
+          </span>
+        )}
+        <p className="text-sm font-semibold font-outfit text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug mb-1.5">
           {post.title}
         </p>
         <p className="text-xs text-muted-foreground">{formatDate(post.publishedAt)}</p>
@@ -104,27 +115,21 @@ export default async function BlogPostPage({
 }) {
   const { slug } = await params
 
-  const [post, related]: [Post | null, PostSummary[]] = await Promise.all([
+  const [post, candidatePosts]: [Post | null, PostSummary[]] = await Promise.all([
     client.fetch(POST_QUERY, { slug }, { next: { revalidate: 60 } }),
-    client.fetch(
-      RELATED_POSTS_QUERY,
-      // We need the topic for related posts; fetch post first, but we do both optimistically.
-      // If the post fetch returns null we'll handle it below.
-      { topic: '', slug },
-      { next: { revalidate: 60 } },
-    ),
+    client.fetch(RECOMMENDED_POSTS_QUERY, { slug }, { next: { revalidate: 60 } }),
   ])
 
   if (!post) notFound()
 
-  // Re-fetch related posts with the correct topic now that we have the post
-  const relatedPosts: PostSummary[] = post.topic
-    ? await client.fetch(
-        RELATED_POSTS_QUERY,
-        { topic: post.topic, slug },
-        { next: { revalidate: 60 } },
-      )
-    : []
+  // Sort: same-topic first, then newest — take up to 4
+  const sameTopic = candidatePosts.filter((p) => p.topic === post.topic)
+  const others = candidatePosts.filter((p) => p.topic !== post.topic)
+  const recommended = [...sameTopic, ...others].slice(0, 4)
+
+  // Table of contents from body headings
+  const tocEntries = post.body && post.body.length > 0 ? extractToc(post.body) : []
+  const hasToC = tocEntries.length > 0
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ai-observly.replit.app'
   const coverUrl = post.coverImage
@@ -158,7 +163,7 @@ export default async function BlogPostPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Cover image */}
+      {/* Cover image — full width */}
       {coverUrl && (
         <div className="relative w-full h-64 md:h-96 overflow-hidden bg-muted">
           <Image
@@ -173,7 +178,8 @@ export default async function BlogPostPage({
         </div>
       )}
 
-      <div className="max-w-2xl mx-auto px-6 py-12 w-full">
+      {/* Three-column layout */}
+      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-12 w-full">
         {/* Back link */}
         <Link
           href="/blog"
@@ -183,60 +189,81 @@ export default async function BlogPostPage({
           All posts
         </Link>
 
-        {/* Meta */}
-        <div className="flex flex-wrap items-center gap-3 mb-4">
-          {post.topic && (
-            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${topicColorCls}`}>
-              {post.topic}
-            </span>
+        <div
+          className={`grid gap-x-10 gap-y-12 ${
+            hasToC
+              ? 'grid-cols-1 lg:grid-cols-[200px_minmax(0,1fr)_260px]'
+              : 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_260px]'
+          }`}
+        >
+          {/* ── Left: Table of Contents (hidden on mobile, stacks below article) ── */}
+          {hasToC && (
+            <aside className="order-2 lg:order-1">
+              <TableOfContents entries={tocEntries} />
+            </aside>
           )}
-          <span className="text-sm text-muted-foreground">{formatDate(post.publishedAt)}</span>
-        </div>
 
-        {/* Title */}
-        <h1 className="text-3xl md:text-4xl font-bold font-outfit tracking-tight text-foreground mb-10 leading-tight">
-          {post.title}
-        </h1>
-
-        {/* Body */}
-        {post.body && post.body.length > 0 ? (
-          <div className="prose-container">
-            <SanityPortableText value={post.body} />
-          </div>
-        ) : (
-          <p className="text-muted-foreground italic">Content coming soon.</p>
-        )}
-
-        {/* Divider */}
-        <div className="border-t border-border my-14" />
-
-        {/* Related posts */}
-        {relatedPosts.length > 0 && (
-          <section className="mb-14">
-            <h2 className="text-xl font-bold font-outfit mb-6 text-foreground">Related posts</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {relatedPosts.map((rp) => (
-                <RelatedCard key={rp._id} post={rp} />
-              ))}
+          {/* ── Center: Article body ── */}
+          <article className="order-1 lg:order-2 min-w-0">
+            {/* Meta */}
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              {post.topic && (
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${topicColorCls}`}>
+                  {post.topic}
+                </span>
+              )}
+              <span className="text-sm text-muted-foreground">{formatDate(post.publishedAt)}</span>
             </div>
-          </section>
-        )}
 
-        {/* CTA */}
-        <div className="bg-primary/5 border border-primary/20 rounded-2xl p-8 text-center">
-          <p className="text-sm font-medium text-primary mb-2">AI Observly</p>
-          <h3 className="text-xl font-bold font-outfit text-foreground mb-3">
-            Stop guessing. Start seeing your AI margins.
-          </h3>
-          <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-            Know exactly which customers and features are eroding your margins — before you find out on the invoice.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 shadow-sm"
-          >
-            Start monitoring now <ArrowRight className="w-4 h-4" />
-          </Link>
+            {/* Title */}
+            <h1 className="text-3xl md:text-4xl font-bold font-outfit tracking-tight text-foreground mb-10 leading-tight">
+              {post.title}
+            </h1>
+
+            {/* Body */}
+            {post.body && post.body.length > 0 ? (
+              <div className="prose-container">
+                <SanityPortableText value={post.body} />
+              </div>
+            ) : (
+              <p className="text-muted-foreground italic">Content coming soon.</p>
+            )}
+
+            {/* CTA */}
+            <div className="mt-16 bg-primary/5 border border-primary/20 rounded-2xl p-8 text-center">
+              <p className="text-sm font-medium text-primary mb-2">AI Observly</p>
+              <h3 className="text-xl font-bold font-outfit text-foreground mb-3">
+                Stop guessing. Start seeing your AI margins.
+              </h3>
+              <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
+                Know exactly which customers and features are eroding your margins — before you find out on the invoice.
+              </p>
+              <Link
+                href="/signup"
+                className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 shadow-sm"
+              >
+                Start monitoring now <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </article>
+
+          {/* ── Right: Recommended Articles ── */}
+          <aside className="order-3 lg:order-3">
+            <div className="lg:sticky lg:top-24 lg:self-start">
+              {recommended.length > 0 && (
+                <>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+                    Recommended Articles
+                  </p>
+                  <div className="flex flex-col gap-4">
+                    {recommended.map((rp) => (
+                      <RecommendedCard key={rp._id} post={rp} />
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          </aside>
         </div>
       </div>
     </PublicLayout>

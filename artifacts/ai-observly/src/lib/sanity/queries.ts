@@ -74,6 +74,19 @@ export const RELATED_POSTS_QUERY = `
   }
 `
 
+// Up to 10 recent posts excluding current — used to build the recommended sidebar.
+// Topic-priority sorting happens in JS: same topic first, then fill with newest.
+export const RECOMMENDED_POSTS_QUERY = `
+  *[_type == "post" && slug.current != $slug] | order(publishedAt desc) [0...10] {
+    _id,
+    title,
+    "slug": slug.current,
+    coverImage,
+    publishedAt,
+    topic
+  }
+`
+
 // Lightweight query for sitemap generation
 export const SITEMAP_POSTS_QUERY = `
   *[_type == "post"] {
