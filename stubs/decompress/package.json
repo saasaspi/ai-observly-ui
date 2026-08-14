@@ -1,0 +1,6 @@
+{
+  "name": "decompress",
+  "version": "4.2.1",
+  "description": "Local stub — replaces the blocked decompress package. The real decompress is only called during sanity init (template extraction), which we never run.",
+  "main": "index.js"
+}

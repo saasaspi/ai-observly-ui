@@ -75,6 +75,9 @@ onlyBuiltDependencies:
   - unrs-resolver
 
 overrides:
+  # Stub out decompress — blocked by Replit's package firewall (CVE path-traversal).
+  # Only used by @sanity/cli during `sanity init` (template extraction), which we never run.
+  decompress: "file:./stubs/decompress"
   # replit uses linux-x64 only, we can exclude all other platforms
   "esbuild>@esbuild/darwin-arm64": "-"
   "esbuild>@esbuild/darwin-x64": "-"
