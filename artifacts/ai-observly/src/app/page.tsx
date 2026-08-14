@@ -217,14 +217,10 @@ function LatestFromBlog() {
       <div className="max-w-5xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
           <div>
-            <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">
+            <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">
               From the blog
             </p>
-            <h2
-              data-reveal
-              style={{ transitionDelay: "0.08s" }}
-              className="text-3xl md:text-4xl font-bold font-outfit"
-            >
+            <h2 className="text-3xl md:text-4xl font-bold font-outfit">
               Latest insights on AI cost &amp; margin
             </h2>
           </div>
@@ -254,8 +250,6 @@ function LatestFromBlog() {
               <Link
                 key={post._id}
                 href={`/blog/${post.slug}`}
-                data-reveal
-                style={{ transitionDelay: `${i * 0.08}s` }}
                 className="group flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
               >
                 {imageUrl ? (
