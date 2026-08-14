@@ -64,7 +64,7 @@ export const postSchema = defineType({
       name: 'seoTitle',
       title: 'SEO Title',
       type: 'string',
-      description: 'Used for the page's <title> meta tag. Defaults to the post title if left blank.',
+      description: "Used for the page's <title> meta tag. Defaults to the post title if left blank.",
     }),
 
     defineField({
