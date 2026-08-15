@@ -21,11 +21,6 @@
       "static/chunks/main-app.js",
       "static/chunks/app/napi/recent-posts/route.js"
     ],
-    "/sitemap.xml/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/sitemap.xml/route.js"
-    ],
     "/pricing/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
