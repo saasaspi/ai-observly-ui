@@ -1,0 +1,121 @@
+# LLM Spend Analyzer — PDF/Web Report Parity Instructions
+
+**For: Replit Agent**
+**Goal: Make the emailed PDF report contain every metric and visual currently shown on the web results page — not just the model comparison table.**
+
+---
+
+## 1. The Problem
+
+The web report (what the user sees on the results page after uploading their CSV/PDF) shows **9 distinct sections** of analysis. The emailed PDF currently only reproduces **4 of them**, and even those are simplified. This creates a bad experience: a user downloads "their report" expecting the same insight they just saw on screen, and gets a much thinner document.
+
+**The fix is not "add a chart or two." The fix is: the PDF must be generated from the exact same computed report data object as the web page, and must render every section the web page renders — just in a static/print-friendly layout instead of an interactive one.**
+
+---
+
+## 2. Core Principle: One Data Source, Two Renderers
+
+Right now it's possible the web dashboard and the PDF generator are computing metrics independently (or on different code paths). That must stop.
+
+- There should be **one function/service** that takes the user's uploaded CSV/PDF and returns a single `ReportData` object containing every metric below.
+- The **web page** renders `ReportData` as interactive charts/cards.
+- The **PDF generator** renders the *same* `ReportData` object as static charts/cards.
+- Neither renderer should re-derive numbers on its own. If a number changes on the web page, it must change identically in the PDF, because they read from the same object.
+- This also guarantees that if new metrics get added to the web report in the future, someone only has to remember to add them to `ReportData` once — both outputs update.
+
+**Action for Replit:** Locate the current PDF generation code and the web dashboard's data-fetching/computation code. Confirm whether they already share a data layer. If not, refactor so the PDF generator consumes the same `ReportData` the dashboard uses for that report/session — don't write a second, simplified calculation path.
+
+---
+
+## 3. Full Metric Inventory — Website vs. Current PDF
+
+| # | Website Section | What it shows | Currently in PDF? | Action |
+|---|---|---|---|---|
+| 1 | **Cost Health Score** | Score /100, risk label chip (e.g. "High risk — significant cost inefficiencies"), explanation text | Partial — score + label + text present, but as a plain number, not the circular gauge visual | Keep the number/label/text; optionally render the circular gauge as a static image for visual parity (see §6) |
+| 2 | **Top stat row** | Total Spend, Projected this month, Projected annual | ✅ Present | No change needed, keep in sync via shared data |
+| 3 | **Spend over time** (weekly bar chart) | Weekly-grouped bar chart, spike weeks highlighted in red, "N spike(s) detected" badge, caption explaining red bars | ❌ Missing entirely | **Add.** Render as a static bar chart image. Same weekly buckets, same red-highlight logic, same caption text. |
+| 4 | **Daily cost rhythm** (daily line chart) | Day-by-day line chart across the full period, red dots marking spike days, caption | ❌ Missing entirely | **Add.** Render as a static line chart image with red dot markers preserved. |
+| 5 | **Where your money's going** (model breakdown) | Donut chart + legend rows (model name, $ amount, % share, mini progress bar per model) | Partial — a plain table exists (Model / Cost / Share) but no donut visual | **Upgrade.** Add the donut chart image above/beside the table, and add the per-model progress bar under each row to match the web legend styling. |
+| 6 | **Cache efficiency** | % of input tokens from cache, "Too low / Good / Great" label, cached-vs-fresh bar, explanatory caption | ✅ Present | Keep, ensure the cached-vs-fresh bar visual is included (currently PDF likely shows number only — add the mini bar) |
+| 7 | **Premium model share** | % of spend on most expensive models, risk label, small donut, caption | ✅ Present (number + caption) | Keep, add the small donut visual for parity |
+| 8 | **Spend spike detail** | Same daily chart, plus a highlighted callout row per spike: `Jun 16  +165%  ($64.10 vs $24.20)` — date, % increase, and the actual day's spend vs. the prior day's spend | Partial — PDF lists date + amount only (e.g. "Jul 2 — $16.26") | **Upgrade.** Add the % increase and the "vs previous day" comparison value to each spike line, exactly as shown on the web page. |
+| 9 | **API key / project concentration** | % of spend from top key (e.g. "79% from Production"), horizontal concentration bar (top key vs. "Other keys"), explanatory caption | ❌ Missing entirely | **Add.** New section: headline %, source key name, horizontal bar (top key vs. others), caption text about visibility risk. |
+
+**Bottom line: sections 3, 4, and 9 need to be built from scratch in the PDF. Sections 1, 5, 6, 7, 8 need their visuals/detail upgraded to match what's already computed for the web page.**
+
+---
+
+## 4. Section-by-Section Build Notes
+
+### 4.1 Cost Health Score
+- Keep exact copy pattern: `{score}/100` + risk chip + one-sentence explanation referencing cache efficiency, model mix, spend spikes, and cost concentration (only mention the factors actually used in the formula).
+- Reuse the same score → risk-label mapping the web page uses (e.g. thresholds that produce "Needs attention," "High risk," etc.) — don't hardcode separate thresholds in the PDF.
+
+### 4.2 Spend Over Time (weekly bars)
+- X-axis: week labels ("Wk of Jun 1," etc.), Y-axis: $ spend.
+- Any week where a daily jump >50% occurred inside it should render in the spike/red color.
+- Include the "N spike(s) detected" badge and the caption: *"Red bars mark [weeks/days] where spend jumped more than 50% over the previous day."*
+- If the user's data covers fewer than ~7 days (not enough for weekly grouping), fall back to a daily bar chart, same as the web page presumably does — confirm the web page's own fallback behavior and mirror it exactly.
+
+### 4.3 Daily Cost Rhythm (line chart)
+- Full-period daily line, spike days marked with a red dot.
+- Caption: *"Red dots mark spend spike days."*
+- This can share the same underlying image-generation function as §4.5's spike chart if the web page also reuses one chart component for both — check before building two separate renderers.
+
+### 4.4 Where Your Money's Going (model breakdown)
+- Donut chart with the same 2+ model segments and colors used on the web page.
+- Legend list below/beside it: model name, $ cost, % share, mini horizontal bar per row (currently the PDF table has the numbers but not the bar — add it).
+
+### 4.5 Cache Efficiency / Premium Model Share
+- Both already exist as text+percentage in the PDF — add the small visual (cached-vs-fresh bar; premium-share mini donut) so the layout matches the web cards, not just the numbers.
+
+### 4.6 Spend Spike Detail
+- Each spike row needs: date, % increase, and `($current vs $previous)` — pull these three values straight from `ReportData`, don't recompute them separately in the PDF path.
+
+### 4.7 API Key / Project Concentration (new section)
+- Headline: `{pct}% from "{key_name}"`.
+- Horizontal bar: top key's share vs. "Other keys" remainder — same proportions and same accent color the web page uses.
+- Caption: reuse the exact concentration-risk copy from the web page.
+- **Edge case:** if the uploaded data has no key/project field at all (e.g. a bare CSV with no key column), this section should be omitted cleanly from both the web page and the PDF — don't show a broken or zeroed-out section. Confirm how the web page already handles "no key data" and mirror that in the PDF (likely: hide the section entirely).
+
+---
+
+## 5. Visual & Branding Consistency
+
+- Use the **same color tokens** the web dashboard already uses for: primary blue, spike/danger red, model-breakdown purple/blue, and the API-key-concentration accent color. Don't invent a separate PDF color palette — pull from the existing design system/CSS variables if the codebase has them.
+- Keep the same card/section grouping and order as the web page (Score → Stat row → Spend over time → Daily rhythm → Model breakdown → Cache efficiency + Premium share → Spike detail → Key concentration), so a user scrolling the web page and scrolling the PDF sees the same story in the same order.
+- Keep the existing AI Observly header/logo and the "this is a one-time snapshot / track it live" footer CTA — that part of the PDF is fine as-is and shouldn't change.
+
+---
+
+## 6. Technical Approach for Charts in the PDF
+
+PDFs can't host interactive charts, so every chart needs to be rendered as a **static image (PNG or inline SVG)** at generation time, using the exact same data points as the interactive version.
+
+- If the current PDF pipeline is HTML-to-PDF based, the simplest path is: render the same chart components used on the web page (or a server-side chart library) to static SVG/PNG at report-generation time, then embed those images in the PDF template.
+- If the PDF is built a different way (direct PDF library, not HTML-based), generate the chart images server-side first (e.g. via a headless chart-rendering step) and place them as images in the PDF layout.
+- **Before implementing, check what the current PDF generation stack actually is** (this doc doesn't assume a specific library) and use whichever approach fits it with the least duplication of chart logic — ideally reusing the same chart-drawing code/config the web page already has, just re-targeted to output a static image instead of a live DOM chart.
+
+---
+
+## 7. Dynamic Data — What Must Still Vary Per User
+
+None of the above should be hardcoded. Every number, label, chart, and even which sections appear must come from that user's own `ReportData`:
+
+- Different users will have different numbers of models, different date ranges, different numbers of spikes (including zero), and may or may not have key/project data at all.
+- If a section has no meaningful data for a given user (e.g. zero spikes, single model, no key data), match whatever the web page already does in that case (hide it, show a "none detected" state, etc.) — don't force a section to render empty or with placeholder zeros in the PDF when the web page wouldn't show it either.
+
+---
+
+## 8. Definition of Done
+
+- [ ] PDF and web report are generated from the same underlying `ReportData` object for a given report — no separate calculation logic in the PDF path.
+- [ ] All 9 sections listed in §3 appear in the PDF (or are consistently hidden, matching the web page's own hide logic for missing data).
+- [ ] Spend over time (weekly bars) rendered as a static chart image in the PDF.
+- [ ] Daily cost rhythm rendered as a static chart image in the PDF.
+- [ ] Model breakdown includes the donut visual, not just the table.
+- [ ] Cache efficiency and Premium model share include their mini visual bars/donuts.
+- [ ] Spike detail lines include % increase and current-vs-previous comparison, not just date + amount.
+- [ ] API key concentration section added, with correct hide-when-no-data behavior.
+- [ ] Colors, section order, and copy match the web page's design system.
+- [ ] Tested with at least: (a) a user with multiple spikes, (b) a user with zero spikes, (c) a user with only one model, (d) a user with no key/project data — PDF and web page should tell the same story in each case.

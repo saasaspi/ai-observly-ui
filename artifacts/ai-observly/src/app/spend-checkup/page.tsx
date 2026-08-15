@@ -361,6 +361,10 @@ export default function SpendCheckupPage() {
             premiumShare: report.premiumShare,
             spikes: report.spikes,
             keyConc: report.keyConc,
+            byDay: report.byDay,
+            chartData: report.chartData,
+            isWeekly: report.isWeekly,
+            hasKeyCol: report.hasKeyCol,
           },
         }),
       });
