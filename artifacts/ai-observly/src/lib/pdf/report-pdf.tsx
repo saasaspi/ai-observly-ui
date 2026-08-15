@@ -431,6 +431,31 @@ export function ReportPDF({ report, logoDataUrl, generatedAt }: {
           </View>
         )}
 
+        {/* ── 5b. Biggest cost driver ── */}
+        {report.topModel && (
+          <View style={s.card} wrap={false}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+              <View style={{ width: 28, height: 28, borderRadius: 6, backgroundColor: '#eff6ff', alignItems: 'center', justifyContent: 'center', marginRight: 8 }}>
+                <Svg width={16} height={16} viewBox="0 0 16 16">
+                  <Path d="M2 12 L6 7 L10 9 L14 3" stroke={BLUE} strokeWidth={1.5} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  <Path d="M11 3 L14 3 L14 6" stroke={BLUE} strokeWidth={1.5} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                </Svg>
+              </View>
+              <View>
+                <Text style={{ fontSize: 10, fontFamily: 'Helvetica-Bold' }}>Biggest cost driver</Text>
+                <Text style={{ fontSize: 8, color: MUTED }}>Top model by spend share</Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
+              <Text style={{ fontSize: 28, fontFamily: 'Helvetica-Bold' }}>{Math.round(report.topModel.share * 100)}%</Text>
+              <Text style={{ fontSize: 9, color: MUTED }}>{report.topModel.model}</Text>
+            </View>
+            <Text style={{ fontSize: 8, color: MUTED, lineHeight: 1.4 }}>
+              {report.topModel.model} accounts for {Math.round(report.topModel.share * 100)}% of your total AI spend. If you can reduce calls to this model, route eligible requests to a cheaper alternative, or cache frequent responses, the savings will be proportional to its share.
+            </Text>
+          </View>
+        )}
+
         {/* ── 6. Cache efficiency + Premium model share ── */}
         {(report.cacheEfficiency !== null || report.premiumShare !== null) && (
           <View style={s.metricRow} wrap={false}>
