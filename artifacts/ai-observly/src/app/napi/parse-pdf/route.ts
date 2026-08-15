@@ -1,13 +1,17 @@
-// pdf-parse is a CommonJS module — must use require() in Next.js App Router
+// pdf-parse v2 exports a named class, not a default function
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
+const { PDFParse } = require("pdf-parse") as {
+  PDFParse: new (opts: { data: Buffer | Uint8Array; verbosity?: number }) => {
+    getText: () => Promise<{ text: string }>;
+  };
+};
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function stripCost(s: string): number {
-  return parseFloat(s.replace(/[$,]/g, ""));
+  return parseFloat(String(s).replace(/[$,]/g, ""));
 }
 
-// Month abbreviations → zero-padded month number
+// Month abbreviations → zero-padded number
 const MONTH_MAP: Record<string, string> = {
   jan: "01", feb: "02", mar: "03", apr: "04", may: "05", jun: "06",
   jul: "07", aug: "08", sep: "09", oct: "10", nov: "11", dec: "12",
@@ -15,12 +19,9 @@ const MONTH_MAP: Record<string, string> = {
 
 function toIso(raw: string): string | null {
   raw = raw.trim();
-  // Already ISO
   if (/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.substring(0, 10);
-  // M/D/YYYY or MM/DD/YYYY
   const mdy = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (mdy) return `${mdy[3]}-${mdy[1].padStart(2, "0")}-${mdy[2].padStart(2, "0")}`;
-  // "Jul 1" / "Jul 01" / "Jul 1, 2026" / "July 1, 2026"
   const written = raw.match(/^([A-Za-z]{3,9})\.?\s+(\d{1,2})(?:,?\s*(\d{4}))?$/);
   if (written) {
     const mo = MONTH_MAP[written[1].substring(0, 3).toLowerCase()];
@@ -32,71 +33,137 @@ function toIso(raw: string): string | null {
   return null;
 }
 
-// ── Known LLM model name prefixes ─────────────────────────────────────────────
-const MODEL_RE =
-  /\b(gpt-[\w\d\.\-]+|chatgpt-[\w\d\.\-]+|o1(?:-[\w\d\.\-]+)?|o3(?:-[\w\d\.\-]+)?|o4(?:-[\w\d\.\-]+)?|claude-[\w\d\.\-]+|gemini-[\w\d\.\-]+|mistral-[\w\d\.\-]+|llama-?[\w\d\.\-]+|titan-[\w\d\.\-]+)/gi;
+// Recognisable LLM model name pattern
+const MODEL_RE = /\b(gpt-[\w\d.\-]+|chatgpt-[\w\d.\-]+|o1(?:-[\w\d.\-]+)?|o3(?:-[\w\d.\-]+)?|o4(?:-[\w\d.\-]+)?|claude-[\w\d.\-]+|gemini-[\w\d.\-]+|mistral-[\w\d.\-]+|llama-?[\w\d.\-]+)/i;
 
-// ── Main text parser ───────────────────────────────────────────────────────────
-function parsePdfText(text: string): {
-  rows: { date: string; cost: number; model?: string }[];
+// ── Multi-page horizontal-split table parser ───────────────────────────────────
+// Some PDF exports split one logical table across two sets of pages:
+//   Left-half pages:  Date | Project | API Key | Feature | Model | Capability | Input Tokens
+//   Right-half pages: Output Tokens | Cache Read | Cache Write | Web Search $ | Code Exec $ | Token Cost $
+// Rows are in the same order on both halves, so we pair them by position.
+function parseHorizontalSplitTable(text: string): {
+  rows: { date: string; cost: number; model?: string; key?: string }[];
   modelMap: Record<string, number>;
 } | null {
-  const modelMap: Record<string, number> = {};
+  // pdf-parse separates pages with "\n-- N of M --\n"
+  const pages = text.split(/\n--\s*\d+\s+of\s+\d+\s*--\n/);
 
-  // Collapse whitespace runs to a single space (preserves line breaks via \n)
-  const flat = text.replace(/[^\S\n]+/g, " ").replace(/\r/g, "");
-  const lines = flat.split("\n").map((l) => l.trim());
+  const dateRows: { date: string; model?: string; key?: string }[] = [];
+  const costValues: number[] = [];
 
-  const rows: { date: string; cost: number; model?: string }[] = [];
-  const seenDates = new Set<string>();
+  for (const page of pages) {
+    const lines = page.trim().split("\n").map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) continue;
 
-  // ── Pass 1: scan every line for date + cost pair ──────────────────────────
-  // Works for:
-  //   "2026-07-01 $412.41"
-  //   "Production - AI Assistant $6,149.52 47.9% 2026-07-01 $412.41"
-  //   "Jul 1 $412.41"
-  const ISO_IN_LINE = /(\d{4}-\d{2}-\d{2})/g;
-  const COST_RE = /\$[\d,]+\.\d{2}|\b\d{1,4},\d{3}\.\d{2}\b|\b\d+\.\d{2}\b/g;
+    // Classify page by checking the first 3 lines for known header words
+    const headerBlock = lines.slice(0, 3).join(" ");
+    const isDateHalf =
+      /\bDate\b/.test(headerBlock) && /Input Tokens/i.test(headerBlock);
+    const isCostHalf = /Token Cost/i.test(headerBlock);
 
-  for (const line of lines) {
-    // Find all ISO dates in line
-    const dates: string[] = [];
-    let m: RegExpExecArray | null;
-    ISO_IN_LINE.lastIndex = 0;
-    while ((m = ISO_IN_LINE.exec(line)) !== null) dates.push(m[1]);
-
-    if (dates.length === 0) continue;
-
-    // Find all costs in line
-    COST_RE.lastIndex = 0;
-    const costs: number[] = [];
-    while ((m = COST_RE.exec(line)) !== null) {
-      const v = stripCost(m[0]);
-      if (!isNaN(v) && v > 0) costs.push(v);
-    }
-
-    if (costs.length === 0) continue;
-
-    // Pair each date with the cost that appears immediately after it
-    // (handles side-by-side table rows)
-    for (const date of dates) {
-      if (seenDates.has(date)) continue;
-      const datePos = line.indexOf(date);
-      // Find the first cost that starts after the date
-      COST_RE.lastIndex = 0;
-      let bestCost: number | null = null;
-      while ((m = COST_RE.exec(line)) !== null) {
-        if (m.index > datePos) { bestCost = stripCost(m[0]); break; }
+    if (isDateHalf) {
+      // Header row — skip lines until the first data row (ISO date)
+      for (const line of lines) {
+        const isoMatch = line.match(/^(\d{4}-\d{2}-\d{2})\s/);
+        if (!isoMatch) continue;
+        const date = isoMatch[1];
+        const modelMatch = line.match(MODEL_RE);
+        // API keys are compact hyphen-separated slugs like prod-assistant, staging
+        const keyMatch = line.match(/\b([a-z][a-z0-9]*(?:-[a-z0-9]+)+)\b/);
+        // Exclude model names from key match
+        const key =
+          keyMatch && keyMatch[1] !== modelMatch?.[1]?.toLowerCase()
+            ? keyMatch[1]
+            : undefined;
+        dateRows.push({ date, model: modelMatch?.[1], key });
       }
-      if (bestCost !== null && bestCost > 0 && bestCost < 1_000_000) {
-        seenDates.add(date);
-        rows.push({ date, cost: bestCost });
+    } else if (isCostHalf) {
+      // Each data row is all numbers; the LAST number is Token Cost ($)
+      for (const line of lines) {
+        if (/[a-zA-Z]/.test(line)) continue; // skip header/label lines
+        const tokens = line.trim().split(/\s+/);
+        if (tokens.length < 2) continue;
+        const last = parseFloat(tokens[tokens.length - 1]);
+        if (!isNaN(last) && last >= 0) costValues.push(last);
       }
     }
   }
 
-  // ── Pass 2: if still no rows, try written-month dates (Jul 1 $412.41) ────
-  if (rows.length === 0) {
+  // ── Build paired rows ──────────────────────────────────────────────────────
+  const pairedRows: { date: string; cost: number; model?: string; key?: string }[] = [];
+  const n = Math.min(dateRows.length, costValues.length);
+  for (let i = 0; i < n; i++) {
+    pairedRows.push({
+      date: dateRows[i].date,
+      cost: costValues[i],
+      model: dateRows[i].model,
+      key: dateRows[i].key,
+    });
+  }
+
+  // ── Extract model-level totals from summary tables ─────────────────────────
+  // Pattern: "gpt-5.6  145174563  30088891  ... $7,623.45"
+  const modelMap: Record<string, number> = {};
+  const MODEL_SUMMARY_RE =
+    /\b(gpt-[\w\d.\-]+|o\d(?:-[\w\d.\-]+)?)\b(?:(?:\s+[\d,]+)+)\s+\$([\d,]+\.\d{2})/g;
+  let m: RegExpExecArray | null;
+  while ((m = MODEL_SUMMARY_RE.exec(text)) !== null) {
+    const model = m[1];
+    const cost = parseFloat(m[2].replace(/,/g, ""));
+    if (!isNaN(cost) && cost > 0 && cost > (modelMap[model] ?? 0)) {
+      modelMap[model] = cost; // keep the largest (= summary total)
+    }
+  }
+
+  if (pairedRows.length === 0 && Object.keys(modelMap).length === 0) return null;
+  return { rows: pairedRows, modelMap };
+}
+
+// ── Flat same-line parser ──────────────────────────────────────────────────────
+// For standard exports where each line has date + cost on the same line.
+function parseFlatText(text: string): {
+  rows: { date: string; cost: number; model?: string; key?: string }[];
+  modelMap: Record<string, number>;
+} | null {
+  const modelMap: Record<string, number> = {};
+  const rows: { date: string; cost: number; model?: string; key?: string }[] = [];
+  const seenDates = new Set<string>();
+
+  const flat = text.replace(/[^\S\n]+/g, " ").replace(/\r/g, "");
+  const lines = flat.split("\n").map((l) => l.trim());
+
+  const ISO_IN_LINE = /(\d{4}-\d{2}-\d{2})/g;
+  const COST_RE = /\$[\d,]+\.\d{2}|\b\d{1,4},\d{3}\.\d{2}\b|\b\d+\.\d{2}\b/g;
+
+  for (const line of lines) {
+    ISO_IN_LINE.lastIndex = 0;
+    const dates: string[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = ISO_IN_LINE.exec(line)) !== null) dates.push(m[1]);
+    if (!dates.length) continue;
+
+    COST_RE.lastIndex = 0;
+    const costs: { pos: number; val: number }[] = [];
+    while ((m = COST_RE.exec(line)) !== null) {
+      const v = stripCost(m[0]);
+      if (!isNaN(v) && v > 0) costs.push({ pos: m.index, val: v });
+    }
+    if (!costs.length) continue;
+
+    for (const date of dates) {
+      if (seenDates.has(date)) continue;
+      const datePos = line.indexOf(date);
+      const after = costs.find((c) => c.pos > datePos);
+      if (after && after.val < 1_000_000) {
+        seenDates.add(date);
+        const modelMatch = line.match(MODEL_RE);
+        rows.push({ date, cost: after.val, model: modelMatch?.[1] });
+      }
+    }
+  }
+
+  // Written-month fallback
+  if (!rows.length) {
     const WRITTEN = /\b([A-Za-z]{3,9}\.?\s+\d{1,2}(?:,?\s*\d{4})?)\s+\$?([\d,]+\.\d{2})/g;
     WRITTEN.lastIndex = 0;
     let m2: RegExpExecArray | null;
@@ -110,27 +177,25 @@ function parsePdfText(text: string): {
     }
   }
 
-  // ── Pass 3: extract model → cost from any line matching MODEL name + cost ─
-  // We scan the whole flat text for "gpt-4o $7,623.45" style entries.
-  const modelScan = flat.replace(/\n/g, " ");
-  MODEL_RE.lastIndex = 0;
+  // Model summary scan
+  const MODEL_FULL = flat.replace(/\n/g, " ");
+  const MODEL_SCAN_RE =
+    /\b(gpt-[\w\d.\-]+|claude-[\w\d.\-]+|gemini-[\w\d.\-]+|o\d(?:-[\w\d.\-]+)?)\b/gi;
   let mm: RegExpExecArray | null;
-  while ((mm = MODEL_RE.exec(modelScan)) !== null) {
-    const modelName = mm[1].toLowerCase();
-    // Look for a cost in the next ~30 chars
-    const after = modelScan.substring(mm.index + mm[0].length, mm.index + mm[0].length + 40);
+  MODEL_SCAN_RE.lastIndex = 0;
+  while ((mm = MODEL_SCAN_RE.exec(MODEL_FULL)) !== null) {
+    const after = MODEL_FULL.substring(mm.index + mm[0].length, mm.index + mm[0].length + 40);
     const costMatch = after.match(/\$?([\d,]+\.\d{2})/);
     if (costMatch) {
       const cost = stripCost(costMatch[1]);
       if (!isNaN(cost) && cost > 0) {
-        // Normalise model name casing to what was found
-        const canonical = mm[1];
-        modelMap[canonical] = (modelMap[canonical] ?? 0) + cost;
+        const key = mm[1];
+        modelMap[key] = (modelMap[key] ?? 0) + cost;
       }
     }
   }
 
-  if (rows.length === 0) return null;
+  if (!rows.length) return null;
   return { rows, modelMap };
 }
 
@@ -146,30 +211,43 @@ export async function POST(request: Request) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    let pdfData: { text: string };
+    let pdfText: string;
     try {
-      pdfData = await pdfParse(buffer);
-    } catch {
-      return Response.json(
-        { error: "Could not read the PDF. Make sure it is not password-protected and contains selectable text." },
-        { status: 400 }
-      );
-    }
-
-    const result = parsePdfText(pdfData.text);
-    if (!result || result.rows.length === 0) {
+      const parser = new PDFParse({ data: buffer, verbosity: 0 });
+      const result = await parser.getText();
+      pdfText = result.text;
+    } catch (e) {
+      console.error("[parse-pdf] pdfjs error:", e);
       return Response.json(
         {
           error:
-            "Could not find date and cost data in this PDF. The tool works best with usage-export PDFs that include a date column and a cost column. Try exporting as CSV instead.",
+            "Could not read the PDF. Make sure it is not password-protected and contains selectable (non-scanned) text.",
         },
         { status: 400 }
       );
     }
 
+    // Try the split-table parser first (handles multi-page column-split exports),
+    // then fall back to the same-line parser (handles flat exports).
+    let result =
+      parseHorizontalSplitTable(pdfText) ?? parseFlatText(pdfText);
+
+    if (!result || result.rows.length === 0) {
+      return Response.json(
+        {
+          error:
+            "Could not find date and cost data in this PDF. The tool works best with usage-export PDFs that contain a Date column and a cost column. Try exporting as CSV for the most reliable results.",
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log(
+      `[parse-pdf] extracted ${result.rows.length} rows, ${Object.keys(result.modelMap).length} models`
+    );
     return Response.json(result);
   } catch (err) {
-    console.error("[parse-pdf]", err);
+    console.error("[parse-pdf] unexpected error:", err);
     return Response.json({ error: "Unexpected error parsing PDF." }, { status: 500 });
   }
 }
