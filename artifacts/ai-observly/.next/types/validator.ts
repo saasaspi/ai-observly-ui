@@ -326,6 +326,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../src/app/napi/send-report/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/napi/send-report">> = Specific
+  const handler = {} as typeof import("../../src/app/napi/send-report/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../src/app/napi/send-test-event/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/napi/send-test-event">> = Specific
@@ -370,6 +379,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends LayoutConfig<"/">> = Specific
   const handler = {} as typeof import("../../src/app/layout.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/spend-checkup/layout.tsx
+{
+  type __IsExpected<Specific extends LayoutConfig<"/spend-checkup">> = Specific
+  const handler = {} as typeof import("../../src/app/spend-checkup/layout.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

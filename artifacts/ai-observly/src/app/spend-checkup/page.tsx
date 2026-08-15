@@ -11,7 +11,7 @@ import {
 import {
   Upload, ChevronDown, ChevronUp, CheckCircle2, AlertCircle,
   Copy, ArrowRight, ExternalLink, RefreshCw, TrendingUp, Shield, Zap,
-  DollarSign, Calendar, TrendingDown,
+  DollarSign, Calendar, TrendingDown, Mail, X, FileDown,
 } from "lucide-react";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -308,6 +308,12 @@ export default function SpendCheckupPage() {
   const [isSample, setIsSample] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  // ── Email PDF modal ──
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [emailState, setEmailState] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [emailError, setEmailError] = useState<string | null>(null);
+
   const processText = useCallback((text: string, sample = false) => {
     setErrorMsg(null);
     const result = analyzeCSV(text);
@@ -330,10 +336,51 @@ export default function SpendCheckupPage() {
     const f = e.dataTransfer.files[0]; if (f) handleFile(f);
   }, []);
 
+  const sendReportEmail = async () => {
+    if (!report || !emailInput) return;
+    setEmailState("sending");
+    setEmailError(null);
+    try {
+      const res = await fetch("/napi/send-report", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: emailInput,
+          report: {
+            totalSpend: report.totalSpend,
+            dayCount: report.dayCount,
+            projectedMonth: report.projectedMonth,
+            projectedYear: report.projectedYear,
+            healthScore: report.healthScore,
+            grade: report.grade,
+            startDate: report.startDate,
+            endDate: report.endDate,
+            byModel: report.byModel,
+            topModel: report.topModel,
+            cacheEfficiency: report.cacheEfficiency,
+            premiumShare: report.premiumShare,
+            spikes: report.spikes,
+            keyConc: report.keyConc,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setEmailState("error");
+        setEmailError(data.error ?? "Something went wrong — please try again.");
+      } else {
+        setEmailState("success");
+      }
+    } catch {
+      setEmailState("error");
+      setEmailError("Something went wrong — please try again.");
+    }
+  };
+
   const copySummary = () => {
     if (!report) return;
     const txt = [
-      `AI Spend Check-up Report`,
+      `LLM Spend Analyzer Report`,
       `Period: ${fmtDate(report.startDate)} – ${fmtDate(report.endDate)}`,
       `Health Score: ${report.healthScore}/100 — ${report.grade}`,
       `Total Spend: ${fmtDollar(report.totalSpend)}`,
@@ -352,7 +399,7 @@ export default function SpendCheckupPage() {
             <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-6">
               Free tool · No sign-up required
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold font-outfit mb-4">The AI Spend Check-up</h1>
+            <h1 className="text-4xl md:text-5xl font-bold font-outfit mb-4">The LLM Spend Analyzer</h1>
             <p className="text-muted-foreground text-lg leading-relaxed max-w-lg mx-auto">
               Upload your Claude, OpenAI, or Gemini billing CSV. Get the plain-English version — no token jargon, just what it means for your business.
             </p>
@@ -389,7 +436,7 @@ export default function SpendCheckupPage() {
           <ProviderInstructions />
 
           <p className="text-xs text-muted-foreground text-center mt-8">
-            Your file is processed entirely in your browser — it&apos;s never uploaded anywhere.
+            Your CSV is processed entirely in your browser and never uploaded. Only the report you choose to email is sent, and only to the address you provide.
           </p>
         </section>
       </PublicLayout>
@@ -435,10 +482,13 @@ export default function SpendCheckupPage() {
                 Sample data — upload your own CSV to analyse your real spend
               </div>
             )}
-            <h1 className="text-3xl font-bold font-outfit mb-2">AI Spend Check-up Report</h1>
+            <h1 className="text-3xl font-bold font-outfit mb-2">LLM Spend Analyzer Report</h1>
             <p className="text-muted-foreground">{fmtDate(report.startDate)} – {fmtDate(report.endDate)} · {report.dayCount} day{report.dayCount !== 1 ? "s" : ""}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <button onClick={() => { setShowEmailModal(true); setEmailState("idle"); setEmailInput(""); setEmailError(null); }} className="inline-flex items-center gap-2 text-sm font-medium bg-primary text-primary-foreground rounded-xl px-4 py-2.5 hover:opacity-90 transition-opacity">
+              <FileDown className="w-4 h-4" /> Download this report PDF
+            </button>
             <button onClick={copySummary} className="inline-flex items-center gap-2 text-sm font-medium border border-border rounded-xl px-4 py-2.5 hover:bg-muted transition-colors">
               {copied ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
               {copied ? "Copied!" : "Copy summary"}
@@ -897,7 +947,7 @@ export default function SpendCheckupPage() {
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-4 pt-6 border-t border-primary/15">
             <p className="text-sm text-muted-foreground flex-1">The full product shows these numbers live — updating automatically as your product runs, broken down by every customer and feature.</p>
-            <Link href="/#pricing" className="shrink-0 inline-flex items-center gap-2 h-12 px-7 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 text-sm">
+            <Link href="/pricing" className="shrink-0 inline-flex items-center gap-2 h-12 px-7 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 text-sm">
               Start monitoring now <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -905,10 +955,144 @@ export default function SpendCheckupPage() {
 
         {/* ── Footer disclaimer ── */}
         <p className="text-xs text-muted-foreground text-center pb-6 leading-relaxed max-w-lg mx-auto">
-          Figures are estimates based on the uploaded file. The premium-model and spend-spike flags are heuristics meant to point in the right direction, not exact audits. Your file is processed entirely in the browser and is never uploaded anywhere.
+          Figures are estimates based on the uploaded file. The premium-model and spend-spike flags are heuristics meant to point in the right direction, not exact audits. Your CSV is processed entirely in your browser and never uploaded. Only the report you choose to email is sent, and only to the address you provide.
         </p>
       </div>
+
+      {/* ── Email PDF modal ── */}
+      {showEmailModal && (
+        <EmailModal
+          onClose={() => setShowEmailModal(false)}
+          emailInput={emailInput}
+          setEmailInput={setEmailInput}
+          emailState={emailState}
+          emailError={emailError}
+          onSubmit={sendReportEmail}
+        />
+      )}
     </PublicLayout>
+  );
+}
+
+// ── Email PDF Modal ────────────────────────────────────────────────────────────
+function EmailModal({
+  onClose,
+  emailInput,
+  setEmailInput,
+  emailState,
+  emailError,
+  onSubmit,
+}: {
+  onClose: () => void;
+  emailInput: string;
+  setEmailInput: (v: string) => void;
+  emailState: "idle" | "sending" | "success" | "error";
+  emailError: string | null;
+  onSubmit: () => void;
+}) {
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.trim());
+
+  const handleKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") onClose();
+    if (e.key === "Enter" && emailValid && emailState === "idle") onSubmit();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="bg-card border border-border rounded-2xl p-7 shadow-2xl w-full max-w-md relative" onKeyDown={handleKey}>
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Close"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        {emailState === "success" ? (
+          <div className="text-center py-4">
+            <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+              <CheckCircle2 className="w-7 h-7 text-green-600" />
+            </div>
+            <h2 className="text-xl font-bold font-outfit mb-2">Report sent!</h2>
+            <p className="text-muted-foreground text-sm">Check your inbox — the PDF should arrive within a minute.</p>
+            <button onClick={onClose} className="mt-6 inline-flex items-center gap-2 text-sm font-medium border border-border rounded-xl px-5 py-2.5 hover:bg-muted transition-colors">
+              Close
+            </button>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <Mail className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold font-outfit">Email me my report</h2>
+                <p className="text-xs text-muted-foreground">A branded PDF will be sent to your inbox</p>
+              </div>
+            </div>
+
+            <div className="mb-5">
+              <label htmlFor="report-email" className="block text-sm font-medium text-foreground mb-2">
+                Your email address
+              </label>
+              <input
+                id="report-email"
+                type="email"
+                autoFocus
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                placeholder="you@example.com"
+                className="w-full border border-border rounded-xl px-4 py-3 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-colors"
+                disabled={emailState === "sending"}
+              />
+            </div>
+
+            {emailError && (
+              <div className="mb-4 flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                {emailError}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={onSubmit}
+                disabled={!emailValid || emailState === "sending"}
+                className="flex-1 inline-flex items-center justify-center gap-2 h-11 bg-primary text-primary-foreground rounded-xl font-medium text-sm hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {emailState === "sending" ? (
+                  <>
+                    <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                    </svg>
+                    Sending…
+                  </>
+                ) : (
+                  <>
+                    <Mail className="w-4 h-4" /> Email me my report
+                  </>
+                )}
+              </button>
+              <button
+                onClick={onClose}
+                disabled={emailState === "sending"}
+                className="inline-flex items-center justify-center h-11 px-4 border border-border rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+
+            <p className="text-[11px] text-muted-foreground text-center mt-4 leading-relaxed">
+              Only the summary numbers are sent — your CSV never leaves your browser.
+            </p>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 
