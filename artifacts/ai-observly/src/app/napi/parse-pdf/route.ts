@@ -171,8 +171,48 @@ function parseHorizontalSplit(text: string) {
   return { rows, modelMap };
 }
 
-// ── Parser B: flat same-line ───────────────────────────────────────────────────
-// Handles exports where each row has date + cost on the same line.
+// ── Parser B: flat detailed table ─────────────────────────────────────────────
+// Handles exports where ALL columns live on one line per usage row, including
+// a "Total Cost" column at the far right (e.g. Claude console exports).
+// Multiple rows can share the same date; each row's last decimal is Total Cost.
+function parseFlatDetailedTable(text: string) {
+  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+
+  // Need a header row that has both "Date" and "Total Cost"
+  const headerIdx = lines.findIndex(
+    (l) => /\bDate\b/i.test(l) && /Total Cost/i.test(l)
+  );
+  if (headerIdx === -1) return null;
+
+  const rows: { date: string; cost: number; model?: string; key?: string }[] =
+    [];
+  const modelMap: Record<string, number> = {};
+
+  for (const line of lines.slice(headerIdx + 1)) {
+    const iso = line.match(/^(\d{4}-\d{2}-\d{2})\s/);
+    if (!iso) continue;
+    const date = iso[1];
+
+    // Find all decimal numbers on the line; the LAST one is Total Cost
+    const decimals = [...line.matchAll(/\b(\d+\.\d+)\b/g)];
+    if (!decimals.length) continue;
+    const totalCost = parseFloat(decimals[decimals.length - 1][1]);
+    if (isNaN(totalCost) || totalCost < 0) continue;
+
+    const model = line.match(MODEL_RE)?.[1];
+    // API keys often look like key_xxx or prod-xxx
+    const keyMatch = line.match(/\bkey_[\w]+\b/i) ?? line.match(/\bprod-[\w-]+\b/);
+
+    rows.push({ date, cost: totalCost, model, key: keyMatch?.[0] });
+    if (model) modelMap[model] = (modelMap[model] ?? 0) + totalCost;
+  }
+
+  return rows.length ? { rows, modelMap } : null;
+}
+
+// ── Parser C: flat same-line (summary exports) ────────────────────────────────
+// Handles exports where each line has ONE date + ONE aggregated cost (no
+// "Total Cost" column header, and one row per date).
 function parseFlatText(text: string) {
   const rows: { date: string; cost: number; model?: string; key?: string }[] =
     [];
@@ -271,8 +311,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // Try the split-table parser first; fall back to the flat parser.
-    const result = parseHorizontalSplit(pdfText) ?? parseFlatText(pdfText);
+    // Try parsers in order of specificity:
+    //   A) horizontal split (OpenAI multi-page table)
+    //   B) flat detailed   (Claude/Gemini: all cols on one line, Total Cost last)
+    //   C) flat summary    (one aggregated row per date)
+    const result =
+      parseHorizontalSplit(pdfText) ??
+      parseFlatDetailedTable(pdfText) ??
+      parseFlatText(pdfText);
 
     if (!result || result.rows.length === 0) {
       return Response.json(
