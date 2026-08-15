@@ -1,0 +1,14 @@
+Date,Workspace ID,Workspace Name,Description,Amount (USD)
+2026-07-01,wrkspc_01a1b2c3d4e5f6g7h8i9j0k1,Default,claude-sonnet-5 (global),4.83
+2026-07-01,wrkspc_01a1b2c3d4e5f6g7h8i9j0k1,Default,claude-haiku-4-5-20251001 (global),1.12
+2026-07-02,wrkspc_02b2c3d4e5f6g7h8i9j0k1l2,Sales-Automation,claude-sonnet-5 (global),10.14
+2026-07-02,wrkspc_02b2c3d4e5f6g7h8i9j0k1l2,Sales-Automation,Web Search Usage,0.12
+2026-07-02,wrkspc_01a1b2c3d4e5f6g7h8i9j0k1,Default,claude-opus-4-8 (global),6.05
+2026-07-02,wrkspc_01a1b2c3d4e5f6g7h8i9j0k1,Default,Code Execution Usage,0.02
+2026-07-03,wrkspc_02b2c3d4e5f6g7h8i9j0k1l2,Sales-Automation,claude-haiku-4-5-20251001 (global),2.1
+2026-07-03,wrkspc_03c3d4e5f6g7h8i9j0k1l2m3,Dev-Testing,claude-sonnet-5 (global),1.36
+2026-07-03,wrkspc_03c3d4e5f6g7h8i9j0k1l2m3,Dev-Testing,Code Execution Usage,0.1
+2026-07-04,wrkspc_01a1b2c3d4e5f6g7h8i9j0k1,Default,claude-sonnet-5 (global),7.85
+2026-07-05,wrkspc_02b2c3d4e5f6g7h8i9j0k1l2,Sales-Automation,claude-opus-4-8 (global),4.87
+2026-07-05,wrkspc_03c3d4e5f6g7h8i9j0k1l2m3,Dev-Testing,claude-haiku-4-5-20251001 (global),0.83
+2026-07-06,wrkspc_01a1b2c3d4e5f6g7h8i9j0k1,Default,claude-sonnet-5 (global),6.86

@@ -142,8 +142,13 @@ function parseHorizontalSplit(text: string) {
         if (/[a-zA-Z]/.test(line)) continue; // skip header/label lines
         const tokens = line.trim().split(/\s+/);
         if (tokens.length < 2) continue;
-        const last = parseFloat(tokens[tokens.length - 1]);
-        if (!isNaN(last) && last >= 0) costValues.push(last);
+        // Sum ALL decimal-point values on the line — these are the cost columns
+        // (Web Search Cost + Code Execution Cost + Token Cost = Total Cost).
+        // Large integers (token counts) never have a decimal point.
+        const totalCost = tokens
+          .filter((t) => /\.\d/.test(t))
+          .reduce((s, t) => s + parseFloat(t), 0);
+        if (totalCost >= 0) costValues.push(totalCost);
       }
     }
   }

@@ -50,9 +50,29 @@ interface Report {
 const COST_COLS = ["total cost (usd)", "cost", "amount", "total_cost", "cost_usd", "total cost", "amount (usd)", "charges", "spend"];
 const DATE_COLS = ["date", "day", "timestamp", "time", "period", "usage_date", "start_time"];
 const MODEL_COLS = ["model", "model_name", "ai model", "engine", "model_id"];
-const KEY_COLS = ["api key", "api_key", "key", "project", "organization", "project_name", "user_id", "key_name"];
+// "Description" columns (Anthropic, etc.) embed model names in free text — handled separately via extractModel()
+const DESC_COLS  = ["description", "line item", "line item description", "charge description", "item description"];
+const KEY_COLS = [
+  "api key", "api_key", "key", "project", "organization", "project_name", "user_id", "key_name",
+  // Anthropic / workspace-based providers — prefer readable Name over opaque ID
+  "workspace name", "workspace_name", "workspace",
+];
 const INPUT_COLS = ["input tokens", "input_tokens", "prompt tokens", "prompt_tokens", "input token count"];
 const CACHE_COLS = ["cache read tokens", "cache_read_tokens", "cached tokens", "cached_input_tokens", "cache read input tokens"];
+
+// Regex that matches known LLM model-name prefixes — used to pull a clean model
+// name out of free-text "Description" cells and to validate PDF-extracted names.
+const MODEL_NAME_RE = /\b(gpt-[\w\d.\-]+|chatgpt-[\w\d.\-]+|o1(?:-[\w\d.\-]+)?|o3(?:-[\w\d.\-]+)?|o4(?:-[\w\d.\-]+)?|claude-[\w\d.\-]+|gemini-[\w\d.\-]+|mistral-[\w\d.\-]+|llama-?[\w\d.\-]+)/i;
+
+// Extract a clean model name from a raw cell value.
+// Works for both proper "model" columns and "Description" cells like
+// "claude-sonnet-5 (global)" — returns undefined for non-model rows
+// like "Web Search Usage" or "Code Execution Usage".
+function extractModel(raw: string | undefined): string | undefined {
+  if (!raw) return undefined;
+  const m = raw.match(MODEL_NAME_RE);
+  return m ? m[1] : undefined;
+}
 const PREMIUM_TERMS = ["opus", "ultra", "gpt-5", "gpt-4", "o1", "o3", "pro", "sonnet", "haiku", "gemini-1.5-pro", "claude-3"];
 
 const MODEL_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#d97706", "#dc2626", "#db2777"];
@@ -297,6 +317,8 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
   const dateCol  = findCol(headers, DATE_COLS);
   const costCol  = findCol(headers, COST_COLS);
   const modelCol = findCol(headers, MODEL_COLS);
+  // "Description"-style columns (Anthropic, etc.) — model name embedded in cell text
+  const descCol  = !modelCol ? findCol(headers, DESC_COLS) : undefined;
   const keyCol   = findCol(headers, KEY_COLS);
   const inputCol = findCol(headers, INPUT_COLS);
   const cacheCol = findCol(headers, CACHE_COLS);
@@ -309,9 +331,17 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
       const date = parseDate(raw[dateCol] ?? "");
       const cost = parseCost(raw[costCol] ?? "0");
       if (!date || isNaN(cost) || cost < 0) continue;
+
+      // Model: prefer explicit model column; fall back to extracting from description.
+      // extractModel() returns undefined for non-model rows ("Web Search Usage" etc.)
+      const model = modelCol
+        ? (raw[modelCol]?.trim().replace(/\s*\([^)]*\)\s*$/, "").trim() || undefined)
+        : descCol
+          ? extractModel(raw[descCol])
+          : undefined;
+
       rows.push({
-        date, cost,
-        model: modelCol ? raw[modelCol]?.trim() : undefined,
+        date, cost, model,
         key:   keyCol   ? raw[keyCol]?.trim()   : undefined,
         inputTokens:     inputCol ? parseInt(raw[inputCol] ?? "0") || undefined : undefined,
         cacheReadTokens: cacheCol ? parseInt(raw[cacheCol] ?? "0") || undefined : undefined,
@@ -452,11 +482,17 @@ export default function SpendCheckupPage() {
           setErrorMsg(data.error ?? "Could not extract data from this PDF.");
           return;
         }
-        // data = { rows: [{date,cost,model?}], modelMap: {model: cost} }
-        const rows: ParsedRow[] = (data.rows ?? []).map((r: { date: string; cost: number; model?: string }) => ({ date: r.date, cost: r.cost, model: r.model }));
+        // data = { rows: [{date,cost,model?,key?}], modelMap: {model: cost} }
+        const rows: ParsedRow[] = (data.rows ?? []).map(
+          (r: { date: string; cost: number; model?: string; key?: string }) => ({
+            date: r.date, cost: r.cost, model: r.model, key: r.key,
+          })
+        );
         const modelMap = new Map<string, number>(Object.entries(data.modelMap ?? {}));
         const hasModels = modelMap.size > 0;
-        const report = buildReport(rows, hasModels ? modelMap : null, false, false);
+        // Detect key data from the rows themselves (PDF parser extracts it)
+        const hasKeyData = rows.some(r => !!r.key);
+        const report = buildReport(rows, hasModels ? modelMap : null, false, hasKeyData);
         setReport(report);
         setIsSample(false);
         setStage("report");
