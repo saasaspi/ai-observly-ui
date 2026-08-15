@@ -59,6 +59,7 @@ const MODEL_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#d97706", "#d
 
 const norm = (s: string) => s.toLowerCase().trim().replace(/\s+/g, " ");
 const findCol = (headers: string[], variants: string[]) => headers.find(h => variants.includes(norm(h)));
+const parseCost = (s: string) => parseFloat(String(s ?? "").replace(/[$,]/g, ""));
 
 // ── Date parsing ───────────────────────────────────────────────────────────────
 function parseDate(s: string): string | null {
@@ -109,35 +110,132 @@ function calcHealth(cacheEff: number | null, premShare: number | null, spikes: n
   return { score, grade, gradeColor, gradeBg };
 }
 
+// ── Multi-section dashboard parser (e.g. OpenAI executive summary export) ──────
+// Returns { rows, modelMap } where rows are pure daily cost entries (no model info
+// if models live in a separate table) and modelMap is the pre-aggregated model
+// breakdown — so the caller never double-counts spend.
+function parseMultiSection(csvText: string): { rows: ParsedRow[]; modelMap: Map<string, number> } | null {
+  const raw = Papa.parse<string[]>(csvText, { header: false, skipEmptyLines: false });
+  const grid: string[][] = raw.data;
+
+  // ── Step 1: find the daily-spend header row ──────────────────────────────────
+  // Scan every cell for a recognised date label; confirm a cost label exists in
+  // the same row, then record the column indices.
+  let dateColIdx = -1, costColIdx = -1, dataStartRow = -1;
+
+  for (let r = 0; r < grid.length; r++) {
+    const row = grid[r];
+    for (let c = 0; c < row.length; c++) {
+      if (DATE_COLS.includes(norm(row[c]))) {
+        const cc = row.findIndex((v, ci) => ci !== c && COST_COLS.includes(norm(v)));
+        if (cc !== -1) {
+          dateColIdx = c;
+          costColIdx = cc;
+          dataStartRow = r + 1;
+          break;
+        }
+      }
+    }
+    if (dataStartRow !== -1) break;
+  }
+
+  if (dataStartRow === -1) return null;
+
+  // ── Step 2: check whether the daily header row also has model/key columns ────
+  const headerRow = grid[dataStartRow - 1];
+  const modelColIdx = headerRow.findIndex((v, ci) =>
+    ci !== dateColIdx && ci !== costColIdx && MODEL_COLS.includes(norm(v))
+  );
+  const keyColIdx = headerRow.findIndex((v, ci) =>
+    ci !== dateColIdx && ci !== costColIdx && KEY_COLS.includes(norm(v))
+  );
+
+  // ── Step 3: extract daily cost rows ─────────────────────────────────────────
+  const rows: ParsedRow[] = [];
+  for (let r = dataStartRow; r < grid.length; r++) {
+    const row = grid[r];
+    const dateStr = row[dateColIdx]?.trim() ?? "";
+    const costStr = row[costColIdx]?.trim() ?? "";
+    if (!dateStr && !costStr) continue;
+    const date = parseDate(dateStr);
+    const cost = parseCost(costStr);
+    if (!date || isNaN(cost) || cost < 0) continue;
+    rows.push({
+      date, cost,
+      model: modelColIdx !== -1 ? row[modelColIdx]?.trim() || undefined : undefined,
+      key:   keyColIdx   !== -1 ? row[keyColIdx]?.trim()   || undefined : undefined,
+    });
+  }
+
+  if (rows.length === 0) return null;
+
+  // ── Step 4: scan the whole grid for a separate model table ───────────────────
+  // If models are in a different section (different columns), extract them into
+  // a map without adding their costs to `rows` — that would double-count spend.
+  const modelMap = new Map<string, number>();
+  for (let r = 0; r < grid.length; r++) {
+    const row = grid[r];
+    for (let c = 0; c < row.length; c++) {
+      if (norm(row[c]) === "model") {
+        const cc = row.findIndex((v, ci) => ci > c && COST_COLS.includes(norm(v)));
+        if (cc !== -1 && cc !== costColIdx) {   // different section from daily data
+          for (let dr = r + 1; dr < grid.length; dr++) {
+            const name = grid[dr][c]?.trim();
+            if (!name) break;
+            const cost = parseCost(grid[dr][cc] ?? "");
+            if (!isNaN(cost) && cost > 0) {
+              modelMap.set(name, (modelMap.get(name) ?? 0) + cost);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return { rows, modelMap };
+}
+
 // ── CSV parsing + analysis ─────────────────────────────────────────────────────
 function analyzeCSV(csvText: string): { report: Report } | { error: string } {
+  // ── Try 1: standard flat CSV (one header row, one data row per event) ─────────
   const parsed = Papa.parse<Record<string, string>>(csvText, {
     header: true, skipEmptyLines: true, transformHeader: (h) => h.trim(),
   });
 
   const headers = parsed.meta.fields ?? [];
-  const dateCol = findCol(headers, DATE_COLS);
-  const costCol = findCol(headers, COST_COLS);
-  if (!dateCol) return { error: "Couldn't find a date column. Expected one of: " + DATE_COLS.slice(0, 5).join(", ") + "." };
-  if (!costCol) return { error: "Couldn't find a cost column. Expected one of: " + COST_COLS.slice(0, 5).join(", ") + "." };
-
+  const dateCol  = findCol(headers, DATE_COLS);
+  const costCol  = findCol(headers, COST_COLS);
   const modelCol = findCol(headers, MODEL_COLS);
-  const keyCol = findCol(headers, KEY_COLS);
+  const keyCol   = findCol(headers, KEY_COLS);
   const inputCol = findCol(headers, INPUT_COLS);
   const cacheCol = findCol(headers, CACHE_COLS);
 
-  const rows: ParsedRow[] = [];
-  for (const raw of parsed.data) {
-    const date = parseDate(raw[dateCol!] ?? "");
-    const cost = parseFloat(raw[costCol!] ?? "0");
-    if (!date || isNaN(cost) || cost < 0) continue;
-    rows.push({
-      date, cost,
-      model: modelCol ? raw[modelCol]?.trim() : undefined,
-      key: keyCol ? raw[keyCol]?.trim() : undefined,
-      inputTokens: inputCol ? parseInt(raw[inputCol] ?? "0") || undefined : undefined,
-      cacheReadTokens: cacheCol ? parseInt(raw[cacheCol] ?? "0") || undefined : undefined,
-    });
+  let rows: ParsedRow[] = [];
+  let prebuiltModelMap: Map<string, number> | null = null;
+
+  if (dateCol && costCol) {
+    for (const raw of parsed.data) {
+      const date = parseDate(raw[dateCol] ?? "");
+      const cost = parseCost(raw[costCol] ?? "0");
+      if (!date || isNaN(cost) || cost < 0) continue;
+      rows.push({
+        date, cost,
+        model: modelCol ? raw[modelCol]?.trim() : undefined,
+        key:   keyCol   ? raw[keyCol]?.trim()   : undefined,
+        inputTokens:    inputCol ? parseInt(raw[inputCol] ?? "0") || undefined : undefined,
+        cacheReadTokens: cacheCol ? parseInt(raw[cacheCol] ?? "0") || undefined : undefined,
+      });
+    }
+  }
+
+  // ── Try 2: multi-section executive summary layout ─────────────────────────────
+  if (rows.length === 0) {
+    const ms = parseMultiSection(csvText);
+    if (!ms) {
+      return { error: "Couldn't find date and cost columns. Make sure the file has a Date column and a Cost/Amount column, or use the sample CSV as a guide." };
+    }
+    rows = ms.rows;
+    if (ms.modelMap.size > 0) prebuiltModelMap = ms.modelMap;
   }
 
   if (rows.length === 0) return { error: "The file was parsed but no valid rows were found. Make sure it has date and cost columns with data." };
@@ -159,9 +257,15 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
     if (prev > 0 && curr / prev - 1 > 0.5 && curr - prev > 5) spikes.push(byDay[i]);
   }
 
-  const modelMap = new Map<string, number>();
-  rows.forEach(r => { if (r.model) modelMap.set(r.model, (modelMap.get(r.model) ?? 0) + r.cost); });
-  const byModel = Array.from(modelMap.entries())
+  // Use prebuilt model map (from multi-section parser) when available, otherwise
+  // aggregate from rows. This prevents double-counting when model costs come from
+  // a separate summary table rather than per-row model labels.
+  const effectiveModelMap: Map<string, number> = prebuiltModelMap ?? (() => {
+    const m = new Map<string, number>();
+    rows.forEach(r => { if (r.model) m.set(r.model, (m.get(r.model) ?? 0) + r.cost); });
+    return m;
+  })();
+  const byModel = Array.from(effectiveModelMap.entries())
     .map(([model, cost]) => ({ model, cost, share: totalSpend > 0 ? cost / totalSpend : 0 }))
     .sort((a, b) => b.cost - a.cost);
 
