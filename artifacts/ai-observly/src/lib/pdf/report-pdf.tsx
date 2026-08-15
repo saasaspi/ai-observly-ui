@@ -322,7 +322,7 @@ export function ReportPDF({ report, logoDataUrl, generatedAt }: {
         </View>
 
         {/* ── 1. Health Score ── */}
-        <View style={s.healthCard}>
+        <View style={s.healthCard} wrap={false}>
           <Text style={[s.healthScore, { color: scoreColor }]}>{report.healthScore}</Text>
           <View style={{ flex: 1 }}>
             <Text style={s.healthGrade}>{report.grade}</Text>
@@ -334,7 +334,7 @@ export function ReportPDF({ report, logoDataUrl, generatedAt }: {
         </View>
 
         {/* ── 2. Top stat row ── */}
-        <View style={s.statsRow}>
+        <View style={s.statsRow} wrap={false}>
           <View style={s.statCard}>
             <Text style={s.statLabel}>Total Spend</Text>
             <Text style={s.statValue}>{fmtDollar(report.totalSpend)}</Text>
@@ -354,7 +354,7 @@ export function ReportPDF({ report, logoDataUrl, generatedAt }: {
 
         {/* ── 3. Spend over time ── */}
         {report.chartData.length > 0 && (
-          <View style={[s.card, { paddingBottom: 8 }]}>
+          <View style={[s.card, { paddingBottom: 8 }]} wrap={false}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               <View>
                 <Text style={s.sectionTitle}>Spend over time</Text>
@@ -383,7 +383,7 @@ export function ReportPDF({ report, logoDataUrl, generatedAt }: {
 
         {/* ── 4. Daily cost rhythm (only if ≥7 days) ── */}
         {report.byDay.length >= 7 && (
-          <View style={[s.card, { paddingBottom: 8 }]}>
+          <View style={[s.card, { paddingBottom: 8 }]} wrap={false}>
             <Text style={s.sectionTitle}>Daily cost rhythm</Text>
             <Text style={s.sectionSub}>How your spend flows day-by-day — flat lines mean predictable costs, sharp peaks mean surprises.</Text>
             <DailyLineChart byDay={report.byDay} spikeDates={spikeDates} />
@@ -398,7 +398,7 @@ export function ReportPDF({ report, logoDataUrl, generatedAt }: {
 
         {/* ── 5. Model breakdown ── */}
         {report.byModel.length > 0 && (
-          <View style={s.card}>
+          <View style={s.card} wrap={false}>
             <Text style={s.sectionTitle}>Where your money&apos;s going</Text>
             <Text style={s.sectionSub}>Cost breakdown by model — which AI is driving your bill.</Text>
             <View style={{ flexDirection: 'row', gap: 14 }}>
@@ -433,7 +433,7 @@ export function ReportPDF({ report, logoDataUrl, generatedAt }: {
 
         {/* ── 6. Cache efficiency + Premium model share ── */}
         {(report.cacheEfficiency !== null || report.premiumShare !== null) && (
-          <View style={s.metricRow}>
+          <View style={s.metricRow} wrap={false}>
             {report.cacheEfficiency !== null && (() => {
               const pct = Math.round(report.cacheEfficiency! * 100)
               const color = report.cacheEfficiency! < 0.25 ? RED : report.cacheEfficiency! < 0.5 ? AMBER : GREEN
@@ -484,7 +484,7 @@ export function ReportPDF({ report, logoDataUrl, generatedAt }: {
 
         {/* ── 7. Spend spike detail ── */}
         {report.byDay.length >= 3 && (
-          <View style={s.card}>
+          <View style={s.card} wrap={false}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
               <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: spikeDetail.length > 0 ? RED : GREEN, marginRight: 6 }} />
               <View>
@@ -501,9 +501,8 @@ export function ReportPDF({ report, logoDataUrl, generatedAt }: {
                 <View key={s2.date} style={s.spikeBadge}>
                   <View style={s.spikeDot} />
                   <Text style={[s.spikeText, { fontFamily: 'Helvetica-Bold' }]}>{s2.label}</Text>
-                  <Text style={s.spikePct}>+{s2.pctIncrease}%</Text>
-                  <Text style={[s.spikeText, { textAlign: 'right', color: MUTED, flex: 0 }]}>
-                    {' '}({fmtDollar(s2.cost)} vs {fmtDollar(s2.prevCost)})
+                  <Text style={{ fontSize: 8, fontFamily: 'Helvetica-Bold', color: RED, flexShrink: 0 }}>
+                    +{s2.pctIncrease}% ({fmtDollar(s2.cost)} vs {fmtDollar(s2.prevCost)})
                   </Text>
                 </View>
               ))
@@ -519,7 +518,7 @@ export function ReportPDF({ report, logoDataUrl, generatedAt }: {
 
         {/* ── 8. API key / project concentration ── */}
         {report.hasKeyCol && (
-          <View style={s.card}>
+          <View style={s.card} wrap={false}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
               <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#eab308', marginRight: 6 }} />
               <View>
