@@ -1,9 +1,5 @@
 {
   "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
-  "/napi/send-report/route": "app/napi/send-report/route.js",
-  "/blog/[slug]/page": "app/blog/[slug]/page.js",
-  "/blog/page": "app/blog/page.js",
   "/page": "app/page.js",
-  "/pricing/page": "app/pricing/page.js",
   "/spend-checkup/page": "app/spend-checkup/page.js"
 }
