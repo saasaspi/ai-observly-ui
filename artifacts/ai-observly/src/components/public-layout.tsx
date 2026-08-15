@@ -73,7 +73,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               alt="AI Observly"
               width={2172}
               height={724}
-              className="h-12 w-auto"
+              className="h-10 w-auto"
               priority
             />
           </Link>
