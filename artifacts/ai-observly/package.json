@@ -15,8 +15,10 @@
     "@sanity/client": "^8.0.0",
     "@sanity/image-url": "^2.1.1",
     "@types/papaparse": "^5.5.2",
+    "@types/pdf-parse": "^1.1.5",
     "next": "^15.3.0",
     "papaparse": "^5.5.4",
+    "pdf-parse": "^2.4.5",
     "react": "catalog:",
     "react-dom": "catalog:",
     "resend": "^6.20.0"

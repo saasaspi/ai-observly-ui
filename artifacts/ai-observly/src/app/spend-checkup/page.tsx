@@ -196,6 +196,97 @@ function parseMultiSection(csvText: string): { rows: ParsedRow[]; modelMap: Map<
 }
 
 // ── CSV parsing + analysis ─────────────────────────────────────────────────────
+// ── Shared analysis engine ─────────────────────────────────────────────────────
+// Called by both the CSV path and the PDF path after rows are collected.
+function buildReport(
+  rows: ParsedRow[],
+  prebuiltModelMap: Map<string, number> | null,
+  hasCacheData: boolean,
+  hasKeyData: boolean,
+): Report {
+  const byDayMap = new Map<string, number>();
+  rows.forEach(r => byDayMap.set(r.date, (byDayMap.get(r.date) ?? 0) + r.cost));
+  const byDay = Array.from(byDayMap.entries()).sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, cost]) => ({ date, label: fmtDate(date), cost }));
+
+  const dayCount = byDay.length;
+  const totalSpend = rows.reduce((s, r) => s + r.cost, 0);
+  const avgDaily = totalSpend / Math.max(dayCount, 1);
+  const projectedMonth = dayCount >= 3 ? avgDaily * 30 : null;
+  const projectedYear  = dayCount >= 3 ? avgDaily * 365 : null;
+
+  const spikes: DailyData[] = [];
+  for (let i = 1; i < byDay.length; i++) {
+    const prev = byDay[i - 1].cost, curr = byDay[i].cost;
+    if (prev > 0 && curr / prev - 1 > 0.5 && curr - prev > 5) spikes.push(byDay[i]);
+  }
+
+  const effectiveModelMap: Map<string, number> = prebuiltModelMap ?? (() => {
+    const m = new Map<string, number>();
+    rows.forEach(r => { if (r.model) m.set(r.model, (m.get(r.model) ?? 0) + r.cost); });
+    return m;
+  })();
+  const byModel = Array.from(effectiveModelMap.entries())
+    .map(([model, cost]) => ({ model, cost, share: totalSpend > 0 ? cost / totalSpend : 0 }))
+    .sort((a, b) => b.cost - a.cost);
+
+  let premiumShare: number | null = null;
+  if (byModel.length > 0) {
+    const premiumCost = byModel.filter(m => PREMIUM_TERMS.some(t => m.model.toLowerCase().includes(t))).reduce((s, m) => s + m.cost, 0);
+    premiumShare = totalSpend > 0 ? premiumCost / totalSpend : 0;
+    if (premiumShare < 0.20) premiumShare = null;
+  }
+
+  let cacheEfficiency: number | null = null;
+  if (hasCacheData) {
+    const totalInput = rows.reduce((s, r) => s + (r.inputTokens ?? 0), 0);
+    const totalCache = rows.reduce((s, r) => s + (r.cacheReadTokens ?? 0), 0);
+    if (totalInput + totalCache > 0) cacheEfficiency = totalCache / (totalInput + totalCache);
+  }
+
+  let keyConc: { topKey: string; share: number } | null = null;
+  if (hasKeyData) {
+    const keyMap = new Map<string, number>();
+    rows.forEach(r => { if (r.key) keyMap.set(r.key, (keyMap.get(r.key) ?? 0) + r.cost); });
+    if (keyMap.size > 0) {
+      const top = Array.from(keyMap.entries()).sort(([, a], [, b]) => b - a)[0];
+      keyConc = { topKey: top[0], share: totalSpend > 0 ? top[1] / totalSpend : 0 };
+    }
+  }
+
+  const topModel = byModel.length > 0 ? { model: byModel[0].model, share: byModel[0].share } : null;
+  const isWeekly = dayCount > 14;
+  const spikeSet = new Set(spikes.map(s => s.date));
+
+  let chartData: { label: string; cost: number; isSpike: boolean }[];
+  if (!isWeekly) {
+    chartData = byDay.map(d => ({ label: d.label, cost: parseFloat(d.cost.toFixed(2)), isSpike: spikeSet.has(d.date) }));
+  } else {
+    const weekMap = new Map<string, { label: string; cost: number; hasSpike: boolean }>();
+    byDay.forEach(d => {
+      const dt = new Date(d.date + "T00:00:00Z");
+      const week = Math.floor((dt.getTime() - new Date("2000-01-03T00:00:00Z").getTime()) / (7 * 86400000));
+      const key = `${week}`;
+      if (!weekMap.has(key)) weekMap.set(key, { label: `Wk of ${d.label}`, cost: 0, hasSpike: false });
+      const w = weekMap.get(key)!;
+      w.cost += d.cost;
+      if (spikeSet.has(d.date)) w.hasSpike = true;
+    });
+    chartData = Array.from(weekMap.values()).map(w => ({ label: w.label, cost: parseFloat(w.cost.toFixed(2)), isSpike: w.hasSpike }));
+  }
+
+  const { score, grade, gradeColor, gradeBg } = calcHealth(cacheEfficiency, premiumShare, spikes.length, keyConc?.share ?? null);
+
+  return {
+    totalSpend, dayCount, projectedMonth, projectedYear,
+    byModel, byDay, chartData, isWeekly,
+    cacheEfficiency, premiumShare, spikes,
+    keyConc, hasKeyCol: hasKeyData,
+    topModel, healthScore: score, grade, gradeColor: gradeColor + " " + gradeBg,
+    startDate: byDay[0]?.date ?? "", endDate: byDay[byDay.length - 1]?.date ?? "",
+  };
+}
+
 function analyzeCSV(csvText: string): { report: Report } | { error: string } {
   // ── Try 1: standard flat CSV (one header row, one data row per event) ─────────
   const parsed = Papa.parse<Record<string, string>>(csvText, {
@@ -222,7 +313,7 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
         date, cost,
         model: modelCol ? raw[modelCol]?.trim() : undefined,
         key:   keyCol   ? raw[keyCol]?.trim()   : undefined,
-        inputTokens:    inputCol ? parseInt(raw[inputCol] ?? "0") || undefined : undefined,
+        inputTokens:     inputCol ? parseInt(raw[inputCol] ?? "0") || undefined : undefined,
         cacheReadTokens: cacheCol ? parseInt(raw[cacheCol] ?? "0") || undefined : undefined,
       });
     }
@@ -240,93 +331,7 @@ function analyzeCSV(csvText: string): { report: Report } | { error: string } {
 
   if (rows.length === 0) return { error: "The file was parsed but no valid rows were found. Make sure it has date and cost columns with data." };
 
-  const byDayMap = new Map<string, number>();
-  rows.forEach(r => byDayMap.set(r.date, (byDayMap.get(r.date) ?? 0) + r.cost));
-  const byDay = Array.from(byDayMap.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([date, cost]) => ({ date, label: fmtDate(date), cost }));
-
-  const dayCount = byDay.length;
-  const totalSpend = rows.reduce((s, r) => s + r.cost, 0);
-  const avgDaily = totalSpend / Math.max(dayCount, 1);
-  const projectedMonth = dayCount >= 3 ? avgDaily * 30 : null;
-  const projectedYear = dayCount >= 3 ? avgDaily * 365 : null;
-
-  const spikes: DailyData[] = [];
-  for (let i = 1; i < byDay.length; i++) {
-    const prev = byDay[i - 1].cost;
-    const curr = byDay[i].cost;
-    if (prev > 0 && curr / prev - 1 > 0.5 && curr - prev > 5) spikes.push(byDay[i]);
-  }
-
-  // Use prebuilt model map (from multi-section parser) when available, otherwise
-  // aggregate from rows. This prevents double-counting when model costs come from
-  // a separate summary table rather than per-row model labels.
-  const effectiveModelMap: Map<string, number> = prebuiltModelMap ?? (() => {
-    const m = new Map<string, number>();
-    rows.forEach(r => { if (r.model) m.set(r.model, (m.get(r.model) ?? 0) + r.cost); });
-    return m;
-  })();
-  const byModel = Array.from(effectiveModelMap.entries())
-    .map(([model, cost]) => ({ model, cost, share: totalSpend > 0 ? cost / totalSpend : 0 }))
-    .sort((a, b) => b.cost - a.cost);
-
-  let premiumShare: number | null = null;
-  if (byModel.length > 0) {
-    const premiumCost = byModel.filter(m => PREMIUM_TERMS.some(t => m.model.toLowerCase().includes(t))).reduce((s, m) => s + m.cost, 0);
-    premiumShare = totalSpend > 0 ? premiumCost / totalSpend : 0;
-    if (premiumShare < 0.20) premiumShare = null;
-  }
-
-  let cacheEfficiency: number | null = null;
-  if (inputCol && cacheCol) {
-    const totalInput = rows.reduce((s, r) => s + (r.inputTokens ?? 0), 0);
-    const totalCache = rows.reduce((s, r) => s + (r.cacheReadTokens ?? 0), 0);
-    if (totalInput + totalCache > 0) cacheEfficiency = totalCache / (totalInput + totalCache);
-  }
-
-  let keyConc: { topKey: string; share: number } | null = null;
-  if (keyCol) {
-    const keyMap = new Map<string, number>();
-    rows.forEach(r => { if (r.key) keyMap.set(r.key, (keyMap.get(r.key) ?? 0) + r.cost); });
-    if (keyMap.size > 0) {
-      const top = Array.from(keyMap.entries()).sort(([, a], [, b]) => b - a)[0];
-      keyConc = { topKey: top[0], share: totalSpend > 0 ? top[1] / totalSpend : 0 };
-    }
-  }
-
-  const topModel = byModel.length > 0 ? { model: byModel[0].model, share: byModel[0].share } : null;
-
-  const isWeekly = dayCount > 14;
-  let chartData: { label: string; cost: number; isSpike: boolean }[];
-  const spikeSet = new Set(spikes.map(s => s.date));
-
-  if (!isWeekly) {
-    chartData = byDay.map(d => ({ label: d.label, cost: parseFloat(d.cost.toFixed(2)), isSpike: spikeSet.has(d.date) }));
-  } else {
-    const weekMap = new Map<string, { label: string; cost: number; hasSpike: boolean }>();
-    byDay.forEach(d => {
-      const dt = new Date(d.date + "T00:00:00Z");
-      const week = Math.floor((dt.getTime() - new Date("2000-01-03T00:00:00Z").getTime()) / (7 * 86400000));
-      const key = `${week}`;
-      if (!weekMap.has(key)) weekMap.set(key, { label: `Wk of ${d.label}`, cost: 0, hasSpike: false });
-      const w = weekMap.get(key)!;
-      w.cost += d.cost;
-      if (spikeSet.has(d.date)) w.hasSpike = true;
-    });
-    chartData = Array.from(weekMap.values()).map(w => ({ label: w.label, cost: parseFloat(w.cost.toFixed(2)), isSpike: w.hasSpike }));
-  }
-
-  const { score, grade, gradeColor, gradeBg } = calcHealth(cacheEfficiency, premiumShare, spikes.length, keyConc?.share ?? null);
-
-  return {
-    report: {
-      totalSpend, dayCount, projectedMonth, projectedYear,
-      byModel, byDay, chartData, isWeekly,
-      cacheEfficiency, premiumShare, spikes,
-      keyConc, hasKeyCol: !!keyCol,
-      topModel, healthScore: score, grade, gradeColor: gradeColor + " " + gradeBg,
-      startDate: byDay[0]?.date ?? "", endDate: byDay[byDay.length - 1]?.date ?? "",
-    }
-  };
+  return { report: buildReport(rows, prebuiltModelMap, !!(inputCol && cacheCol), !!keyCol) };
 }
 
 // ── Sample CSV generator ───────────────────────────────────────────────────────
@@ -410,6 +415,7 @@ export default function SpendCheckupPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSample, setIsSample] = useState(false);
+  const [isParsing, setIsParsing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // ── Email PDF modal ──
@@ -428,11 +434,43 @@ export default function SpendCheckupPage() {
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   }, []);
 
-  const handleFile = (file: File) => {
-    if (!file.name.endsWith(".csv") && file.type !== "text/csv") { setErrorMsg("Please upload a .csv file."); return; }
-    const reader = new FileReader();
-    reader.onload = (e) => processText(e.target?.result as string);
-    reader.readAsText(file);
+  const handleFile = async (file: File) => {
+    const isPdf = file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf";
+    const isCsv = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv";
+    if (!isPdf && !isCsv) { setErrorMsg("Please upload a .csv or .pdf file."); return; }
+
+    setErrorMsg(null);
+
+    if (isPdf) {
+      setIsParsing(true);
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/napi/parse-pdf", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          setErrorMsg(data.error ?? "Could not extract data from this PDF.");
+          return;
+        }
+        // data = { rows: [{date,cost,model?}], modelMap: {model: cost} }
+        const rows: ParsedRow[] = (data.rows ?? []).map((r: { date: string; cost: number; model?: string }) => ({ date: r.date, cost: r.cost, model: r.model }));
+        const modelMap = new Map<string, number>(Object.entries(data.modelMap ?? {}));
+        const hasModels = modelMap.size > 0;
+        const report = buildReport(rows, hasModels ? modelMap : null, false, false);
+        setReport(report);
+        setIsSample(false);
+        setStage("report");
+        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+      } catch {
+        setErrorMsg("Something went wrong reading the PDF. Please try again.");
+      } finally {
+        setIsParsing(false);
+      }
+    } else {
+      const reader = new FileReader();
+      reader.onload = (e) => processText(e.target?.result as string);
+      reader.readAsText(file);
+    }
   };
 
   const onDrop = useCallback((e: React.DragEvent) => {
@@ -520,12 +558,21 @@ export default function SpendCheckupPage() {
             onDrop={onDrop}
             onClick={() => fileRef.current?.click()}
           >
-            <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+            <input ref={fileRef} type="file" accept=".csv,.pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
             <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
-              <Upload className="w-7 h-7" />
+              {isParsing ? <RefreshCw className="w-7 h-7 animate-spin" /> : <Upload className="w-7 h-7" />}
             </div>
-            <p className="font-semibold text-foreground text-lg mb-1">Drop your billing CSV here</p>
-            <p className="text-sm text-muted-foreground">or click to browse — .csv files only</p>
+            {isParsing ? (
+              <>
+                <p className="font-semibold text-foreground text-lg mb-1">Extracting data from PDF…</p>
+                <p className="text-sm text-muted-foreground">This takes a few seconds</p>
+              </>
+            ) : (
+              <>
+                <p className="font-semibold text-foreground text-lg mb-1">Drop your billing export here</p>
+                <p className="text-sm text-muted-foreground">or click to browse — CSV or PDF accepted</p>
+              </>
+            )}
           </div>
 
           {errorMsg && (
@@ -544,7 +591,7 @@ export default function SpendCheckupPage() {
           <ProviderInstructions />
 
           <p className="text-xs text-muted-foreground text-center mt-8">
-            Your CSV is processed entirely in your browser and never uploaded. Only the report you choose to email is sent, and only to the address you provide.
+            CSV files are processed entirely in your browser and never uploaded. PDFs are sent to our server only for text extraction, then discarded immediately. Only the report you choose to email is sent, and only to the address you provide.
           </p>
         </section>
       </PublicLayout>
