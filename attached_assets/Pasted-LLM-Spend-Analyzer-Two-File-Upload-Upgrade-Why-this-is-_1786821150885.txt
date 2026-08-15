@@ -1,0 +1,51 @@
+LLM Spend Analyzer — Two-File Upload Upgrade
+Why this is needed
+
+Real provider exports come as two separate files: a Cost export (dollar amounts, no token detail) and a Usage export (token/request counts, no dollar amounts). The tool currently only accepts one upload, tuned to the Cost format — that's why a Usage file fails (no date/cost columns to parse). Fix: two independent, optional upload slots, with report logic that adapts to whichever file(s) show up.
+
+1. Upload UI
+Add a second upload slot. Both optional — require at least one, not both.
+Slot A: "Cost / Billing export" — hint: "the file with dollar amounts"
+Slot B: "Usage / Token export (optional)" — hint: "the file with input/output token counts — unlocks the full report"
+Note under Slot B: "Don't have this? You'll still get a spend breakdown from the Cost file alone."
+2. Auto-detect which file is which
+
+Don't rely on the slot the user dropped it in — sniff the headers so it works even if they're swapped:
+
+Cost file → has a dollar column: cost, amount, total_cost, token_cost, amount (usd).
+Usage file → has token columns (input_tokens, output_tokens, uncached_input_tokens, prompt_tokens, completion_tokens, etc.) and no dollar column.
+If a file has both cost and token columns in the same row (some tools export a combined/enriched format), treat it as a Cost file with bonus token detail — don't route it down the Usage-only path.
+If neither pattern matches: reject with a plain-English error — "We couldn't find a cost or token column in this file. Try re-exporting from your provider's usage or billing page."
+3. Provider column-alias map
+
+Column names differ by provider — keep this as one config object, not hardcoded per-parser logic, so adding a provider later is a data change:
+
+Provider	Cost file columns	Usage file columns
+OpenAI	project_id/project, line_item, amount	project_id, model, input_tokens, cached_input_tokens, output_tokens, num_model_requests
+Anthropic	workspace_id/workspace, description (holds model name or a fixed label like Code Execution Usage), amount	workspace_id, model, uncached_input_tokens, cache_read_input_tokens, cache_creation_input_tokens, output_tokens
+Gemini	Not yet mapped — confirm actual export format before shipping. Google's billing data comes via GCP Billing export / BigQuery, not a flat CSV like OpenAI/Anthropic, so don't assume it matches their shape.	
+4. Report logic by combination
+
+Cost file only (today's working path — keep as-is)
+
+Total spend, spend by model, spend by project/workspace, spend trend over time.
+No token counts. Show a line: "Upload your usage/token export too for token-level detail."
+
+Usage file only (currently broken — this is the fix)
+
+Don't try to read a cost column that isn't there.
+Run token counts through an internal per-model list-price table (input $/1M, output $/1M, cache-read $/1M) to estimate spend.
+Label every dollar figure in this path clearly: "Estimated — based on public list pricing, not your actual bill" (can't reflect enterprise discounts, batch/priority pricing, or committed spend).
+Token totals, request counts, and model mix need no estimate — show those as exact.
+
+Both files uploaded (new — full picture)
+
+Join Cost rows to Usage rows on date + project/workspace + model.
+Tool-cost line items in the Cost file (Web Search Usage, Code Execution Usage, Web search tool, Code interpreter) have no matching model row in Usage — bucket these separately as "Tool costs" rather than force-matching them (they'll otherwise get dropped silently or joined to the wrong row).
+If the two files cover different date ranges, report only the overlap and say so: "Report covers Jul 1–26, the range common to both files." Don't silently truncate or extrapolate past that.
+This path is the only one that gets real (non-estimated) dollar figures plus token-level detail: actual cost per 1K tokens, cache-hit rate, requests per dollar.
+5. In-app messaging
+If only one file is uploaded, show one soft nudge after the report renders: "Add your [missing file type] for the full picture" with a re-upload option. Not a blocking modal.
+Don't gate the PDF download behind having both files — cost-only and estimate-based reports should still be downloadable.
+6. Out of scope for this pass
+Keep the existing email-gate + Resend PDF delivery flow unchanged.
