@@ -4,5 +4,6 @@
   "/pricing/page": "app/pricing/page.js",
   "/signup/page": "app/signup/page.js",
   "/blog/[slug]/page": "app/blog/[slug]/page.js",
-  "/blog/page": "app/blog/page.js"
+  "/blog/page": "app/blog/page.js",
+  "/spend-checkup/page": "app/spend-checkup/page.js"
 }
