@@ -1,6 +1,7 @@
 "use client";
 import { ReactNode, useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -66,26 +67,15 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-2 font-bold text-lg font-outfit shrink-0"
-            data-testid="link-home"
-          >
-            <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-              </svg>
-            </div>
-            AI Observly
+          <Link href="/" className="shrink-0" data-testid="link-home">
+            <Image
+              src="/logo.png"
+              alt="AI Observly"
+              width={2172}
+              height={724}
+              className="h-8 w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop nav */}
@@ -317,22 +307,15 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
             <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2 mb-3 font-outfit font-semibold text-foreground">
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-primary"
-                >
-                  <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-                </svg>
-                AI Observly
-              </div>
+              <Link href="/" className="inline-block mb-3">
+                <Image
+                  src="/logo.png"
+                  alt="AI Observly"
+                  width={2172}
+                  height={724}
+                  className="h-7 w-auto"
+                />
+              </Link>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 AI cost &amp; margin tracking for founders who ship fast.
               </p>
