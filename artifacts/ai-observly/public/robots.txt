@@ -1,2 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /login
+Disallow: /signup
+Disallow: /dashboard
+Disallow: /napi/
+
+Sitemap: https://aiobservly.com/sitemap.xml
