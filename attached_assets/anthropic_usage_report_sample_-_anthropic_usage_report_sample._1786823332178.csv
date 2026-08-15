@@ -1,0 +1,11 @@
+Date,Workspace ID,Workspace Name,API Key ID,Model,Service Tier,Context Window,Uncached Input Tokens,Cache Read Input Tokens,Cache Creation Input Tokens,Output Tokens,Web Search Requests
+2026-07-01,wrkspc_01a1b2c3d4e5f6g7h8i9j0k1,Default,apikey_01x1y2z3a4b5c6d7e8f9g0h1,claude-sonnet-5,standard,0-200k,1250000,320000,45000,180000,0
+2026-07-01,wrkspc_01a1b2c3d4e5f6g7h8i9j0k1,Default,apikey_01x1y2z3a4b5c6d7e8f9g0h1,claude-haiku-4-5-20251001,standard,0-200k,890000,0,0,95000,0
+2026-07-02,wrkspc_02b2c3d4e5f6g7h8i9j0k1l2,Sales-Automation,apikey_02y2z3a4b5c6d7e8f9g0h1i2,claude-sonnet-5,standard,0-200k,2100000,890000,120000,410000,12
+2026-07-02,wrkspc_01a1b2c3d4e5f6g7h8i9j0k1,Default,apikey_01x1y2z3a4b5c6d7e8f9g0h1,claude-opus-4-8,standard,0-200k,340000,0,0,88000,0
+2026-07-03,wrkspc_02b2c3d4e5f6g7h8i9j0k1l2,Sales-Automation,apikey_02y2z3a4b5c6d7e8f9g0h1i2,claude-haiku-4-5-20251001,standard,0-200k,1560000,0,0,210000,0
+2026-07-03,wrkspc_03c3d4e5f6g7h8i9j0k1l2m3,Dev-Testing,apikey_03z3a4b5c6d7e8f9g0h1i2j3,claude-sonnet-5,batch,0-200k,410000,0,0,62000,0
+2026-07-04,wrkspc_01a1b2c3d4e5f6g7h8i9j0k1,Default,apikey_01x1y2z3a4b5c6d7e8f9g0h1,claude-sonnet-5,standard,200k-1m,1980000,610000,80000,305000,3
+2026-07-05,wrkspc_02b2c3d4e5f6g7h8i9j0k1l2,Sales-Automation,apikey_02y2z3a4b5c6d7e8f9g0h1i2,claude-opus-4-8,standard,0-200k,275000,0,0,54000,0
+2026-07-05,wrkspc_03c3d4e5f6g7h8i9j0k1l2m3,Dev-Testing,apikey_03z3a4b5c6d7e8f9g0h1i2j3,claude-haiku-4-5-20251001,standard,0-200k,620000,0,0,80000,0
+2026-07-06,wrkspc_01a1b2c3d4e5f6g7h8i9j0k1,Default,apikey_01x1y2z3a4b5c6d7e8f9g0h1,claude-sonnet-5,standard,0-200k,1740000,540000,60000,265000,0

@@ -61,8 +61,17 @@ const KEY_COLS = [
   // Anthropic / workspace-based providers — prefer readable Name over opaque ID
   "workspace name", "workspace_name", "workspace",
 ];
-const INPUT_COLS = ["input tokens", "input_tokens", "prompt tokens", "prompt_tokens", "input token count", "uncached_input_tokens"];
-const CACHE_COLS = ["cache read tokens", "cache_read_tokens", "cached tokens", "cached_input_tokens", "cache read input tokens", "cache_read_input_tokens"];
+const INPUT_COLS = [
+  // Standard / OpenAI
+  "input tokens", "input_tokens", "prompt tokens", "prompt_tokens", "input token count",
+  // Anthropic — the primary token column is "Uncached Input Tokens"
+  "uncached input tokens", "uncached_input_tokens",
+];
+const CACHE_COLS = [
+  "cache read tokens", "cache_read_tokens", "cached tokens", "cached_input_tokens",
+  "cache read input tokens", "cache_read_input_tokens",
+  // Anthropic uses "Cache Read Input Tokens" (already covered above via norm)
+];
 const OUTPUT_COLS = ["output_tokens", "output tokens", "completion_tokens", "completion tokens", "tokens_out"];
 const REQUEST_COLS = ["num_model_requests", "requests", "num_requests", "request_count", "api_calls"];
 // Any of these headers marks a file as a "usage" export (token counts, no dollars)
@@ -513,17 +522,27 @@ function joinCostAndUsage(
   // Filter cost rows to the overlapping date range
   const filteredCost = costRows.filter(r => overlapSet.has(r.date));
 
-  // Build usage index: date||model||key → row
-  const usageIdx = new Map<string, ParsedRow>();
+  // Build two usage indexes:
+  //   1. date||model||key — exact match (cost row has a key, e.g. OpenAI project key)
+  //   2. date||model      — key-agnostic fallback (cost row has no key, e.g. Anthropic cost PDF
+  //      where no workspace name is captured, but usage CSV has workspace keys)
+  const usageIdx    = new Map<string, ParsedRow>();   // exact: date||model||key
+  const usageIdxNoKey = new Map<string, ParsedRow>(); // fallback: date||model
   for (const r of usageRows) {
     if (!overlapSet.has(r.date)) continue;
     const k = `${r.date}||${(r.model ?? "").toLowerCase()}||${(r.key ?? "").toLowerCase()}`;
     usageIdx.set(k, r);
+    // For the no-key index, first-seen row wins (cost is merged anyway if present)
+    const kNoKey = `${r.date}||${(r.model ?? "").toLowerCase()}`;
+    if (!usageIdxNoKey.has(kNoKey)) usageIdxNoKey.set(kNoKey, r);
   }
 
   const joined: ParsedRow[] = filteredCost.map(cr => {
     const k = `${cr.date}||${(cr.model ?? "").toLowerCase()}||${(cr.key ?? "").toLowerCase()}`;
-    const ur = usageIdx.get(k);
+    // When cost row has no key, also try the key-agnostic index so Anthropic cost PDF
+    // rows (key=undefined) can match Anthropic usage CSV rows (key="Default" etc.)
+    const kNoKey = `${cr.date}||${(cr.model ?? "").toLowerCase()}`;
+    const ur = usageIdx.get(k) ?? (!cr.key ? usageIdxNoKey.get(kNoKey) : undefined);
     if (!ur) {
       // Row has no matching usage entry — either a tool-cost line (Web Search Usage,
       // Code Execution Usage, etc.) or a model row not present in the usage export.
