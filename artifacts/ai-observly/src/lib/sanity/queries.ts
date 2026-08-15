@@ -21,12 +21,26 @@ export type Post = {
 
 export type PostSummary = Pick<Post, '_id' | 'title' | 'slug' | 'coverImage' | 'publishedAt' | 'metaDescription' | 'topic'>
 
+/**
+ * GROQ helper: always returns a slug without a leading slash.
+ *
+ * Sanity's slug field is free-text, so someone can accidentally save "/my-slug"
+ * instead of "my-slug". This expression normalises it at the GROQ level so
+ * the website never sees a leading slash regardless of what's stored.
+ *
+ *   slug.current[0..0] == "/"  → strip first char  → slug.current[1...]
+ *   otherwise                  → use as-is         → slug.current
+ */
+// GROQ doesn't support open-ended string slices, so we use [1..200] as a
+// safe upper bound — no slug is ever 200+ characters long.
+const SLUG_PROJECTION = `select(slug.current[0..0] == "/" => slug.current[1..200], slug.current)`
+
 // All published posts ordered newest-first
 export const POSTS_QUERY = `
   *[_type == "post"] | order(publishedAt desc) {
     _id,
     title,
-    "slug": slug.current,
+    "slug": ${SLUG_PROJECTION},
     coverImage,
     publishedAt,
     metaDescription,
@@ -39,7 +53,7 @@ export const POSTS_BY_TOPIC_QUERY = `
   *[_type == "post" && topic == $topic] | order(publishedAt desc) {
     _id,
     title,
-    "slug": slug.current,
+    "slug": ${SLUG_PROJECTION},
     coverImage,
     publishedAt,
     metaDescription,
@@ -47,12 +61,14 @@ export const POSTS_BY_TOPIC_QUERY = `
   }
 `
 
-// Single post by slug — full fields
+// Single post by slug — full fields.
+// Matches both "my-slug" and "/my-slug" so a leading slash in Sanity never
+// causes a 404 on the website.
 export const POST_QUERY = `
-  *[_type == "post" && slug.current == $slug][0] {
+  *[_type == "post" && (slug.current == $slug || slug.current == ("/"+$slug))][0] {
     _id,
     title,
-    "slug": slug.current,
+    "slug": ${SLUG_PROJECTION},
     coverImage,
     publishedAt,
     body,
@@ -62,12 +78,15 @@ export const POST_QUERY = `
   }
 `
 
-// Up to 3 related posts in the same topic, excluding current
+// Up to 3 related posts in the same topic, excluding current.
+// The exclusion filter also covers the "/slug" form stored in Sanity.
 export const RELATED_POSTS_QUERY = `
-  *[_type == "post" && topic == $topic && slug.current != $slug] | order(publishedAt desc) [0...3] {
+  *[_type == "post" && topic == $topic
+    && slug.current != $slug && slug.current != ("/"+$slug)
+  ] | order(publishedAt desc) [0...3] {
     _id,
     title,
-    "slug": slug.current,
+    "slug": ${SLUG_PROJECTION},
     coverImage,
     publishedAt,
     metaDescription
@@ -77,10 +96,12 @@ export const RELATED_POSTS_QUERY = `
 // Up to 10 recent posts excluding current — used to build the recommended sidebar.
 // Topic-priority sorting happens in JS: same topic first, then fill with newest.
 export const RECOMMENDED_POSTS_QUERY = `
-  *[_type == "post" && slug.current != $slug] | order(publishedAt desc) [0...10] {
+  *[_type == "post"
+    && slug.current != $slug && slug.current != ("/"+$slug)
+  ] | order(publishedAt desc) [0...10] {
     _id,
     title,
-    "slug": slug.current,
+    "slug": ${SLUG_PROJECTION},
     coverImage,
     publishedAt,
     topic
@@ -91,7 +112,7 @@ export const RECOMMENDED_POSTS_QUERY = `
 // _updatedAt is the Sanity-managed last-edit timestamp; falls back to publishedAt if missing.
 export const SITEMAP_POSTS_QUERY = `
   *[_type == "post"] {
-    "slug": slug.current,
+    "slug": ${SLUG_PROJECTION},
     publishedAt,
     _updatedAt
   }
