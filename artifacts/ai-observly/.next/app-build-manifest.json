@@ -35,6 +35,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/napi/recent-posts/route.js"
+    ],
+    "/napi/send-report/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/napi/send-report/route.js"
     ]
   }
 }

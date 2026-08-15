@@ -21,6 +21,7 @@ interface ParsedRow {
   model?: string;
   key?: string;
   inputTokens?: number;
+  outputTokens?: number;
   cacheReadTokens?: number;
 }
 interface DailyData { date: string; label: string; cost: number; }
@@ -44,6 +45,9 @@ interface Report {
   gradeColor: string;
   startDate: string;
   endDate: string;
+  // Extra metadata
+  isEstimated?: boolean;       // Usage-only path — dollars are estimated from list pricing
+  dateRangeNote?: string | null; // When cost + usage date ranges differ
 }
 
 // ── Column name variants ───────────────────────────────────────────────────────
@@ -57,8 +61,15 @@ const KEY_COLS = [
   // Anthropic / workspace-based providers — prefer readable Name over opaque ID
   "workspace name", "workspace_name", "workspace",
 ];
-const INPUT_COLS = ["input tokens", "input_tokens", "prompt tokens", "prompt_tokens", "input token count"];
-const CACHE_COLS = ["cache read tokens", "cache_read_tokens", "cached tokens", "cached_input_tokens", "cache read input tokens"];
+const INPUT_COLS = ["input tokens", "input_tokens", "prompt tokens", "prompt_tokens", "input token count", "uncached_input_tokens"];
+const CACHE_COLS = ["cache read tokens", "cache_read_tokens", "cached tokens", "cached_input_tokens", "cache read input tokens", "cache_read_input_tokens"];
+const OUTPUT_COLS = ["output_tokens", "output tokens", "completion_tokens", "completion tokens", "tokens_out"];
+const REQUEST_COLS = ["num_model_requests", "requests", "num_requests", "request_count", "api_calls"];
+// Any of these headers marks a file as a "usage" export (token counts, no dollars)
+const USAGE_SIGNAL_COLS = [
+  "input_tokens", "output_tokens", "uncached_input_tokens", "cache_read_input_tokens",
+  "cache_creation_input_tokens", "cached_input_tokens", "completion_tokens", "num_model_requests",
+];
 
 // Regex that matches known LLM model-name prefixes — used to pull a clean model
 // name out of free-text "Description" cells and to validate PDF-extracted names.
@@ -74,6 +85,53 @@ function extractModel(raw: string | undefined): string | undefined {
   return m ? m[1] : undefined;
 }
 const PREMIUM_TERMS = ["opus", "ultra", "gpt-5", "gpt-4", "o1", "o3", "pro", "sonnet", "haiku", "gemini-1.5-pro", "claude-3"];
+
+// ── Per-model public list pricing ($/1M tokens) ────────────────────────────────
+// Ordered longest-prefix-first so gpt-4.1-mini matches before gpt-4.1 before gpt-4.
+const MODEL_PRICES: { prefix: string; inp: number; out: number; cacheRead: number }[] = [
+  // Anthropic
+  { prefix: "claude-opus-4",      inp: 15.00, out: 75.00, cacheRead: 1.50 },
+  { prefix: "claude-opus-3",      inp: 15.00, out: 75.00, cacheRead: 1.50 },
+  { prefix: "claude-sonnet-5",    inp: 3.00,  out: 15.00, cacheRead: 0.30 },
+  { prefix: "claude-sonnet-4",    inp: 3.00,  out: 15.00, cacheRead: 0.30 },
+  { prefix: "claude-sonnet-3-5",  inp: 3.00,  out: 15.00, cacheRead: 0.30 },
+  { prefix: "claude-sonnet-3",    inp: 3.00,  out: 15.00, cacheRead: 0.30 },
+  { prefix: "claude-haiku-4-5",   inp: 0.80,  out: 4.00,  cacheRead: 0.08 },
+  { prefix: "claude-haiku-4",     inp: 0.80,  out: 4.00,  cacheRead: 0.08 },
+  { prefix: "claude-haiku-3",     inp: 0.25,  out: 1.25,  cacheRead: 0.03 },
+  // OpenAI
+  { prefix: "o4-mini",            inp: 1.10,  out: 4.40,  cacheRead: 0.275 },
+  { prefix: "o3-mini",            inp: 1.10,  out: 4.40,  cacheRead: 0.55  },
+  { prefix: "o3",                 inp: 10.00, out: 40.00, cacheRead: 2.50  },
+  { prefix: "o1",                 inp: 15.00, out: 60.00, cacheRead: 7.50  },
+  { prefix: "gpt-5-mini",         inp: 1.10,  out: 4.40,  cacheRead: 0.275 },
+  { prefix: "gpt-5",              inp: 2.50,  out: 10.00, cacheRead: 1.25  },
+  { prefix: "gpt-4.1-mini",       inp: 0.40,  out: 1.60,  cacheRead: 0.10  },
+  { prefix: "gpt-4.1-nano",       inp: 0.10,  out: 0.40,  cacheRead: 0.025 },
+  { prefix: "gpt-4.1",            inp: 2.00,  out: 8.00,  cacheRead: 0.50  },
+  { prefix: "gpt-4o-mini",        inp: 0.15,  out: 0.60,  cacheRead: 0.075 },
+  { prefix: "gpt-4o",             inp: 2.50,  out: 10.00, cacheRead: 1.25  },
+  { prefix: "gpt-4",              inp: 30.00, out: 60.00, cacheRead: 0     },
+];
+
+function lookupModelPrice(model: string): { inp: number; out: number; cacheRead: number } | null {
+  const lower = model.toLowerCase();
+  return MODEL_PRICES.find(p => lower.startsWith(p.prefix)) ?? null;
+}
+
+// ── File classifier ────────────────────────────────────────────────────────────
+// Returns "cost", "usage", "cost+usage", or "unknown" based on column headers.
+// Uses the same findCol/norm logic as the parsers so space-separated and
+// underscore-style header variants are treated identically.
+function classifyCSVText(text: string): "cost" | "usage" | "cost+usage" | "unknown" {
+  const headers = (Papa.parse<Record<string, string>>(text, { header: true, preview: 1 }).meta.fields ?? []).map(norm);
+  const hasCost  = !!findCol(headers, COST_COLS);
+  const hasUsage = !!findCol(headers, INPUT_COLS) || !!findCol(headers, OUTPUT_COLS);
+  if (hasCost && hasUsage) return "cost+usage";
+  if (hasCost)  return "cost";
+  if (hasUsage) return "usage";
+  return "unknown";
+}
 
 const MODEL_COLORS = ["#2563eb", "#7c3aed", "#0891b2", "#059669", "#d97706", "#dc2626", "#db2777"];
 
@@ -307,61 +365,181 @@ function buildReport(
   };
 }
 
-function analyzeCSV(csvText: string): { report: Report } | { error: string } {
-  // ── Try 1: standard flat CSV (one header row, one data row per event) ─────────
+// ── Core cost-row extractor — shared by analyzeCSV and the combined-file path ──
+type CostRowsResult = { rows: ParsedRow[]; modelMap: Map<string, number> | null; hasCacheData: boolean; hasKeyData: boolean };
+function extractCostRows(csvText: string): CostRowsResult | { error: string } {
   const parsed = Papa.parse<Record<string, string>>(csvText, {
     header: true, skipEmptyLines: true, transformHeader: (h) => h.trim(),
   });
 
-  const headers = parsed.meta.fields ?? [];
+  const headers  = parsed.meta.fields ?? [];
   const dateCol  = findCol(headers, DATE_COLS);
   const costCol  = findCol(headers, COST_COLS);
   const modelCol = findCol(headers, MODEL_COLS);
-  // "Description"-style columns (Anthropic, etc.) — model name embedded in cell text
   const descCol  = !modelCol ? findCol(headers, DESC_COLS) : undefined;
   const keyCol   = findCol(headers, KEY_COLS);
   const inputCol = findCol(headers, INPUT_COLS);
   const cacheCol = findCol(headers, CACHE_COLS);
 
   let rows: ParsedRow[] = [];
-  let prebuiltModelMap: Map<string, number> | null = null;
+  let modelMap: Map<string, number> | null = null;
 
   if (dateCol && costCol) {
     for (const raw of parsed.data) {
       const date = parseDate(raw[dateCol] ?? "");
       const cost = parseCost(raw[costCol] ?? "0");
       if (!date || isNaN(cost) || cost < 0) continue;
-
-      // Model: prefer explicit model column; fall back to extracting from description.
-      // extractModel() returns undefined for non-model rows ("Web Search Usage" etc.)
       const model = modelCol
         ? (raw[modelCol]?.trim().replace(/\s*\([^)]*\)\s*$/, "").trim() || undefined)
-        : descCol
-          ? extractModel(raw[descCol])
-          : undefined;
-
+        : descCol ? extractModel(raw[descCol]) : undefined;
       rows.push({
         date, cost, model,
-        key:   keyCol   ? raw[keyCol]?.trim()   : undefined,
-        inputTokens:     inputCol ? parseInt(raw[inputCol] ?? "0") || undefined : undefined,
-        cacheReadTokens: cacheCol ? parseInt(raw[cacheCol] ?? "0") || undefined : undefined,
+        key:             keyCol   ? raw[keyCol]?.trim()   : undefined,
+        inputTokens:     inputCol ? parseInt(raw[inputCol]  ?? "0") || undefined : undefined,
+        cacheReadTokens: cacheCol ? parseInt(raw[cacheCol]  ?? "0") || undefined : undefined,
       });
     }
   }
 
-  // ── Try 2: multi-section executive summary layout ─────────────────────────────
   if (rows.length === 0) {
     const ms = parseMultiSection(csvText);
-    if (!ms) {
-      return { error: "Couldn't find date and cost columns. Make sure the file has a Date column and a Cost/Amount column, or use the sample CSV as a guide." };
-    }
+    if (!ms) return { error: "Couldn't find date and cost columns. Make sure the file has a Date column and a Cost/Amount column, or use the sample CSV as a guide." };
     rows = ms.rows;
-    if (ms.modelMap.size > 0) prebuiltModelMap = ms.modelMap;
+    if (ms.modelMap.size > 0) modelMap = ms.modelMap;
   }
 
   if (rows.length === 0) return { error: "The file was parsed but no valid rows were found. Make sure it has date and cost columns with data." };
+  return { rows, modelMap, hasCacheData: !!(inputCol && cacheCol), hasKeyData: !!keyCol };
+}
 
-  return { report: buildReport(rows, prebuiltModelMap, !!(inputCol && cacheCol), !!keyCol) };
+function analyzeCSV(csvText: string): { report: Report } | { error: string } {
+  const result = extractCostRows(csvText);
+  if ("error" in result) return result;
+  const { rows, modelMap, hasCacheData, hasKeyData } = result;
+  return { report: buildReport(rows, modelMap, hasCacheData, hasKeyData) };
+}
+
+// ── Usage-row extractor ────────────────────────────────────────────────────────
+// Reads token columns. Returns rows with cost=0; cost is estimated later.
+function extractUsageRows(csvText: string): ParsedRow[] | { error: string } {
+  const parsed = Papa.parse<Record<string, string>>(csvText, {
+    header: true, skipEmptyLines: true, transformHeader: h => h.trim(),
+  });
+  const headers  = parsed.meta.fields ?? [];
+  const dateCol  = findCol(headers, DATE_COLS);
+  const modelCol = findCol(headers, MODEL_COLS);
+  const descCol  = !modelCol ? findCol(headers, DESC_COLS) : undefined;
+  const keyCol   = findCol(headers, KEY_COLS);
+  const inputCol = findCol(headers, INPUT_COLS);
+  const outputCol= findCol(headers, OUTPUT_COLS);
+  const cacheCol = findCol(headers, CACHE_COLS);
+
+  if (!dateCol) return { error: "No date column found in this usage file." };
+  if (!inputCol && !outputCol) return { error: "No token columns found. Make sure this is a usage/token export, not a billing export." };
+
+  const rows: ParsedRow[] = [];
+  for (const raw of parsed.data) {
+    const date = parseDate(raw[dateCol] ?? "");
+    if (!date) continue;
+    const modelRaw = modelCol
+      ? raw[modelCol]?.trim().replace(/\s*\([^)]*\)\s*$/, "").trim()
+      : descCol ? extractModel(raw[descCol]) : undefined;
+    if (!modelRaw) continue;
+    rows.push({
+      date, cost: 0, model: modelRaw,
+      key:             keyCol   ? raw[keyCol]?.trim() : undefined,
+      inputTokens:     inputCol  ? parseInt(raw[inputCol]  ?? "0") || undefined : undefined,
+      outputTokens:    outputCol ? parseInt(raw[outputCol] ?? "0") || undefined : undefined,
+      cacheReadTokens: cacheCol  ? parseInt(raw[cacheCol]  ?? "0") || undefined : undefined,
+    });
+  }
+  return rows;
+}
+
+// ── Usage-only analysis (estimates spend from token counts) ────────────────────
+function analyzeUsageCSV(csvText: string): { report: Report } | { error: string } {
+  const usageRows = extractUsageRows(csvText);
+  if ("error" in usageRows) return usageRows;
+
+  // Estimate cost for each row using list pricing
+  const rows: ParsedRow[] = [];
+  let unknownModels = 0;
+  for (const r of usageRows) {
+    const price = lookupModelPrice(r.model ?? "");
+    if (!price) { unknownModels++; continue; }
+    const cost = ((r.inputTokens     ?? 0) / 1_000_000) * price.inp
+               + ((r.outputTokens    ?? 0) / 1_000_000) * price.out
+               + ((r.cacheReadTokens ?? 0) / 1_000_000) * price.cacheRead;
+    rows.push({ ...r, cost });
+  }
+
+  if (rows.length === 0) {
+    return { error: unknownModels > 0
+      ? "None of the model names in this file matched our pricing table. Estimated spend requires a recognized model name (e.g. claude-sonnet-5, gpt-4o)."
+      : "No valid rows with model names found in this usage file." };
+  }
+
+  const hasCacheData = rows.some(r => r.cacheReadTokens !== undefined);
+  const hasKeyData   = rows.some(r => !!r.key);
+  const report = buildReport(rows, null, hasCacheData, hasKeyData);
+  return { report: { ...report, isEstimated: true } };
+}
+
+// ── Cost + Usage join ──────────────────────────────────────────────────────────
+// Matches cost rows to usage rows on date + model + key.
+// Returns disjoint:true when the two files share no dates — caller should
+// fall back to cost-only rather than treating everything as Tool costs.
+function joinCostAndUsage(
+  costRows: ParsedRow[], usageRows: ParsedRow[]
+): { rows: ParsedRow[]; dateRangeNote: string | null; disjoint: boolean } {
+  const costDates  = [...new Set(costRows.map(r => r.date))].sort();
+  const usageDates = [...new Set(usageRows.map(r => r.date))].sort();
+  const overlapSet = new Set(costDates.filter(d => usageDates.includes(d)));
+
+  // Disjoint ranges — cannot meaningfully join; report this back to caller
+  if (overlapSet.size === 0 && costDates.length > 0 && usageDates.length > 0) {
+    return { rows: [], dateRangeNote: null, disjoint: true };
+  }
+
+  let dateRangeNote: string | null = null;
+  if (costDates.length > 0 && usageDates.length > 0) {
+    const sameRange = costDates[0] === usageDates[0] && costDates.at(-1) === usageDates.at(-1);
+    if (!sameRange && overlapSet.size > 0) {
+      const overlapSorted = [...overlapSet].sort();
+      dateRangeNote = `Report covers ${fmtDate(overlapSorted[0])}–${fmtDate(overlapSorted.at(-1)!)}, the range common to both files.`;
+    }
+  }
+
+  // Filter cost rows to the overlapping date range
+  const filteredCost = costRows.filter(r => overlapSet.has(r.date));
+
+  // Build usage index: date||model||key → row
+  const usageIdx = new Map<string, ParsedRow>();
+  for (const r of usageRows) {
+    if (!overlapSet.has(r.date)) continue;
+    const k = `${r.date}||${(r.model ?? "").toLowerCase()}||${(r.key ?? "").toLowerCase()}`;
+    usageIdx.set(k, r);
+  }
+
+  const joined: ParsedRow[] = filteredCost.map(cr => {
+    const k = `${cr.date}||${(cr.model ?? "").toLowerCase()}||${(cr.key ?? "").toLowerCase()}`;
+    const ur = usageIdx.get(k);
+    if (!ur) {
+      // Row has no matching usage entry — either a tool-cost line (Web Search Usage,
+      // Code Execution Usage, etc.) or a model row not present in the usage export.
+      // ALL unmatched rows are bucketed as "Tool costs" so they appear as a distinct
+      // line in the model breakdown rather than being silently mixed or dropped.
+      return { ...cr, model: "Tool costs" };
+    }
+    return {
+      ...cr,
+      inputTokens:     ur.inputTokens,
+      outputTokens:    ur.outputTokens,
+      cacheReadTokens: ur.cacheReadTokens,
+    };
+  });
+
+  return { rows: joined, dateRangeNote, disjoint: false };
 }
 
 // ── Sample CSV generator ───────────────────────────────────────────────────────
@@ -383,24 +561,28 @@ function generateSampleCSV(): string {
 }
 
 // ── Recharts custom tooltip ────────────────────────────────────────────────────
-function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number; name?: string }[]; label?: string }) {
+function ChartTooltip({ active, payload, label, isEstimated }: { active?: boolean; payload?: { value: number; name?: string }[]; label?: string; isEstimated?: boolean }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-card border border-border rounded-xl px-4 py-3 shadow-xl text-sm min-w-[120px]">
       <p className="text-muted-foreground text-xs mb-1.5 font-medium">{label}</p>
       {payload.map((p, i) => (
-        <p key={i} className="font-bold text-foreground">{fmtDollar(p.value)}</p>
+        <p key={i} className="font-bold text-foreground">
+          {fmtDollar(p.value)}{isEstimated && <span className="ml-1 text-[10px] font-semibold text-amber-600">est.</span>}
+        </p>
       ))}
     </div>
   );
 }
 
-function PieTooltip({ active, payload }: { active?: boolean; payload?: { name: string; value: number; payload: { cost: number } }[] }) {
+function PieTooltip({ active, payload, isEstimated }: { active?: boolean; payload?: { name: string; value: number; payload: { cost: number } }[]; isEstimated?: boolean }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-card border border-border rounded-xl px-4 py-3 shadow-xl text-sm">
       <p className="font-medium text-foreground mb-0.5 truncate max-w-[180px]">{payload[0].name}</p>
-      <p className="font-bold text-foreground">{fmtDollar(payload[0].payload.cost)}</p>
+      <p className="font-bold text-foreground">
+        {fmtDollar(payload[0].payload.cost)}{isEstimated && <span className="ml-1 text-[10px] font-semibold text-amber-600">est.</span>}
+      </p>
       <p className="text-xs text-muted-foreground">{Math.round(payload[0].value)}% of spend</p>
     </div>
   );
@@ -442,11 +624,16 @@ export default function SpendCheckupPage() {
   const [stage, setStage] = useState<"upload" | "report">("upload");
   const [report, setReport] = useState<Report | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSample, setIsSample] = useState(false);
   const [isParsing, setIsParsing] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
+
+  // ── Two upload slots ──
+  const [slotA, setSlotA] = useState<File | null>(null); // cost/billing slot
+  const [slotB, setSlotB] = useState<File | null>(null); // usage/token slot
+  const [uploadSource, setUploadSource] = useState<"cost-only" | "usage-only" | "both" | "sample" | null>(null);
+  const fileRefA = useRef<HTMLInputElement>(null);
+  const fileRefB = useRef<HTMLInputElement>(null);
 
   // ── Email PDF modal ──
   const [showEmailModal, setShowEmailModal] = useState(false);
@@ -454,65 +641,142 @@ export default function SpendCheckupPage() {
   const [emailState, setEmailState] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [emailError, setEmailError] = useState<string | null>(null);
 
-  const processText = useCallback((text: string, sample = false) => {
-    setErrorMsg(null);
+  const readFileText = (file: File): Promise<string> =>
+    new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = e => res(e.target?.result as string);
+      r.onerror = rej;
+      r.readAsText(file);
+    });
+
+  const isPdfFile = (f: File) => f.name.toLowerCase().endsWith(".pdf") || f.type === "application/pdf";
+
+  const processSample = useCallback((text: string) => {
     const result = analyzeCSV(text);
     if ("error" in result) { setErrorMsg(result.error); return; }
     setReport(result.report);
-    setIsSample(sample);
+    setUploadSource("sample");
+    setIsSample(true);
     setStage("report");
     setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
   }, []);
 
-  const handleFile = async (file: File) => {
-    const isPdf = file.name.toLowerCase().endsWith(".pdf") || file.type === "application/pdf";
-    const isCsv = file.name.toLowerCase().endsWith(".csv") || file.type === "text/csv";
-    if (!isPdf && !isCsv) { setErrorMsg("Please upload a .csv or .pdf file."); return; }
-
+  // ── Main orchestration — classifies both slots and routes ──
+  const handleFiles = useCallback(async () => {
+    if (!slotA && !slotB) { setErrorMsg("Please add at least one file."); return; }
     setErrorMsg(null);
+    setIsParsing(true);
 
-    if (isPdf) {
-      setIsParsing(true);
-      try {
-        const fd = new FormData();
-        fd.append("file", file);
-        const res = await fetch("/napi/parse-pdf", { method: "POST", body: fd });
-        const data = await res.json();
-        if (!res.ok || data.error) {
-          setErrorMsg(data.error ?? "Could not extract data from this PDF.");
+    try {
+      type Classified = { kind: "cost"; rows: ParsedRow[]; modelMap: Map<string, number>; hasCacheData: boolean; hasKeyData: boolean }
+                      | { kind: "usage"; rows: ParsedRow[] }
+                      | { kind: "cost+usage"; rows: ParsedRow[]; modelMap: Map<string, number>; hasCacheData: boolean; hasKeyData: boolean; usageRows: ParsedRow[] };
+
+      const classify = async (f: File, slotLabel: string): Promise<Classified | { error: string }> => {
+        if (isPdfFile(f)) {
+          const fd = new FormData(); fd.append("file", f);
+          const res = await fetch("/napi/parse-pdf", { method: "POST", body: fd });
+          const data = await res.json();
+          if (!res.ok || data.error) return { error: data.error ?? `Could not read ${slotLabel} PDF.` };
+          const rows: ParsedRow[] = (data.rows ?? []).map((r: { date: string; cost: number; model?: string; key?: string }) => ({ date: r.date, cost: r.cost, model: r.model, key: r.key }));
+          const modelMap = new Map<string, number>(Object.entries(data.modelMap ?? {}));
+          return { kind: "cost", rows, modelMap, hasCacheData: false, hasKeyData: rows.some(r => !!r.key) };
+        }
+
+        const text = await readFileText(f);
+        const fileKind = classifyCSVText(text);
+
+        if (fileKind === "unknown") {
+          return { error: `We couldn't find a cost or token column in "${f.name}". Try re-exporting from your provider's usage or billing page.` };
+        }
+        if (fileKind === "cost" || fileKind === "cost+usage") {
+          const result = extractCostRows(text);
+          if ("error" in result) return result;
+          if (fileKind === "cost+usage") {
+            const uRows = extractUsageRows(text);
+            return { kind: "cost+usage", ...result, usageRows: "error" in uRows ? [] : uRows };
+          }
+          return { kind: "cost", ...result };
+        }
+        // usage
+        const uRows = extractUsageRows(text);
+        if ("error" in uRows) return uRows;
+        return { kind: "usage", rows: uRows };
+      };
+
+      const [aResult, bResult] = await Promise.all([
+        slotA ? classify(slotA, "Cost") : Promise.resolve(null),
+        slotB ? classify(slotB, "Usage") : Promise.resolve(null),
+      ]);
+
+      if (aResult && "error" in aResult) { setErrorMsg(aResult.error); return; }
+      if (bResult && "error" in bResult) { setErrorMsg(bResult.error); return; }
+
+      const a = aResult as Classified | null;
+      const b = bResult as Classified | null;
+
+      // Resolve which is cost and which is usage (auto-detect wins over slot label)
+      let costResult = a?.kind !== "usage" ? a : b?.kind !== "usage" ? b : null;
+      let usageResult= a?.kind === "usage" ? a : b?.kind === "usage" ? b : null;
+
+      // Handle combined single-file (cost+usage)
+      if (costResult?.kind === "cost+usage" && !usageResult) {
+        usageResult = { kind: "usage", rows: costResult.usageRows };
+      }
+
+      if (costResult && usageResult) {
+        // ── BOTH: join and build full report ──
+        const { rows, dateRangeNote, disjoint } = joinCostAndUsage(
+          costResult.rows,
+          usageResult.rows,
+        );
+        if (disjoint) {
+          // Files cover completely different date ranges — fall back to cost-only
+          // with an explanatory note rather than showing a misleading Tool-costs report.
+          const builtReport = buildReport(
+            costResult.rows,
+            "modelMap" in costResult ? (costResult.modelMap ?? null) : null,
+            costResult.hasCacheData, costResult.hasKeyData,
+          );
+          setReport({ ...builtReport, dateRangeNote: "Your two files cover different date ranges with no overlap — showing the cost file only. Re-upload files that share the same period to get a joined report." });
+          setUploadSource("cost-only");
+          setStage("report");
           return;
         }
-        // data = { rows: [{date,cost,model?,key?}], modelMap: {model: cost} }
-        const rows: ParsedRow[] = (data.rows ?? []).map(
-          (r: { date: string; cost: number; model?: string; key?: string }) => ({
-            date: r.date, cost: r.cost, model: r.model, key: r.key,
-          })
-        );
-        const modelMap = new Map<string, number>(Object.entries(data.modelMap ?? {}));
-        const hasModels = modelMap.size > 0;
-        // Detect key data from the rows themselves (PDF parser extracts it)
-        const hasKeyData = rows.some(r => !!r.key);
-        const report = buildReport(rows, hasModels ? modelMap : null, false, hasKeyData);
-        setReport(report);
-        setIsSample(false);
-        setStage("report");
-        setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
-      } catch {
-        setErrorMsg("Something went wrong reading the PDF. Please try again.");
-      } finally {
-        setIsParsing(false);
+        const hasCacheData = rows.some(r => r.cacheReadTokens !== undefined);
+        const hasKeyData   = rows.some(r => !!r.key);
+        // Derive the model breakdown from the joined rows (not from the prebuilt map)
+        // so Tool-costs rows and date-filtered rows are reflected accurately.
+        const builtReport  = buildReport(rows, null, hasCacheData, hasKeyData);
+        setReport({ ...builtReport, dateRangeNote });
+        setUploadSource("both");
+      } else if (costResult) {
+        // ── COST ONLY ──
+        const builtReport = buildReport(costResult.rows, costResult.modelMap?.size ? costResult.modelMap : null, costResult.hasCacheData, costResult.hasKeyData);
+        setReport(builtReport);
+        setUploadSource("cost-only");
+      } else if (usageResult) {
+        // ── USAGE ONLY ──
+        const csvText = slotA && !isPdfFile(slotA) ? await readFileText(slotA) : slotB && !isPdfFile(slotB) ? await readFileText(slotB) : null;
+        if (!csvText) { setErrorMsg("Could not read the usage file."); return; }
+        const result = analyzeUsageCSV(csvText);
+        if ("error" in result) { setErrorMsg(result.error); return; }
+        setReport(result.report);
+        setUploadSource("usage-only");
+      } else {
+        setErrorMsg("Please upload at least one billing or usage file.");
+        return;
       }
-    } else {
-      const reader = new FileReader();
-      reader.onload = (e) => processText(e.target?.result as string);
-      reader.readAsText(file);
-    }
-  };
 
-  const onDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault(); setIsDragging(false);
-    const f = e.dataTransfer.files[0]; if (f) handleFile(f);
-  }, []);
+      setIsSample(false);
+      setStage("report");
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 50);
+    } catch {
+      setErrorMsg("Something went wrong reading the file. Please try again.");
+    } finally {
+      setIsParsing(false);
+    }
+  }, [slotA, slotB]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sendReportEmail = async () => {
     if (!report || !emailInput) return;
@@ -574,6 +838,7 @@ export default function SpendCheckupPage() {
 
   // ── Upload stage ──
   if (stage === "upload") {
+    const canAnalyze = !!(slotA || slotB) && !isParsing;
     return (
       <PublicLayout>
         <section className="py-20 px-6 max-w-2xl mx-auto w-full">
@@ -583,43 +848,59 @@ export default function SpendCheckupPage() {
             </div>
             <h1 className="text-4xl md:text-5xl font-bold font-outfit mb-4">The LLM Spend Analyzer</h1>
             <p className="text-muted-foreground text-lg leading-relaxed max-w-lg mx-auto">
-              Upload your Claude, OpenAI, or Gemini billing CSV. Get the plain-English version — no token jargon, just what it means for your business.
+              Upload your Claude or OpenAI billing export — or add both the cost file and the usage/token file for the full picture.
             </p>
           </div>
 
-          <div
-            className={`relative border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-200 ${isDragging ? "border-primary bg-primary/5 scale-[1.01]" : "border-border hover:border-primary/50 hover:bg-muted/30"}`}
-            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={onDrop}
-            onClick={() => fileRef.current?.click()}
-          >
-            <input ref={fileRef} type="file" accept=".csv,.pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
-              {isParsing ? <RefreshCw className="w-7 h-7 animate-spin" /> : <Upload className="w-7 h-7" />}
-            </div>
-            {isParsing ? (
-              <>
-                <p className="font-semibold text-foreground text-lg mb-1">Extracting data from PDF…</p>
-                <p className="text-sm text-muted-foreground">This takes a few seconds</p>
-              </>
-            ) : (
-              <>
-                <p className="font-semibold text-foreground text-lg mb-1">Drop your billing export here</p>
-                <p className="text-sm text-muted-foreground">or click to browse — CSV or PDF accepted</p>
-              </>
-            )}
+          {/* ── Two upload slots ── */}
+          <div className="grid sm:grid-cols-2 gap-4 mb-4">
+            <UploadSlotCard
+              label="Cost / Billing export"
+              hint="the file with dollar amounts"
+              badge="Cost file"
+              badgeColor="bg-primary/10 text-primary"
+              file={slotA}
+              onFile={setSlotA}
+              onClear={() => setSlotA(null)}
+              fileInputRef={fileRefA}
+              disabled={isParsing}
+            />
+            <UploadSlotCard
+              label="Usage / Token export"
+              hint="input/output token counts — unlocks full token detail"
+              badge="Optional"
+              badgeColor="bg-muted text-muted-foreground"
+              note="Don't have this? You'll still get a spend breakdown from the Cost file alone."
+              file={slotB}
+              onFile={setSlotB}
+              onClear={() => setSlotB(null)}
+              fileInputRef={fileRefB}
+              disabled={isParsing}
+            />
           </div>
 
+          {/* ── Analyse button ── */}
+          <button
+            onClick={handleFiles}
+            disabled={!canAnalyze}
+            className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed mb-4"
+          >
+            {isParsing ? (
+              <><RefreshCw className="w-4 h-4 animate-spin" /> Analysing…</>
+            ) : (
+              <><Upload className="w-4 h-4" /> Analyse my data</>
+            )}
+          </button>
+
           {errorMsg && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-xl flex gap-3 text-sm text-red-700">
+            <div className="mt-2 p-4 bg-red-50 border border-red-200 rounded-xl flex gap-3 text-sm text-red-700">
               <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-              <div><strong>Couldn&apos;t parse this file.</strong> {errorMsg}</div>
+              <div><strong>Couldn&apos;t read this file.</strong> {errorMsg}</div>
             </div>
           )}
 
           <div className="mt-4 text-center">
-            <button onClick={() => processText(generateSampleCSV(), true)} className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
+            <button onClick={() => processSample(generateSampleCSV())} className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline">
               Don&apos;t have a file handy? Try it with sample data <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -666,15 +947,32 @@ export default function SpendCheckupPage() {
       <div className="max-w-4xl mx-auto px-6 py-14 w-full">
 
         {/* ── Header ── */}
-        <div className="flex items-start justify-between gap-4 flex-wrap mb-12">
+        <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
           <div>
-            {isSample && (
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 border border-yellow-200 text-yellow-700 text-xs font-semibold px-3 py-1 mb-4">
-                Sample data — upload your own CSV to analyse your real spend
-              </div>
-            )}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              {isSample && (
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 border border-yellow-200 text-yellow-700 text-xs font-semibold px-3 py-1">
+                  Sample data — upload your own file to analyse real spend
+                </div>
+              )}
+              {report.isEstimated && (
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 border border-amber-200 text-amber-700 text-xs font-semibold px-3 py-1">
+                  Estimated — based on public list pricing, not your actual bill
+                </div>
+              )}
+            </div>
             <h1 className="text-3xl font-bold font-outfit mb-2">LLM Spend Analyzer Report</h1>
-            <p className="text-muted-foreground">{fmtDate(report.startDate)} – {fmtDate(report.endDate)} · {report.dayCount} day{report.dayCount !== 1 ? "s" : ""}</p>
+            <p className="text-muted-foreground">
+              {fmtDate(report.startDate)} – {fmtDate(report.endDate)} · {report.dayCount} day{report.dayCount !== 1 ? "s" : ""}
+              {uploadSource === "both" && <span className="ml-2 text-xs bg-green-100 text-green-700 border border-green-200 rounded-full px-2 py-0.5 font-semibold">Cost + Usage</span>}
+              {uploadSource === "cost-only" && <span className="ml-2 text-xs bg-blue-100 text-blue-700 border border-blue-200 rounded-full px-2 py-0.5 font-semibold">Cost file</span>}
+              {uploadSource === "usage-only" && <span className="ml-2 text-xs bg-violet-100 text-violet-700 border border-violet-200 rounded-full px-2 py-0.5 font-semibold">Usage file</span>}
+            </p>
+            {report.dateRangeNote && (
+              <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {report.dateRangeNote}
+              </p>
+            )}
           </div>
           <div className="flex items-center gap-3 flex-wrap">
             <button onClick={() => { setShowEmailModal(true); setEmailState("idle"); setEmailInput(""); setEmailError(null); }} className="inline-flex items-center gap-2 text-sm font-medium bg-primary text-primary-foreground rounded-xl px-4 py-2.5 hover:opacity-90 transition-opacity">
@@ -684,11 +982,28 @@ export default function SpendCheckupPage() {
               {copied ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
               {copied ? "Copied!" : "Copy summary"}
             </button>
-            <button onClick={() => { setStage("upload"); setReport(null); setErrorMsg(null); }} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground border border-border rounded-xl px-4 py-2.5 hover:bg-muted transition-colors">
+            <button onClick={() => { setStage("upload"); setReport(null); setErrorMsg(null); setSlotA(null); setSlotB(null); setUploadSource(null); }} className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground border border-border rounded-xl px-4 py-2.5 hover:bg-muted transition-colors">
               <RefreshCw className="w-4 h-4" /> New file
             </button>
           </div>
         </div>
+
+        {/* ── Post-report nudge (soft — not a blocker) ── */}
+        {!isSample && uploadSource !== "both" && (
+          <div className="flex items-center gap-4 bg-muted/60 border border-border rounded-2xl px-5 py-3.5 mb-8 text-sm">
+            <div className="flex-1 text-muted-foreground">
+              {uploadSource === "cost-only"
+                ? "Add your usage/token export for token-level detail — cache hit rate, requests per dollar, and exact cost-per-call."
+                : "Add your billing/cost export for actual dollar figures instead of estimated list prices."}
+            </div>
+            <button
+              onClick={() => { setStage("upload"); setReport(null); setErrorMsg(null); }}
+              className="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+            >
+              Add file <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
 
         {/* ── Health Score + Stats ── */}
         <div className="bg-card border border-border rounded-3xl p-8 shadow-sm mb-10">
@@ -734,7 +1049,12 @@ export default function SpendCheckupPage() {
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${s.color}`}>{s.icon}</div>
                 <div>
                   <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">{s.label}</p>
-                  <p className="text-2xl font-bold font-outfit text-foreground leading-none mb-1">{s.value}</p>
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <p className="text-2xl font-bold font-outfit text-foreground leading-none">{s.value}</p>
+                    {report.isEstimated && s.value !== "—" && (
+                      <span className="text-[10px] font-semibold text-amber-600 bg-amber-100 border border-amber-200 px-1.5 py-0.5 rounded-full leading-none">est.</span>
+                    )}
+                  </div>
                   <p className="text-xs text-muted-foreground">{s.sub}</p>
                 </div>
               </div>
@@ -765,8 +1085,8 @@ export default function SpendCheckupPage() {
                 </linearGradient>
               </defs>
               <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-              <YAxis tickFormatter={(v) => `$${v}`} tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} width={52} />
-              <Tooltip content={<ChartTooltip />} cursor={{ fill: "#f1f5f9", opacity: 0.8 }} />
+              <YAxis tickFormatter={(v) => report.isEstimated ? `~$${v}` : `$${v}`} tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} width={52} />
+              <Tooltip content={({ active, payload, label }) => <ChartTooltip active={active} payload={payload as { value: number }[]} label={label} isEstimated={report.isEstimated} />} cursor={{ fill: "#f1f5f9", opacity: 0.8 }} />
               <Bar dataKey="cost" radius={[6, 6, 0, 0]}>
                 {report.chartData.map((entry, i) => (
                   <Cell key={i} fill={entry.isSpike ? "#ef4444" : "url(#barGradient)"} />
@@ -798,8 +1118,8 @@ export default function SpendCheckupPage() {
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                <YAxis tickFormatter={(v) => `$${v}`} tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} width={52} />
-                <Tooltip content={<ChartTooltip />} cursor={{ stroke: "#2563eb", strokeWidth: 1, strokeDasharray: "4 4" }} />
+                <YAxis tickFormatter={(v) => report.isEstimated ? `~$${v}` : `$${v}`} tick={{ fontSize: 11, fill: "#94a3b8" }} tickLine={false} axisLine={false} width={52} />
+                <Tooltip content={({ active, payload, label }) => <ChartTooltip active={active} payload={payload as { value: number }[]} label={label} isEstimated={report.isEstimated} />} cursor={{ stroke: "#2563eb", strokeWidth: 1, strokeDasharray: "4 4" }} />
                 <Area type="monotone" dataKey="cost" stroke="#2563eb" strokeWidth={2.5} fill="url(#areaGradient)" dot={false} activeDot={{ r: 5, fill: "#2563eb", strokeWidth: 2, stroke: "white" }} />
                 {report.spikes.map((s, i) => (
                   <ReferenceDot key={i} x={s.label} y={s.cost} r={6} fill="#ef4444" stroke="white" strokeWidth={2} />
@@ -840,7 +1160,7 @@ export default function SpendCheckupPage() {
                         <Cell key={i} fill={entry.fill} />
                       ))}
                     </Pie>
-                    <Tooltip content={<PieTooltip />} />
+                    <Tooltip content={({ active, payload }) => <PieTooltip active={active} payload={payload as { name: string; value: number; payload: { cost: number } }[]} isEstimated={report.isEstimated} />} />
                     <Legend
                       formatter={(value) => <span style={{ fontSize: 11, color: "#64748b" }}>{value}</span>}
                       iconSize={10}
@@ -856,7 +1176,9 @@ export default function SpendCheckupPage() {
                     <div className="flex justify-between text-sm mb-2">
                       <span className="font-medium text-foreground truncate max-w-[55%]">{m.model}</span>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="text-muted-foreground text-xs">{fmtDollar(m.cost)}</span>
+                        <span className="text-muted-foreground text-xs">
+                          {fmtDollar(m.cost)}{report.isEstimated && <span className="ml-1 text-amber-600 font-semibold">est.</span>}
+                        </span>
                         <span className="text-foreground font-bold text-xs bg-muted px-2 py-0.5 rounded-full">{Math.round(m.share * 100)}%</span>
                       </div>
                     </div>
@@ -981,8 +1303,8 @@ export default function SpendCheckupPage() {
                   </linearGradient>
                 </defs>
                 <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#94a3b8" }} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                <YAxis tickFormatter={(v) => `$${v}`} tick={{ fontSize: 10, fill: "#94a3b8" }} tickLine={false} axisLine={false} width={48} />
-                <Tooltip content={<ChartTooltip />} />
+                <YAxis tickFormatter={(v) => report.isEstimated ? `~$${v}` : `$${v}`} tick={{ fontSize: 10, fill: "#94a3b8" }} tickLine={false} axisLine={false} width={48} />
+                <Tooltip content={({ active, payload, label }) => <ChartTooltip active={active} payload={payload as { value: number }[]} label={label} isEstimated={report.isEstimated} />} />
                 <Line type="monotone" dataKey="cost" stroke="#2563eb" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: "#2563eb", strokeWidth: 2, stroke: "white" }} />
                 {report.spikes.map((s, i) => (
                   <ReferenceDot key={i} x={s.label} y={s.cost} r={6} fill="#ef4444" stroke="white" strokeWidth={2} />
@@ -998,7 +1320,9 @@ export default function SpendCheckupPage() {
                     <div key={s.date} className="flex items-center gap-3 bg-red-50 border border-red-100 rounded-xl px-4 py-3 text-sm">
                       <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
                       <span className="font-medium text-foreground">{s.label}</span>
-                      <span className="text-red-700 font-semibold">+{pct}% ({fmtDollar(s.cost)} vs {fmtDollar(prev)})</span>
+                      <span className="text-red-700 font-semibold">
+                        +{pct}% ({fmtDollar(s.cost)}{report.isEstimated && <span className="text-[10px] text-amber-600 font-semibold ml-0.5">est.</span>} vs {fmtDollar(prev)}{report.isEstimated && <span className="text-[10px] text-amber-600 font-semibold ml-0.5">est.</span>})
+                      </span>
                     </div>
                   );
                 })}
@@ -1283,6 +1607,69 @@ function EmailModal({
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+// ── Upload slot card ───────────────────────────────────────────────────────────
+function UploadSlotCard({
+  label, hint, badge, badgeColor, note,
+  file, onFile, onClear, fileInputRef, disabled,
+}: {
+  label: string; hint: string; badge: string; badgeColor: string; note?: string;
+  file: File | null; onFile: (f: File) => void; onClear: () => void;
+  fileInputRef: React.RefObject<HTMLInputElement | null>; disabled?: boolean;
+}) {
+  const [isDragging, setIsDragging] = useState(false);
+  return (
+    <div
+      className={`relative border-2 border-dashed rounded-2xl p-5 transition-all duration-200 ${
+        isDragging  ? "border-primary bg-primary/5 scale-[1.01]" :
+        file        ? "border-green-400 bg-green-50/50 cursor-default" :
+                      "border-border hover:border-primary/40 hover:bg-muted/30 cursor-pointer"
+      }`}
+      onDragOver={(e) => { e.preventDefault(); if (!disabled) setIsDragging(true); }}
+      onDragLeave={() => setIsDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault(); setIsDragging(false);
+        if (disabled) return;
+        const f = e.dataTransfer.files[0]; if (f) onFile(f);
+      }}
+      onClick={() => { if (!file && !disabled) fileInputRef.current?.click(); }}
+    >
+      <input
+        ref={fileInputRef} type="file" accept=".csv,.pdf" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }}
+      />
+
+      {/* Label row */}
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-sm font-semibold text-foreground">{label}</span>
+        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${badgeColor}`}>{badge}</span>
+      </div>
+
+      {file ? (
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+          <span className="text-sm text-green-700 font-medium truncate flex-1">{file.name}</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); onClear(); }}
+            className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="Remove file"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      ) : (
+        <div>
+          <p className="text-sm text-muted-foreground">Drop file or click to browse</p>
+          <p className="text-xs text-muted-foreground/70 mt-0.5">{hint}</p>
+        </div>
+      )}
+
+      {note && !file && (
+        <p className="text-[11px] text-muted-foreground/60 mt-2 leading-relaxed border-t border-border/50 pt-2">{note}</p>
+      )}
     </div>
   );
 }

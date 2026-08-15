@@ -176,36 +176,47 @@ function parseHorizontalSplit(text: string) {
   return { rows, modelMap };
 }
 
+// Cost-related header terms used by various providers in their PDFs.
+const COST_HEADER_RE = /Total Cost|Cost \(USD\)|Total cost \(USD\)|Amount|Charge|Total Amount/i;
+
 // ── Parser B: flat detailed table ─────────────────────────────────────────────
-// Handles exports where ALL columns live on one line per usage row, including
-// a "Total Cost" column at the far right (e.g. Claude console exports).
-// Multiple rows can share the same date; each row's last decimal is Total Cost.
+// Handles exports where ALL columns live on one line per usage row.
+// Anthropic PDFs use "Total cost (USD)" — we match any recognizable cost header.
+// Also handles cases where "Date" and the cost header appear on nearby (not same) lines.
 function parseFlatDetailedTable(text: string) {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
 
-  // Need a header row that has both "Date" and "Total Cost"
-  const headerIdx = lines.findIndex(
-    (l) => /\bDate\b/i.test(l) && /Total Cost/i.test(l)
-  );
+  // Find a header block: "Date" must appear within 3 lines of a cost-column name
+  let headerIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (/\bDate\b/i.test(lines[i]) && COST_HEADER_RE.test(lines[i])) {
+      headerIdx = i; break; // same line — ideal case
+    }
+    if (/\bDate\b/i.test(lines[i])) {
+      // Look ahead up to 3 lines for the cost column header
+      for (let j = i + 1; j <= Math.min(i + 3, lines.length - 1); j++) {
+        if (COST_HEADER_RE.test(lines[j])) { headerIdx = j; break; }
+      }
+      if (headerIdx !== -1) break;
+    }
+  }
   if (headerIdx === -1) return null;
 
-  const rows: { date: string; cost: number; model?: string; key?: string }[] =
-    [];
+  const rows: { date: string; cost: number; model?: string; key?: string }[] = [];
   const modelMap: Record<string, number> = {};
 
   for (const line of lines.slice(headerIdx + 1)) {
-    const iso = line.match(/^(\d{4}-\d{2}-\d{2})\s/);
+    // Allow ISO date anywhere on the line (Anthropic sometimes puts workspace/model first)
+    const iso = line.match(/\b(\d{4}-\d{2}-\d{2})\b/);
     if (!iso) continue;
     const date = iso[1];
 
-    // Find all decimal numbers on the line; the LAST one is Total Cost
-    const decimals = [...line.matchAll(/\b(\d+\.\d+)\b/g)];
-    if (!decimals.length) continue;
-    const totalCost = parseFloat(decimals[decimals.length - 1][1]);
-    if (isNaN(totalCost) || totalCost < 0) continue;
+    // Find all decimal numbers on the line; the LAST one < 100k is Total Cost
+    const decimals = [...line.matchAll(/\b(\d+\.\d+)\b/g)].map((m) => parseFloat(m[1]));
+    const totalCost = [...decimals].reverse().find((v) => v < 100_000);
+    if (totalCost === undefined || totalCost < 0) continue;
 
     const model = line.match(MODEL_RE)?.[1];
-    // API keys often look like key_xxx or prod-xxx
     const keyMatch = line.match(/\bkey_[\w]+\b/i) ?? line.match(/\bprod-[\w-]+\b/);
 
     rows.push({ date, cost: totalCost, model, key: keyMatch?.[0] });
@@ -215,53 +226,84 @@ function parseFlatDetailedTable(text: string) {
   return rows.length ? { rows, modelMap } : null;
 }
 
-// ── Parser C: generic flat fallback ───────────────────────────────────────────
-// Handles any export where each row starts with an ISO date and has one or more
-// decimal cost values.  Takes the LAST decimal on each line (= Total Cost when
-// multiple cost columns exist) and accumulates — never deduplicates by date so
-// multi-row-per-date exports are summed correctly.
+// ── Parser C: generic flat fallback (ISO date at line start) ──────────────────
+// Handles any export where each row starts with an ISO date.
 function parseFlatText(text: string) {
-  const rows: { date: string; cost: number; model?: string; key?: string }[] =
-    [];
+  const rows: { date: string; cost: number; model?: string; key?: string }[] = [];
   const modelMap: Record<string, number> = {};
 
   const flat = text.replace(/[^\S\n]+/g, " ").replace(/\r/g, "");
   const lines = flat.split("\n").map((l) => l.trim());
 
   for (const line of lines) {
-    // Line must start with an ISO date
+    // Primary: ISO date at line start
     const isoMatch = line.match(/^(\d{4}-\d{2}-\d{2})\s/);
     if (!isoMatch) continue;
     const date = isoMatch[1];
 
-    // Collect ALL decimal numbers on the line
-    const decimals = [...line.matchAll(/\b(\d+\.\d+)\b/g)].map((m) =>
-      parseFloat(m[1])
-    );
-    if (!decimals.length) continue;
-
-    // Prefer the last decimal (= Total Cost column) but reject implausibly large
-    // values (token counts occasionally have a .0 form)
+    const decimals = [...line.matchAll(/\b(\d+\.\d+)\b/g)].map((m) => parseFloat(m[1]));
     const cost = [...decimals].reverse().find((v) => v < 100_000);
     if (cost === undefined || cost <= 0) continue;
 
     const model = line.match(MODEL_RE)?.[1];
-    const keyMatch =
-      line.match(/\bkey_[\w]+\b/i) ?? line.match(/\bprod-[\w-]+\b/);
+    const keyMatch = line.match(/\bkey_[\w]+\b/i) ?? line.match(/\bprod-[\w-]+\b/);
     rows.push({ date, cost, model, key: keyMatch?.[0] });
     if (model) modelMap[model] = (modelMap[model] ?? 0) + cost;
   }
 
   // Written-month fallback (e.g. "Jul 1 $4.83")
   if (!rows.length) {
-    const WRITTEN =
-      /\b([A-Za-z]{3,9}\.?\s+\d{1,2}(?:,?\s*\d{4})?)\s+\$?([\d,]+\.\d{2})/g;
+    const WRITTEN = /\b([A-Za-z]{3,9}\.?\s+\d{1,2}(?:,?\s*\d{4})?)\s+\$?([\d,]+\.\d{2})/g;
     let m: RegExpExecArray | null;
     while ((m = WRITTEN.exec(flat)) !== null) {
       const date = toIso(m[1]);
       const cost = stripCost(m[2]);
       if (date && !isNaN(cost) && cost > 0) rows.push({ date, cost });
     }
+  }
+
+  return rows.length ? { rows, modelMap } : null;
+}
+
+// ── Parser D: ISO date anywhere on line (Anthropic / non-standard layouts) ────
+// Catches PDFs where text extraction puts workspace, model, or key columns
+// BEFORE the date — common in Anthropic console exports where "Workspace Name"
+// is the first extracted column.  Only runs after A–C all fail.
+function parseDateAnywhereOnLine(text: string) {
+  const rows: { date: string; cost: number; model?: string; key?: string }[] = [];
+  const modelMap: Record<string, number> = {};
+
+  const flat = text.replace(/[^\S\n]+/g, " ").replace(/\r/g, "");
+  const lines = flat.split("\n").map((l) => l.trim());
+
+  for (const line of lines) {
+    // Skip header / label lines
+    if (/\bDate\b|\bModel\b|\bWorkspace\b|\bTokens\b|\bCost\b/i.test(line) &&
+        !/\d{4}-\d{2}-\d{2}/.test(line)) continue;
+
+    // ISO date somewhere in the line
+    const isoMatch = line.match(/\b(\d{4}-\d{2}-\d{2})\b/);
+    if (!isoMatch) continue;
+    const date = isoMatch[1];
+
+    // Prefer an explicit $N.NN pattern; fall back to last small decimal
+    const dollarMatch = line.match(/\$\s*([\d,]+\.\d{2})/);
+    let cost: number;
+    if (dollarMatch) {
+      cost = parseFloat(dollarMatch[1].replace(/,/g, ""));
+    } else {
+      const decimals = [...line.matchAll(/\b(\d+\.\d+)\b/g)].map((m) => parseFloat(m[1]));
+      const found = [...decimals].reverse().find((v) => v < 100_000);
+      if (found === undefined || found <= 0) continue;
+      cost = found;
+    }
+
+    if (isNaN(cost) || cost < 0) continue;
+
+    const model = line.match(MODEL_RE)?.[1];
+    const keyMatch = line.match(/\bkey_[\w]+\b/i) ?? line.match(/\bprod-[\w-]+\b/);
+    rows.push({ date, cost, model, key: keyMatch?.[0] });
+    if (model) modelMap[model] = (modelMap[model] ?? 0) + cost;
   }
 
   return rows.length ? { rows, modelMap } : null;
@@ -292,19 +334,24 @@ export async function POST(request: Request) {
     }
 
     // Try parsers in order of specificity:
-    //   A) horizontal split (OpenAI multi-page table)
-    //   B) flat detailed   (Claude/Gemini: all cols on one line, Total Cost last)
-    //   C) flat summary    (one aggregated row per date)
+    //   A) horizontal split      — OpenAI multi-page table (date half / cost half)
+    //   B) flat detailed table   — date + cost header anywhere within 3 lines of each other;
+    //                              ISO date allowed anywhere on data lines (handles Anthropic)
+    //   C) flat summary          — ISO date at line start + last small decimal
+    //   D) date-anywhere fallback— ISO date anywhere on line; prefers $N.NN pattern
     const result =
       parseHorizontalSplit(pdfText) ??
       parseFlatDetailedTable(pdfText) ??
-      parseFlatText(pdfText);
+      parseFlatText(pdfText) ??
+      parseDateAnywhereOnLine(pdfText);
 
     if (!result || result.rows.length === 0) {
       return Response.json(
         {
           error:
-            "Could not find date and cost data in this PDF. Try exporting as CSV for the most reliable results.",
+            "Could not find date and cost data in this PDF. " +
+            "For Anthropic: export a CSV from the Usage tab at console.anthropic.com/settings/usage. " +
+            "For OpenAI: use the CSV export at platform.openai.com/usage.",
         },
         { status: 400 }
       );

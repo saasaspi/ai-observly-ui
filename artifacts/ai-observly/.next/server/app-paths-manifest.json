@@ -1,5 +1,5 @@
 {
-  "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
+  "/napi/parse-pdf/route": "app/napi/parse-pdf/route.js",
   "/page": "app/page.js",
   "/spend-checkup/page": "app/spend-checkup/page.js"
 }
