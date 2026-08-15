@@ -239,10 +239,10 @@ export default async function BlogPostPage({
                 Know exactly which customers and features are eroding your margins — before you find out on the invoice.
               </p>
               <Link
-                href="/#pricing"
+                href="/spend-checkup"
                 className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 shadow-sm"
               >
-                Start monitoring now <ArrowRight className="w-4 h-4" />
+                Try the Free LLM Spend Analyzer <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </article>

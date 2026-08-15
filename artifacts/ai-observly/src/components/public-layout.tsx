@@ -176,14 +176,14 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               Pricing
             </Link>
 
-            {/* Free Spend Check-up */}
+            {/* Free LLM Spend Analyzer */}
             <Link
               href="/spend-checkup"
               className="px-3 py-2 rounded-md font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5"
               data-testid="link-spend-checkup"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              Free Spend Check-up
+              Free LLM Spend Analyzer
             </Link>
           </nav>
 
@@ -281,14 +281,14 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               Pricing
             </Link>
 
-            {/* Free Spend Check-up */}
+            {/* Free LLM Spend Analyzer */}
             <Link
               href="/spend-checkup"
               className="px-3 py-2.5 rounded-md text-sm font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
               onClick={() => setMobileOpen(false)}
             >
               <Sparkles className="w-3.5 h-3.5" />
-              Free Spend Check-up
+              Free LLM Spend Analyzer
             </Link>
 
             <div className="border-t border-border mt-2 pt-3 flex flex-col gap-2">
@@ -375,7 +375,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                     href="/spend-checkup"
                     className="hover:text-foreground transition-colors font-medium text-primary"
                   >
-                    Free Spend Check-up
+                    Free LLM Spend Analyzer
                   </Link>
                 </li>
                 <li>

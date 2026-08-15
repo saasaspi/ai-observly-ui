@@ -602,6 +602,9 @@ importers:
       sanity:
         specifier: ^3.73.0
         version: 3.99.0(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.3.0)(@types/node@25.9.5)(@types/react@18.3.31)(immer@10.2.0)(jiti@2.7.0)(lightningcss@1.32.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(styled-components@6.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(tsx@4.23.1)(typescript@5.9.3)(yaml@2.9.0)
+      sanity-plugin-table:
+        specifier: ^2.3.0
+        version: 2.3.0(@sanity/icons@3.8.0(react@19.1.0))(@sanity/ui@2.16.27(@emotion/is-prop-valid@1.4.0)(react-dom@19.1.0(react@19.1.0))(react-is@18.3.1)(react@19.1.0)(styled-components@6.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)))(@sanity/uuid@3.0.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(styled-components@6.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
       styled-components:
         specifier: ^6.1.15
         version: 6.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -6067,6 +6070,16 @@ packages:
 
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
+
+  sanity-plugin-table@2.3.0:
+    resolution: {integrity: sha512-5aTTjL7Bpyc52MqWg+d/Gk8qDy3XuyQ0IT23qFCXXYolhPNIQQSOUVgKHMWdXgTC5OvcnXhTMCh5oRBCXXtbOw==}
+    peerDependencies:
+      '@sanity/icons': ^1.0.1
+      '@sanity/ui': ^0.33.10
+      '@sanity/uuid': ^3.0.1
+      react: ^17.0.1
+      react-dom: ^17.0.1
+      styled-components: ^5.2.1
 
   sanity@3.99.0:
     resolution: {integrity: sha512-uNo8bEC6w4j87d6mUMpkTIjRR/bTtF+SKmvRl0XP7ZCjds9oK2+t4txL1Rr0VmV5KnCFZJhq8sP7aVJN5PPD5w==}
@@ -12843,6 +12856,15 @@ snapshots:
   safe-stable-stringify@2.5.0: {}
 
   safer-buffer@2.1.2: {}
+
+  sanity-plugin-table@2.3.0(@sanity/icons@3.8.0(react@19.1.0))(@sanity/ui@2.16.27(@emotion/is-prop-valid@1.4.0)(react-dom@19.1.0(react@19.1.0))(react-is@18.3.1)(react@19.1.0)(styled-components@6.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)))(@sanity/uuid@3.0.3)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(styled-components@6.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)):
+    dependencies:
+      '@sanity/icons': 3.8.0(react@19.1.0)
+      '@sanity/ui': 2.16.27(@emotion/is-prop-valid@1.4.0)(react-dom@19.1.0(react@19.1.0))(react-is@18.3.1)(react@19.1.0)(styled-components@6.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))
+      '@sanity/uuid': 3.0.3
+      react: 19.1.0
+      react-dom: 19.1.0(react@19.1.0)
+      styled-components: 6.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
 
   sanity@3.99.0(@emotion/is-prop-valid@1.4.0)(@noble/hashes@2.3.0)(@types/node@25.9.5)(@types/react@18.3.31)(immer@10.2.0)(jiti@2.7.0)(lightningcss@1.32.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(styled-components@6.5.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(tsx@4.23.1)(typescript@5.9.3)(yaml@2.9.0):
     dependencies:
