@@ -1,4 +1,6 @@
-import pdfParse from "pdf-parse";
+// pdf-parse is a CommonJS module — must use require() in Next.js App Router
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfParse = require("pdf-parse") as (buf: Buffer) => Promise<{ text: string }>;
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function stripCost(s: string): number {
