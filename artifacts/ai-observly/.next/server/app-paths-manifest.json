@@ -1,5 +1,5 @@
 {
-  "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
-  "/page": "app/page.js",
-  "/pricing/page": "app/pricing/page.js"
+  "/sitemap.xml/route": "app/sitemap.xml/route.js",
+  "/pricing/page": "app/pricing/page.js",
+  "/page": "app/page.js"
 }

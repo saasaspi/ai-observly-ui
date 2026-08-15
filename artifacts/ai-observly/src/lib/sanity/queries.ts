@@ -87,11 +87,13 @@ export const RECOMMENDED_POSTS_QUERY = `
   }
 `
 
-// Lightweight query for sitemap generation
+// Lightweight query for sitemap generation.
+// _updatedAt is the Sanity-managed last-edit timestamp; falls back to publishedAt if missing.
 export const SITEMAP_POSTS_QUERY = `
   *[_type == "post"] {
     "slug": slug.current,
-    publishedAt
+    publishedAt,
+    _updatedAt
   }
 `
 
