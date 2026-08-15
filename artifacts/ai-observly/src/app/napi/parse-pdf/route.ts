@@ -210,77 +210,52 @@ function parseFlatDetailedTable(text: string) {
   return rows.length ? { rows, modelMap } : null;
 }
 
-// ── Parser C: flat same-line (summary exports) ────────────────────────────────
-// Handles exports where each line has ONE date + ONE aggregated cost (no
-// "Total Cost" column header, and one row per date).
+// ── Parser C: generic flat fallback ───────────────────────────────────────────
+// Handles any export where each row starts with an ISO date and has one or more
+// decimal cost values.  Takes the LAST decimal on each line (= Total Cost when
+// multiple cost columns exist) and accumulates — never deduplicates by date so
+// multi-row-per-date exports are summed correctly.
 function parseFlatText(text: string) {
   const rows: { date: string; cost: number; model?: string; key?: string }[] =
     [];
   const modelMap: Record<string, number> = {};
-  const seenDates = new Set<string>();
 
   const flat = text.replace(/[^\S\n]+/g, " ").replace(/\r/g, "");
   const lines = flat.split("\n").map((l) => l.trim());
 
-  const ISO_RE = /(\d{4}-\d{2}-\d{2})/g;
-  const COST_RE = /\$[\d,]+\.\d{2}|\b\d{1,4},\d{3}\.\d{2}\b|\b\d+\.\d{2}\b/g;
-
   for (const line of lines) {
-    ISO_RE.lastIndex = 0;
-    const dates: string[] = [];
-    let m: RegExpExecArray | null;
-    while ((m = ISO_RE.exec(line)) !== null) dates.push(m[1]);
-    if (!dates.length) continue;
+    // Line must start with an ISO date
+    const isoMatch = line.match(/^(\d{4}-\d{2}-\d{2})\s/);
+    if (!isoMatch) continue;
+    const date = isoMatch[1];
 
-    const costs: { pos: number; val: number }[] = [];
-    COST_RE.lastIndex = 0;
-    while ((m = COST_RE.exec(line)) !== null) {
-      const v = stripCost(m[0]);
-      if (!isNaN(v) && v > 0) costs.push({ pos: m.index, val: v });
-    }
-    if (!costs.length) continue;
+    // Collect ALL decimal numbers on the line
+    const decimals = [...line.matchAll(/\b(\d+\.\d+)\b/g)].map((m) =>
+      parseFloat(m[1])
+    );
+    if (!decimals.length) continue;
 
-    for (const date of dates) {
-      if (seenDates.has(date)) continue;
-      const datePos = line.indexOf(date);
-      const after = costs.find((c) => c.pos > datePos);
-      if (after && after.val < 1_000_000) {
-        seenDates.add(date);
-        rows.push({ date, cost: after.val, model: line.match(MODEL_RE)?.[1] });
-      }
-    }
+    // Prefer the last decimal (= Total Cost column) but reject implausibly large
+    // values (token counts occasionally have a .0 form)
+    const cost = [...decimals].reverse().find((v) => v < 100_000);
+    if (cost === undefined || cost <= 0) continue;
+
+    const model = line.match(MODEL_RE)?.[1];
+    const keyMatch =
+      line.match(/\bkey_[\w]+\b/i) ?? line.match(/\bprod-[\w-]+\b/);
+    rows.push({ date, cost, model, key: keyMatch?.[0] });
+    if (model) modelMap[model] = (modelMap[model] ?? 0) + cost;
   }
 
-  // Written-month fallback
+  // Written-month fallback (e.g. "Jul 1 $4.83")
   if (!rows.length) {
     const WRITTEN =
       /\b([A-Za-z]{3,9}\.?\s+\d{1,2}(?:,?\s*\d{4})?)\s+\$?([\d,]+\.\d{2})/g;
-    let m2: RegExpExecArray | null;
-    while ((m2 = WRITTEN.exec(flat)) !== null) {
-      const date = toIso(m2[1]);
-      const cost = stripCost(m2[2]);
-      if (date && !isNaN(cost) && cost > 0 && !seenDates.has(date)) {
-        seenDates.add(date);
-        rows.push({ date, cost });
-      }
-    }
-  }
-
-  // Model cost scan
-  const oneLine = flat.replace(/\n/g, " ");
-  const MSCRE =
-    /\b(gpt-[\w\d.\-]+|claude-[\w\d.\-]+|gemini-[\w\d.\-]+|o\d(?:-[\w\d.\-]+)?)\b/gi;
-  let mm: RegExpExecArray | null;
-  while ((mm = MSCRE.exec(oneLine)) !== null) {
-    const after = oneLine.substring(
-      mm.index + mm[0].length,
-      mm.index + mm[0].length + 40
-    );
-    const cm = after.match(/\$?([\d,]+\.\d{2})/);
-    if (cm) {
-      const cost = stripCost(cm[1]);
-      if (!isNaN(cost) && cost > 0)
-        modelMap[mm[1]] = (modelMap[mm[1]] ?? 0) + cost;
+    let m: RegExpExecArray | null;
+    while ((m = WRITTEN.exec(flat)) !== null) {
+      const date = toIso(m[1]);
+      const cost = stripCost(m[2]);
+      if (date && !isNaN(cost) && cost > 0) rows.push({ date, cost });
     }
   }
 
