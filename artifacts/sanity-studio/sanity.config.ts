@@ -1,6 +1,5 @@
 import { defineConfig } from 'sanity'
 import { structureTool } from 'sanity/structure'
-import { table } from 'sanity-plugin-table'
 import { schemas } from './schemas'
 
 export default defineConfig({
@@ -10,7 +9,7 @@ export default defineConfig({
   projectId: 'y4ebxpas',
   dataset: 'production',
 
-  plugins: [structureTool(), table()],
+  plugins: [structureTool()],
 
   schema: {
     types: schemas,
