@@ -169,12 +169,12 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             </div>
 
             {/* Pricing */}
-            <a
-              href={sectionHref("pricing")}
+            <Link
+              href="/pricing"
               className="px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               Pricing
-            </a>
+            </Link>
 
             {/* Free Spend Check-up */}
             <Link
@@ -273,13 +273,13 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             </Link>
 
             {/* Pricing */}
-            <a
-              href={sectionHref("pricing")}
+            <Link
+              href="/pricing"
               className="px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               onClick={() => setMobileOpen(false)}
             >
               Pricing
-            </a>
+            </Link>
 
             {/* Free Spend Check-up */}
             <Link
@@ -346,9 +346,9 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                   </a>
                 </li>
                 <li>
-                  <a href="/#pricing" className="hover:text-foreground transition-colors">
+                  <Link href="/pricing" className="hover:text-foreground transition-colors">
                     Pricing
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a href="/#how-it-works" className="hover:text-foreground transition-colors">

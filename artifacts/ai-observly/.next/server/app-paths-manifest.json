@@ -1,5 +1,5 @@
 {
-  "/sitemap.xml/route": "app/sitemap.xml/route.js",
   "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/pricing/page": "app/pricing/page.js"
 }
