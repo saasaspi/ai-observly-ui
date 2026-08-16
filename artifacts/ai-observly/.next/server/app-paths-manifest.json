@@ -1,6 +1,9 @@
 {
+  "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
   "/icon.png/route": "app/icon.png/route.js",
-  "/signup/page": "app/signup/page.js",
   "/page": "app/page.js",
+  "/signup/page": "app/signup/page.js",
+  "/blog/[slug]/page": "app/blog/[slug]/page.js",
+  "/blog/page": "app/blog/page.js",
   "/blind-spot-quiz/page": "app/blind-spot-quiz/page.js"
 }
