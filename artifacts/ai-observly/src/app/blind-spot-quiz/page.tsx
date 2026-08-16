@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { PublicLayout } from "@/components/public-layout";
 import Link from "next/link";
 import { ArrowRight, RotateCcw, Brain } from "lucide-react";
+import { fireEvent } from "@/lib/gtag";
 
 // Replace with real signup/pricing URL before shipping
 const PRODUCT_URL = "/signup";
@@ -337,6 +338,7 @@ export default function BlindSpotQuizPage() {
     setTimeout(() => {
       setSelected(null);
       if (currentQ === 7) {
+        fireEvent("quiz_complete");
         setPhase("results");
       } else {
         setCurrentQ((q) => q + 1);

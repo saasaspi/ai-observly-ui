@@ -3,6 +3,7 @@ import { useState, useRef, useCallback } from "react";
 import { PublicLayout } from "@/components/public-layout";
 import Link from "next/link";
 import Papa from "papaparse";
+import { fireEvent } from "@/lib/gtag";
 import {
   BarChart, Bar, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer,
   AreaChart, Area, LineChart, Line, ReferenceDot,
@@ -834,6 +835,7 @@ export default function SpendCheckupPage() {
         setEmailState("error");
         setEmailError(data.error ?? "Something went wrong — please try again.");
       } else {
+        fireEvent("report_download");
         setEmailState("success");
       }
     } catch {

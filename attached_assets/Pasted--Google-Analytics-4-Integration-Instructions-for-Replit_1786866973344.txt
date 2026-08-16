@@ -1,0 +1,49 @@
+# Google Analytics 4 Integration — Instructions for Replit Agent
+
+## Task
+Add Google Analytics 4 (GA4) tracking to this website using the Measurement ID below.
+
+**Measurement ID:** `G-P93V7K0XZB`
+
+## What to do
+
+1. Insert the following code inside the `<head>` of the site's **root HTML layout** (the single file/component that wraps every page), so it loads on **every page** — including the homepage, blog, docs, LLM Spend Analyzer, and Blind Spot Quiz.
+
+```html
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-P93V7K0XZB"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-P93V7K0XZB');
+</script>
+```
+
+2. Make sure this snippet is added **only once** — it should not be duplicated on individual pages or components. It belongs in the single shared root layout/head, not in each page file.
+
+3. After adding it, tell me exactly **which file** you added it to, so I have a record of where it lives.
+
+## Key events to track as conversions
+
+Once the base tracking is confirmed working, also fire these named `gtag` events at the moments described, so they can be marked as key events in GA4:
+
+| Event name | Fires when |
+|---|---|
+| `signup_complete` | A user finishes signing up for AI Observly |
+| `report_download` | A user downloads the PDF report from the LLM Spend Analyzer (after entering their email) |
+| `quiz_complete` | A user finishes the AI Blind Spot Quiz |
+| `pricing_cta_click` | A user clicks a "Start monitoring now" / pricing CTA from a blog post |
+
+Example of how one of these should look in code:
+
+```js
+gtag('event', 'report_download');
+```
+
+Add the corresponding `gtag('event', ...)` call at the point in the code where each of these four actions actually completes (e.g., inside the success handler for the signup form, right after the PDF is generated/sent, right when the quiz results are shown, and on the CTA's click handler).
+
+## Verification
+
+- Confirm the tag loads on the homepage, a blog post, the LLM Spend Analyzer page, and the Blind Spot Quiz page.
+- Confirm no page has the snippet more than once.

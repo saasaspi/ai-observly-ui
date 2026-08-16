@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { fireEvent } from "@/lib/gtag";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,6 +37,7 @@ export default function Signup() {
       {
         onSuccess: () => {
           localStorage.setItem("ai_observly_user_name", data.name.trim());
+          fireEvent("signup_complete");
           router.push("/dashboard");
         },
         onError: () => {
@@ -49,6 +51,7 @@ export default function Signup() {
     localStorage.setItem("ai_observly_authed", "true");
     localStorage.setItem("ai_observly_user_name", name);
     localStorage.setItem("ai_observly_user_email", email);
+    fireEvent("signup_complete");
     router.push("/dashboard");
   };
 

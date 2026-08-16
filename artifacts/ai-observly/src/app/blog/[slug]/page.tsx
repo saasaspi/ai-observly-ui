@@ -3,6 +3,7 @@ import { POST_QUERY, RECOMMENDED_POSTS_QUERY, type Post, type PostSummary } from
 import { urlFor } from '@/lib/sanity/image'
 import { SanityPortableText } from '@/components/sanity-portable-text'
 import { TableOfContents } from '@/components/table-of-contents'
+import { fireEvent } from '@/lib/gtag'
 import { PublicLayout } from '@/components/public-layout'
 import { extractToc } from '@/lib/sanity/toc'
 import Image from 'next/image'
@@ -241,6 +242,7 @@ export default async function BlogPostPage({
               <Link
                 href="/blind-spot-quiz"
                 className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 shadow-sm"
+                onClick={() => fireEvent("pricing_cta_click")}
               >
                 Take the free quiz <ArrowRight className="w-4 h-4" />
               </Link>
