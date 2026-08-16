@@ -383,12 +383,14 @@ export default function BlindSpotQuizPage() {
                   </span>
                 ))}
               </div>
-              <button
-                onClick={() => setPhase("quiz")}
-                className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
-              >
-                Start assessment
-              </button>
+              <div className="flex justify-center">
+                <button
+                  onClick={() => setPhase("quiz")}
+                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+                >
+                  Start the Quiz
+                </button>
+              </div>
             </div>
           )}
 

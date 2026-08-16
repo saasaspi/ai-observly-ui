@@ -558,7 +558,7 @@ export default function LandingPage() {
               href="/blind-spot-quiz"
               className="inline-flex items-center justify-center h-14 px-8 text-base rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 shadow-sm"
             >
-              Start assessment
+              Start the Quiz
             </Link>
           </div>
         </div>
