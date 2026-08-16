@@ -233,16 +233,16 @@ export default async function BlogPostPage({
             <div className="mt-16 bg-primary/5 border border-primary/20 rounded-2xl p-8 text-center">
               <p className="text-sm font-medium text-primary mb-2">AI Observly</p>
               <h3 className="text-xl font-bold font-outfit text-foreground mb-3">
-                Stop guessing. Start seeing your AI margins.
+                Not sure where your AI budget is going?
               </h3>
               <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-                Know exactly which customers and features are eroding your margins — before you find out on the invoice.
+                Take our free 90-second quiz to find your AI cost blind spots — see if you know what you're really spending, and whether it's profitable.
               </p>
               <Link
-                href="/spend-checkup"
+                href="/blind-spot-quiz"
                 className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 shadow-sm"
               >
-                Try the Free LLM Spend Analyzer <ArrowRight className="w-4 h-4" />
+                Take the free quiz <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </article>

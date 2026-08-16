@@ -47,6 +47,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 }
 
 
+// Validate ../../src/app/blind-spot-quiz/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/blind-spot-quiz">> = Specific
+  const handler = {} as typeof import("../../src/app/blind-spot-quiz/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../src/app/blog/[slug]/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/blog/[slug]">> = Specific
@@ -383,6 +392,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 
 
 
+
+// Validate ../../src/app/blind-spot-quiz/layout.tsx
+{
+  type __IsExpected<Specific extends LayoutConfig<"/blind-spot-quiz">> = Specific
+  const handler = {} as typeof import("../../src/app/blind-spot-quiz/layout.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
 
 // Validate ../../src/app/layout.tsx
 {

@@ -521,6 +521,31 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── QUIZ PROMO TILE ── */}
+      <section className="py-10 px-6 bg-background">
+        <div className="max-w-5xl mx-auto">
+          <div
+            data-reveal
+            className="flex flex-col sm:flex-row items-center gap-6 bg-primary/5 border border-primary/20 rounded-2xl px-8 py-7 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+          >
+            <div className="flex-1 text-center sm:text-left">
+              <h3 className="text-xl font-bold font-outfit text-foreground mb-1">
+                Not sure where your AI budget is going?
+              </h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
+                Take our free 90-second quiz to find your biggest AI cost blind spot — and see what it might be costing you.
+              </p>
+            </div>
+            <Link
+              href="/blind-spot-quiz"
+              className="shrink-0 inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 shadow-sm"
+            >
+              Take the free quiz →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ── WHO IT'S FOR ── */}
       <section id="who-its-for" className="py-24 px-6 bg-card border-y border-border">
         <div className="max-w-5xl mx-auto">

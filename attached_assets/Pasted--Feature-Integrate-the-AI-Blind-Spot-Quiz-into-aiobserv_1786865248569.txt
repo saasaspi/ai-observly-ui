@@ -1,0 +1,78 @@
+# Feature: Integrate the AI Blind Spot Quiz into aiobservly.com
+
+## Overview
+We're adding a second free lead-magnet tool — the **AI Blind Spot Quiz** — alongside the existing LLM Spend Analyzer (`/spend-checkup`). Unlike the Spend Analyzer, this tool takes no file uploads and needs **no database, no server-side logic, and no API calls** — it's a fully self-contained, client-side quiz (HTML/CSS/JS provided in the attached file `find-your-ai-blind-spot-quiz.html`).
+
+This doc covers four changes: a new page, a homepage tile, a nav update, and a blog CTA update.
+
+---
+
+## 1. New page: `/blind-spot-quiz`
+
+- **Route:** `/blind-spot-quiz`
+- **Build pattern:** Set this page up the same way `/spend-checkup` is currently built — same header/nav + footer shell, with the interactive tool mounted as the page's main content.
+
+### What the tool does (functional spec)
+
+**Flow:** Intro screen → 8-question quiz (one question per screen, with a segmented progress bar showing position) → results screen.
+
+**Questions:** 8 questions, each representing one "layer" of a founder's AI cost understanding — Spend, Drivers, Customers, Features, Profitability, Change, Action, Automation. Each is answered on a 5-option behavioral scale rather than yes/no — for most questions: *I have no idea → I could probably estimate → I can find out manually → I track this regularly → I know automatically* (scored 0–4). Three questions (Change, Action, Automation) use differently-worded options suited to "how quickly / how much" phrasing instead — see the reference file for the exact wording per question.
+
+**Scoring:** The 8 questions map in pairs to 4 dimensions — Customer visibility, Feature visibility, Profitability, Automation. Each dimension's score is the average of its two questions (0–4 scale, converted to 0/25/50/75/100). The overall score is the average of the 4 dimension scores.
+
+**Results screen:**
+- A circular gauge showing the overall score out of 100, with a maturity band label underneath (Flying Blind / Getting Visibility / Tracking Costs / Cost-Aware / AI Cost Leader), colored red → amber → blue → green as the score rises.
+- A headline naming the person's biggest blind spot (or, at a perfect score, "You're already an AI Cost Leader").
+- A one-line dynamic insight contrasting what they know vs. don't (e.g. "You know what you're spending. You don't know who's driving it.").
+- Four animated horizontal meter bars, one per dimension, each colored by that dimension's own score.
+- A "counterfactual scenario" box — a short hypothetical illustrating the real-world risk behind their weakest dimension, ending on a gut-check question. Ties are broken toward flagging Automation as the gap. A perfect score gets a distinct message instead, acknowledging their maturity and reframing the remaining gap as automation.
+- A CTA button to the AI Observly signup/pricing page, and a "Retake assessment" link.
+
+**Entirely client-side:** all logic — question flow, scoring, animated meters and gauge — runs in the browser with in-memory state only. No network calls, no persistence.
+
+- **Widget code:** Port the markup, `<style>`, and `<script>` from `find-your-ai-blind-spot-quiz.html` into this page's component — it already implements everything described above and is fully self-contained (no props, no external data, no backend calls). Before shipping, replace the placeholder `PRODUCT_URL` constant near the top of the script with the real signup/pricing URL.
+- **No database, no CSV upload, no email gate** — this tool is intentionally pure frontend state. Don't wire it into Resend or any storage.
+
+### SEO / meta tags
+Keep these distinct from `/spend-checkup`'s meta tags (which should stay targeted at more technical, "upload your OpenAI/Gemini bill" style queries). This page targets a more emotional, top-of-funnel search intent:
+
+- **Title:** `Am I Losing Money on AI? | Free Blind Spot Quiz`
+- **Description:** `Take our free 90-second quiz to find your AI cost blind spots — see if you know what you're really spending, and whether it's actually profitable.`
+- Add matching Open Graph / Twitter card tags (same title/description) so it previews well when shared or linked from blog posts.
+- Add `/blind-spot-quiz` to `sitemap.xml` wherever `/spend-checkup` is currently listed.
+
+---
+
+## 2. Homepage: tile below the core Features section
+
+Add a single promotional card directly **below the Features section**, before whatever section currently follows it.
+
+- Keep it lightweight — one card, not a new multi-column section, so it doesn't compete visually with Features above or Pricing/testimonials below.
+- Content: short headline (e.g. "Not sure where your AI budget is going?"), one line of supporting copy, and a button — **"Take the free quiz →"** — linking to `/blind-spot-quiz`.
+
+---
+
+## 3. Nav: replace "Free Spend Checkup" with a "Free Tools" dropdown
+
+Currently the nav has a single top-level `Free Spend Checkup` link. Replace it with:
+
+- **"Free Tools"** — a hover dropdown, reusing the same dropdown component already built for **"Blogs"** in the nav, for visual and interaction consistency.
+- Two entries inside it:
+  - **Your AI Blind Spot Quiz** → `/blind-spot-quiz`
+  - **LLM Spend Analyzer** → `/spend-checkup`
+
+This keeps the nav at 5 top-level items (Products, Docs, Blogs, Pricing, Free Tools) rather than growing to 6, and leaves room to add a third free tool later without another nav change.
+
+---
+
+## 4. Blog CTAs → point to the quiz
+
+Find every CTA link inside the blog post templates/components and repoint it to `/blind-spot-quiz`.
+
+> ⚠️ **Flag before implementing:** the blog's "Start monitoring now" CTA was previously set to link to the Pricing section (an earlier explicit decision). Confirm whether that specific CTA should now be repointed to `/blind-spot-quiz` too, or whether it should stay on Pricing and this change only applies to other blog CTAs. Update accordingly once confirmed — don't silently override the Pricing link without checking.
+
+---
+
+## Out of scope
+- No database, user accounts, or email capture for the quiz.
+- No changes needed to `/spend-checkup`'s existing functionality.

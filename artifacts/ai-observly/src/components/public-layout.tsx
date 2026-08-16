@@ -13,13 +13,16 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const [blogsOpen, setBlogsOpen] = useState(false);
+  const [freeToolsOpen, setFreeToolsOpen] = useState(false);
   const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
+  const [mobileFreeToolsOpen, setMobileFreeToolsOpen] = useState(false);
   const [navPosts, setNavPosts] = useState<NavPost[]>([]);
   const isHome = pathname === "/";
 
   // Timers to prevent flicker on hover
   const productsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const blogsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const freeToolsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -50,6 +53,13 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   };
   const closeBlogs = () => {
     blogsTimer.current = setTimeout(() => setBlogsOpen(false), 120);
+  };
+  const openFreeTools = () => {
+    if (freeToolsTimer.current) clearTimeout(freeToolsTimer.current);
+    setFreeToolsOpen(true);
+  };
+  const closeFreeTools = () => {
+    freeToolsTimer.current = setTimeout(() => setFreeToolsOpen(false), 120);
   };
 
   const dropdownBase =
@@ -166,15 +176,39 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               Pricing
             </Link>
 
-            {/* Free LLM Spend Analyzer */}
-            <Link
-              href="/spend-checkup"
-              className="px-3 py-2 rounded-md font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-1.5"
-              data-testid="link-spend-checkup"
+            {/* Free Tools dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={openFreeTools}
+              onMouseLeave={closeFreeTools}
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              Free LLM Spend Analyzer
-            </Link>
+              <button
+                className="flex items-center gap-1.5 px-3 py-2 rounded-md font-semibold text-primary hover:bg-primary/10 transition-colors"
+                data-testid="link-free-tools"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Free Tools <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              {freeToolsOpen && (
+                <div className={`${dropdownBase} w-56`}>
+                  <Link
+                    href="/blind-spot-quiz"
+                    className={dropdownLink}
+                    onClick={() => setFreeToolsOpen(false)}
+                  >
+                    🔍 AI Blind Spot Quiz
+                  </Link>
+                  <Link
+                    href="/spend-checkup"
+                    className={dropdownLink}
+                    onClick={() => setFreeToolsOpen(false)}
+                    data-testid="link-spend-checkup"
+                  >
+                    📊 LLM Spend Analyzer
+                  </Link>
+                </div>
+              )}
+            </div>
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
@@ -271,15 +305,39 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               Pricing
             </Link>
 
-            {/* Free LLM Spend Analyzer */}
-            <Link
-              href="/spend-checkup"
-              className="px-3 py-2.5 rounded-md text-sm font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center gap-2"
-              onClick={() => setMobileOpen(false)}
+            {/* Free Tools — expandable */}
+            <button
+              className="flex items-center justify-between w-full px-3 py-2.5 rounded-md text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
+              onClick={() => setMobileFreeToolsOpen(!mobileFreeToolsOpen)}
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              Free LLM Spend Analyzer
-            </Link>
+              <span className="flex items-center gap-2">
+                <Sparkles className="w-3.5 h-3.5" />
+                Free Tools
+              </span>
+              {mobileFreeToolsOpen ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
+            </button>
+            {mobileFreeToolsOpen && (
+              <div className="pl-4 flex flex-col gap-0.5">
+                <Link
+                  href="/blind-spot-quiz"
+                  className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  🔍 AI Blind Spot Quiz
+                </Link>
+                <Link
+                  href="/spend-checkup"
+                  className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  📊 LLM Spend Analyzer
+                </Link>
+              </div>
+            )}
 
             <div className="border-t border-border mt-2 pt-3 flex flex-col gap-2">
               <Link

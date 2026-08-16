@@ -23,5 +23,6 @@ export const STATIC_PAGES: StaticPage[] = [
   { path: '/blog',          changeFrequency: 'daily',   priority: 0.9 },
   { path: '/pricing',       changeFrequency: 'monthly', priority: 0.8 },
   { path: '/docs',          changeFrequency: 'monthly', priority: 0.7 },
-  { path: '/spend-checkup', changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/spend-checkup',    changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/blind-spot-quiz', changeFrequency: 'monthly', priority: 0.7 },
 ]
