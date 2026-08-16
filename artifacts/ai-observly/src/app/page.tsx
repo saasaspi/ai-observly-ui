@@ -325,7 +325,7 @@ export default function LandingPage() {
               Start monitoring now <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
             <a
-              href="#how-it-works"
+              href="/docs"
               className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg border border-border bg-card hover:bg-muted hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 w-full sm:w-auto"
             >
               See how to integrate
