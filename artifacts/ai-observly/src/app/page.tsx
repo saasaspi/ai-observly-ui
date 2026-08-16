@@ -521,33 +521,42 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── QUIZ PROMO TILE ── */}
-      <section className="py-10 px-6 bg-background">
-        <div className="max-w-5xl mx-auto">
+      {/* ── QUIZ PROMO SECTION ── */}
+      <section className="py-24 px-6 bg-primary/5 border-y border-primary/10">
+        <div className="max-w-3xl mx-auto text-center">
+          <p data-reveal className="text-xs font-bold uppercase tracking-widest text-primary mb-4">
+            Find Your AI Blind Spot Quiz
+          </p>
+          <h2
+            data-reveal
+            style={{ transitionDelay: "0.08s" }}
+            className="text-3xl md:text-4xl font-bold font-outfit text-foreground mb-4 leading-snug"
+          >
+            How well do you actually know your AI economics?
+          </h2>
+          <p
+            data-reveal
+            style={{ transitionDelay: "0.14s" }}
+            className="text-muted-foreground text-lg leading-relaxed mb-6 max-w-xl mx-auto"
+          >
+            8 quick questions, each peeling back one more layer — from what you spend, to who&apos;s driving it, to whether you&apos;d even notice if it changed. Answer honestly.
+          </p>
           <div
             data-reveal
-            className="bg-white dark:bg-card border border-border rounded-2xl shadow-sm px-8 py-8 max-w-2xl"
+            style={{ transitionDelay: "0.20s" }}
+            className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground mb-8"
           >
-            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-3">
-              Find Your AI Blind Spot Quiz
-            </p>
-            <h3 className="text-2xl md:text-3xl font-bold font-outfit text-foreground mb-3 leading-snug">
-              How well do you actually know your AI economics?
-            </h3>
-            <p className="text-muted-foreground text-base leading-relaxed mb-5">
-              8 quick questions, each peeling back one more layer — from what you spend, to who&apos;s driving it, to whether you&apos;d even notice if it changed. Answer honestly.
-            </p>
-            <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground mb-6">
-              {["8 questions", "~90 seconds", "Nothing saved or uploaded"].map((item) => (
-                <span key={item} className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-                  {item}
-                </span>
-              ))}
-            </div>
+            {["8 questions", "~90 seconds", "Nothing saved or uploaded"].map((item) => (
+              <span key={item} className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                {item}
+              </span>
+            ))}
+          </div>
+          <div data-reveal style={{ transitionDelay: "0.26s" }}>
             <Link
               href="/blind-spot-quiz"
-              className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+              className="inline-flex items-center justify-center h-14 px-8 text-base rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 shadow-sm"
             >
               Start assessment
             </Link>

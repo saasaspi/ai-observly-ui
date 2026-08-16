@@ -1,6 +1,6 @@
 {
   "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
-  "/page": "app/page.js",
   "/signup/page": "app/signup/page.js",
+  "/page": "app/page.js",
   "/blind-spot-quiz/page": "app/blind-spot-quiz/page.js"
 }
