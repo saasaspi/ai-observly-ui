@@ -3842,6 +3842,9 @@
     .sm\:gap-2\.5 {
       gap: calc(var(--spacing) * 2.5);
     }
+    .sm\:gap-4 {
+      gap: calc(var(--spacing) * 4);
+    }
     :where(.sm\:space-x-2 > :not(:last-child)) {
       --tw-space-x-reverse: 0;
       margin-inline-start: calc(calc(var(--spacing) * 2) * var(--tw-space-x-reverse));
@@ -3850,11 +3853,21 @@
     .sm\:rounded-lg {
       border-radius: var(--radius);
     }
+    .sm\:p-3 {
+      padding: calc(var(--spacing) * 3);
+    }
     .sm\:px-6 {
       padding-inline: calc(var(--spacing) * 6);
     }
     .sm\:text-left {
       text-align: left;
+    }
+    .sm\:text-xl {
+      font-size: var(--text-xl);
+      line-height: var(--tw-leading, var(--text-xl--line-height));
+    }
+    .sm\:text-\[10px\] {
+      font-size: 10px;
     }
     .data-\[state\=open\]\:sm\:slide-in-from-bottom-full[data-state="open"] {
       --tw-enter-translate-y: calc(1*100%);

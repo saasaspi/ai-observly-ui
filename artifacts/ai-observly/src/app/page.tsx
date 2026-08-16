@@ -119,16 +119,16 @@ function DashboardMockup() {
 
       <div className="p-6 space-y-5">
         {/* Summary cards with count-up */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-4">
           {[
             { label: "Total AI Cost", value: `$${cost.toLocaleString()}`, sub: "this month", color: "text-foreground" },
             { label: "Total Revenue", value: `$${revenue.toLocaleString()}`, sub: "attributed", color: "text-foreground" },
             { label: "Net Margin", value: `+$${profit.toLocaleString()}`, sub: "from AI features", color: "text-green-600" },
           ].map((s) => (
-            <div key={s.label} className="bg-background border border-border rounded-lg p-3">
-              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">{s.label}</p>
-              <p className={`text-xl font-bold font-outfit ${s.color}`}>{s.value}</p>
-              <p className="text-[10px] text-muted-foreground">{s.sub}</p>
+            <div key={s.label} className="bg-background border border-border rounded-lg p-2 sm:p-3 min-w-0">
+              <p className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 leading-tight">{s.label}</p>
+              <p className={`text-sm sm:text-xl font-bold font-outfit leading-tight break-all ${s.color}`}>{s.value}</p>
+              <p className="text-[9px] sm:text-[10px] text-muted-foreground leading-snug">{s.sub}</p>
             </div>
           ))}
         </div>
