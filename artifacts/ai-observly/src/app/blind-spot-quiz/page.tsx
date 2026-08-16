@@ -365,37 +365,29 @@ export default function BlindSpotQuizPage() {
 
           {/* ── Intro screen ── */}
           {phase === "intro" && (
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-6">
-                <Brain className="w-3.5 h-3.5" />
-                Free · 8 questions · 90 seconds
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold font-outfit text-foreground mb-4 leading-tight">
-                Find Your AI Blind Spot
-              </h1>
-              <p className="text-lg text-muted-foreground mb-8 max-w-lg mx-auto leading-relaxed">
-                8 questions to see how well you actually understand your AI cost —
-                who's driving it, whether it's profitable, and whether you'd
-                know if something went wrong.
+            <div className="bg-white dark:bg-card border border-border rounded-2xl shadow-sm px-8 py-10">
+              <p className="text-xs font-bold uppercase tracking-widest text-primary mb-4">
+                Find Your AI Blind Spot Quiz
               </p>
-              <ul className="text-sm text-muted-foreground space-y-2 mb-10 text-left max-w-xs mx-auto">
-                {[
-                  "Where your AI spend really goes",
-                  "Which customers and features drive costs",
-                  "Whether your AI features are profitable",
-                  "How fast you'd catch a cost problem",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-2.5">
+              <h1 className="text-3xl md:text-4xl font-bold font-outfit text-foreground mb-4 leading-snug">
+                How well do you actually know your AI economics?
+              </h1>
+              <p className="text-base text-muted-foreground leading-relaxed mb-6">
+                8 quick questions, each peeling back one more layer — from what you spend, to who&apos;s driving it, to whether you&apos;d even notice if it changed. Answer honestly.
+              </p>
+              <div className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-muted-foreground mb-8">
+                {["8 questions", "~90 seconds", "Nothing saved or uploaded"].map((item) => (
+                  <span key={item} className="flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
                     {item}
-                  </li>
+                  </span>
                 ))}
-              </ul>
+              </div>
               <button
                 onClick={() => setPhase("quiz")}
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-lg bg-primary text-primary-foreground font-semibold text-base hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 shadow-sm"
+                className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
               >
-                Start the quiz <ArrowRight className="w-5 h-5" />
+                Start assessment
               </button>
             </div>
           )}

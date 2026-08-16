@@ -526,21 +526,30 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto">
           <div
             data-reveal
-            className="flex flex-col sm:flex-row items-center gap-6 bg-primary/5 border border-primary/20 rounded-2xl px-8 py-7 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+            className="bg-white dark:bg-card border border-border rounded-2xl shadow-sm px-8 py-8 max-w-2xl"
           >
-            <div className="flex-1 text-center sm:text-left">
-              <h3 className="text-xl font-bold font-outfit text-foreground mb-1">
-                Not sure where your AI budget is going?
-              </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Take our free 90-second quiz to find your biggest AI cost blind spot — and see what it might be costing you.
-              </p>
+            <p className="text-xs font-bold uppercase tracking-widest text-primary mb-3">
+              Find Your AI Blind Spot Quiz
+            </p>
+            <h3 className="text-2xl md:text-3xl font-bold font-outfit text-foreground mb-3 leading-snug">
+              How well do you actually know your AI economics?
+            </h3>
+            <p className="text-muted-foreground text-base leading-relaxed mb-5">
+              8 quick questions, each peeling back one more layer — from what you spend, to who&apos;s driving it, to whether you&apos;d even notice if it changed. Answer honestly.
+            </p>
+            <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted-foreground mb-6">
+              {["8 questions", "~90 seconds", "Nothing saved or uploaded"].map((item) => (
+                <span key={item} className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                  {item}
+                </span>
+              ))}
             </div>
             <Link
               href="/blind-spot-quiz"
-              className="shrink-0 inline-flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 shadow-sm"
+              className="inline-flex items-center justify-center px-7 py-3.5 rounded-xl bg-foreground text-background font-bold text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
             >
-              Take the free quiz →
+              Start assessment
             </Link>
           </div>
         </div>
