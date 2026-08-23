@@ -4,5 +4,10 @@
   "/page": "app/page.js",
   "/features/per-customer-cost-attribution/page": "app/features/per-customer-cost-attribution/page.js",
   "/features/per-feature-margins-roi/page": "app/features/per-feature-margins-roi/page.js",
-  "/features/plan-pricing-profitability/page": "app/features/plan-pricing-profitability/page.js"
+  "/features/plan-pricing-profitability/page": "app/features/plan-pricing-profitability/page.js",
+  "/tools/page": "app/tools/page.js",
+  "/use-cases/founders/page": "app/use-cases/founders/page.js",
+  "/tools/plan-pricing-margin-calculator/page": "app/tools/plan-pricing-margin-calculator/page.js",
+  "/use-cases/product-managers/page": "app/use-cases/product-managers/page.js",
+  "/pricing/page": "app/pricing/page.js"
 }

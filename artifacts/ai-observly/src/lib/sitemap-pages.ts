@@ -28,4 +28,11 @@ export const STATIC_PAGES: StaticPage[] = [
   { path: '/features/per-customer-cost-attribution', changeFrequency: 'monthly', priority: 0.8 },
   { path: '/features/per-feature-margins-roi',       changeFrequency: 'monthly', priority: 0.8 },
   { path: '/features/plan-pricing-profitability',    changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/tools',                                  changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/tools/plan-pricing-margin-calculator',   changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/use-cases/founders',                     changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/use-cases/product-managers',             changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/use-cases/customer-success',             changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/use-cases/engineering',                  changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/use-cases/finance',                      changeFrequency: 'monthly', priority: 0.7 },
 ]

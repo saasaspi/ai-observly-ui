@@ -573,41 +573,51 @@ export default function LandingPage() {
               Built for the people who have to answer<br className="hidden md:block" /> &ldquo;why did the AI bill go up again?&rdquo;
             </h2>
           </div>
-          <div className="grid md:grid-cols-2 gap-8 items-start">
-            <div data-reveal className="bg-primary/5 border border-primary/20 rounded-2xl p-8 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-              <div className="flex items-center gap-3 mb-6">
-                <Users className="w-6 h-6 text-primary" />
-                <h3 className="text-xl font-bold font-outfit text-primary">Who this is for</h3>
-              </div>
-              <ul className="space-y-4">
-                {[
-                  { label: "Founders of B2B SaaS with AI features", detail: "who need to know which customers, features, and plans are margin-negative before it shows up in the burn rate." },
-                  { label: "Product managers", detail: "deciding which AI feature to invest in next — and which one to quietly sunset." },
-                  { label: "Anyone pricing an AI product", detail: "who wants their tiers to actually cover the AI cost they create, instead of finding out at renewal." },
-                ].map(({ label, detail }) => (
-                  <li key={label} className="flex items-start gap-3 text-sm text-foreground">
-                    <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-                    <span><strong>{label}</strong> {detail}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div data-reveal style={{ transitionDelay: "0.1s" }} className="bg-muted/50 border border-border rounded-2xl p-8 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">
-              <h3 className="text-xl font-bold font-outfit mb-2">How we compare</h3>
-              <p className="text-muted-foreground text-sm mb-6">Tools like <strong>Langfuse</strong>, <strong>Helicone</strong>, and <strong>Datadog</strong> are powerful — but they&apos;re built for engineering teams. We&apos;re the plain-English margin visibility tool for founders who need to know if their AI is making money.</p>
-              <div className="space-y-3 text-sm">
-                {[
-                  { them: "Complex setup & SDKs", us: "One fire-and-forget call" },
-                  { them: "Traces, spans, waterfall views", us: "Margin & cost in plain dollars" },
-                  { them: "Built for DevOps teams", us: "Built for founders & PMs" },
-                  { them: "Starts at $100+/mo", us: "Free tier, then $29/mo" },
-                ].map((row) => (
-                  <div key={row.them} className="grid grid-cols-2 gap-3">
-                    <div className="flex items-center gap-2 text-muted-foreground"><span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 shrink-0" />{row.them}</div>
-                    <div className="flex items-center gap-2 text-green-700 font-medium"><CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0" />{row.us}</div>
-                  </div>
-                ))}
-              </div>
+
+          {/* 5 persona cards */}
+          <div data-reveal className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+            {[
+              { label: "SaaS Founders", detail: "Know which customers and plans are margin-negative before it shows up in your burn rate.", Icon: DollarSign, href: "/use-cases/founders" },
+              { label: "Product Managers", detail: "See per-feature AI cost and bring real unit economics into every roadmap call.", Icon: BarChart2, href: "/use-cases/product-managers" },
+              { label: "Customer Success", detail: "Catch usage spikes and margin problems before the renewal call, not during it.", Icon: Users, href: "/use-cases/customer-success" },
+              { label: "Engineering", detail: "One fire-and-forget call gets you cost attribution — no proxy, no stored API keys.", Icon: Zap, href: "/use-cases/engineering" },
+              { label: "Finance & Ops", detail: "Per-customer and per-plan cost data — the missing input for your unit economics model.", Icon: CreditCard, href: "/use-cases/finance" },
+            ].map(({ label, detail, Icon, href }) => (
+              <Link
+                key={href}
+                href={href}
+                className="group bg-background border border-border rounded-2xl p-6 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/30 transition-all duration-200 flex flex-col gap-4"
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Icon className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold font-outfit text-foreground group-hover:text-primary transition-colors mb-1.5">{label}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{detail}</p>
+                </div>
+                <span className="text-sm font-semibold text-primary flex items-center gap-1 group-hover:gap-2 transition-all mt-auto">
+                  Learn more <ArrowRight className="w-3.5 h-3.5" />
+                </span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Comparison table */}
+          <div data-reveal style={{ transitionDelay: "0.1s" }} className="bg-muted/50 border border-border rounded-2xl p-8 hover:shadow-md transition-all duration-200">
+            <h3 className="text-xl font-bold font-outfit mb-2">How we compare</h3>
+            <p className="text-muted-foreground text-sm mb-6">Tools like <strong>Langfuse</strong>, <strong>Helicone</strong>, and <strong>Datadog</strong> are powerful — but they&apos;re built for engineering teams. We&apos;re the plain-English margin visibility tool for founders who need to know if their AI is making money.</p>
+            <div className="grid sm:grid-cols-2 gap-4 text-sm">
+              {[
+                { them: "Complex setup & SDKs", us: "One fire-and-forget call" },
+                { them: "Traces, spans, waterfall views", us: "Margin & cost in plain dollars" },
+                { them: "Built for DevOps teams", us: "Built for founders & PMs" },
+                { them: "Starts at $100+/mo", us: "Free tier, then $29/mo" },
+              ].map((row) => (
+                <div key={row.them} className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center gap-2 text-muted-foreground"><span className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 shrink-0" />{row.them}</div>
+                  <div className="flex items-center gap-2 text-green-700 font-medium"><CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0" />{row.us}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

@@ -1,0 +1,154 @@
+# AI Observly — Use Case Pages: Content + Replit Build Instructions
+
+Paste this whole file into Replit Agent. It contains the copy for 5 new persona pages and the build/linking instructions to implement them.
+
+---
+
+## Instructions for Replit Agent
+
+**Goal:** Create 5 new persona-specific pages and link all of them from the "Who uses this?" section.
+
+1. **Routes to create:**
+   - `/use-cases/founders`
+   - `/use-cases/product-managers`
+   - `/use-cases/customer-success`
+   - `/use-cases/engineering`
+   - `/use-cases/finance`
+
+2. **Design:** Reuse the existing page layout, components, and design system already used elsewhere on the site — same nav, footer, spacing, color theme, and animation patterns. Don't introduce a new visual style; these pages should look like they belong to the same site as the homepage.
+
+3. **Page structure** (same pattern for all 5, content is below):
+   - **Hero** — H1 + subheadline
+   - **"The Problem"** — the 3 bullets, each with its short body copy. Present as 3 cards or a 3-column layout, matching whatever pattern is already used for grouped content elsewhere on the site.
+   - **"How AI Observly Helps"** — the 3 feature blocks, each with its short body copy. Same card/column treatment as the Problem section.
+   - **Closing CTA** — the CTA line + a button labeled **"Start monitoring now"** linking to the **Pricing section/page** (not the generic homepage CTA destination — all 5 use-case pages should send visitors to Pricing).
+
+4. **SEO:** Set each page's `<title>` and meta description to the "Meta Title" / "Meta Description" values given for that page below.
+
+5. **Update "Who uses this?"**: Find this section (wherever it currently lives — likely the homepage) and make sure all 5 personas link to their respective `/use-cases/` pages above.
+   - If it currently only shows Founders and Product Managers, keep those two and add the three new personas as matching cards in the same visual style.
+   - If Customer Success, Engineering, or Finance & Ops don't have cards yet, create them using the same pattern as the existing ones.
+   - No persona should appear as plain text without a link — all 5 must be clickable through to their page.
+
+---
+
+## 1. Founders — `/use-cases/founders`
+
+**Meta Title:** AI Cost & Margin Tracking for Founders | AI Observly
+**Meta Description:** See which customers and features are quietly burning your AI margins — before they burn your runway. Built for non-technical founders, live in minutes.
+
+**H1:** Know exactly which customers are eating your AI margins
+
+**Subhead:** You added AI to your product. Your OpenAI or Anthropic bill went up. AI Observly shows you exactly who's driving it — and whether they're still profitable.
+
+**The Problem**
+- **One invoice, zero answers.** You can see your total LLM spend, but not which customers or plans are actually driving it.
+- **Margin-negative customers hide in plain sight.** A customer on your $49/month plan can easily cost you $80/month in AI usage — and you won't know until it's a pattern, not an incident.
+- **Pricing is a guess.** Without per-customer or per-plan cost data, every pricing decision — raising a tier, adding usage limits, sunsetting a plan — is based on a hunch, not a number.
+
+**How AI Observly Helps**
+- **Per-customer cost attribution.** See exactly what each customer costs you in AI spend, right next to their plan and revenue — no spreadsheet required.
+- **Plan & pricing profitability.** Instantly see which pricing tiers are actually making you money and which ones are quietly subsidized by your other customers.
+- **Built for founders, not engineers.** One lightweight integration — no proxy, no stored API keys — gets you live data the same day, no dev sprint needed.
+
+**CTA:** Stop guessing which customers are worth keeping. → **Start monitoring now**
+
+---
+
+## 2. Product Managers — `/use-cases/product-managers`
+
+**Meta Title:** Feature-Level AI Cost & ROI Data for Product Managers | AI Observly
+**Meta Description:** Tie every AI feature to its true cost-to-serve. Prioritize your roadmap with real margin data instead of gut feel.
+
+**H1:** Ship AI features you know are worth building
+
+**Subhead:** Usage graphs tell you a feature is popular. AI Observly tells you what that popularity actually costs — and whether it's worth doubling down on.
+
+**The Problem**
+- **Adoption without economics.** You can see a feature's usage climbing, but not what each use costs to serve — so you can't tell if growth is a win or a slow leak.
+- **Roadmap calls run on opinion.** Without per-feature cost data, prioritization conversations default to whoever argues loudest, not what the numbers say.
+- **No line back to the customer.** When a feature's costs spike, it's hard to tell whether it's one heavy user, a whole segment, or a genuine usage pattern worth designing around.
+
+**How AI Observly Helps**
+- **Per-feature cost & margin.** See what each AI feature costs to run — broken down by customer and plan — so usage and cost live in the same view.
+- **Cost-aware prioritization.** Bring real cost-to-serve numbers into roadmap discussions, not just usage counts.
+- **Customer-level context.** Trace a feature's cost back to the specific accounts driving it, so you know if it's a segment worth building for or an outlier to manage.
+
+**CTA:** Bring cost data to your next roadmap review. → **Start monitoring now**
+
+---
+
+## 3. Customer Success — `/use-cases/customer-success`
+
+**Meta Title:** Spot Account Usage & Margin Signals Before Renewal | AI Observly for CS
+**Meta Description:** See which accounts are quietly costing you money and which are ready to expand — before the renewal call, not during it.
+
+**H1:** Walk into every renewal knowing the real story
+
+**Subhead:** Usage dashboards show you activity. AI Observly shows you what that activity actually costs — so you know which accounts need a conversation before the invoice does the talking.
+
+**The Problem**
+- **Surprises show up on the bill, not the dashboard.** A customer's AI usage spikes for weeks before anyone on your side notices — usually when finance asks about it.
+- **Heavy usage is ambiguous.** A power user could be your best expansion opportunity or a margin problem in the making, and most CS tools can't tell you which.
+- **Renewal conversations lack cost context.** You know a customer's plan and support history — but not whether they're actually profitable at their current tier.
+
+**How AI Observly Helps**
+- **Per-customer usage & cost visibility.** See exactly how each account uses AI features and what it costs to serve them, alongside their plan.
+- **Early signal on problem accounts.** Catch cost spikes while they're still a conversation, not a churn risk or a write-off.
+- **Expansion cues built in.** An account pushing past its plan's usage is a warmer upsell signal than a check-in email — and you'll see it before the renewal date, not at it.
+
+**CTA:** Go into your next renewal with the full picture. → **Start monitoring now**
+
+---
+
+## 4. Engineering — `/use-cases/engineering`
+
+**Meta Title:** Lightweight AI Cost Attribution for Engineering Teams | AI Observly
+**Meta Description:** One fire-and-forget endpoint. No proxy in your request path. No stored API keys. Get per-customer cost attribution without building it yourself.
+
+**H1:** Cost attribution without building it yourself
+
+**Subhead:** Product and finance keep asking what an AI feature costs per customer. AI Observly answers that without you having to build a logging pipeline to get there.
+
+**The Problem**
+- **"What does this cost per customer?" has no easy answer.** Getting there yourself means custom logging, a data pipeline to aggregate it, and someone to maintain both.
+- **Most cost-tracking tools want to sit in the request path.** Proxying every LLM call adds a moving part and a new failure mode to something that already works.
+- **Provider credentials become another thing to secure.** Tools that need your API keys to work are one more surface to worry about.
+
+**How AI Observly Helps**
+- **Fire-and-forget usage-report endpoint.** Report usage from your existing code with a single call — no proxy, nothing sitting between your app and the LLM provider.
+- **No API keys stored, ever.** AI Observly never touches your provider credentials — it only sees the usage data you choose to send.
+- **Ship it once.** A lightweight integration you can add in one sitting, not a sprint — and you're done answering the cost question by hand.
+
+**CTA:** Get cost visibility without the infra project. → **Start monitoring now**
+
+---
+
+## 5. Finance & Ops — `/use-cases/finance`
+
+**Meta Title:** AI Cost Data for Unit Economics & Forecasting | AI Observly for Finance & Ops
+**Meta Description:** Turn unpredictable LLM spend into real per-customer and per-plan cost data — the missing input for unit economics and margin models.
+
+**H1:** Turn your AI bill into real unit economics
+
+**Subhead:** Usage-based AI pricing makes the vendor invoice a moving target. AI Observly gives you the per-customer and per-plan cost data to model it properly instead of reacting to it.
+
+**The Problem**
+- **AI/LLM spend is the hardest line item to forecast.** It scales with usage, not headcount or seats, so last month's bill tells you very little about next month's.
+- **Contribution margin models are missing a piece.** Without per-customer AI cost, any margin or unit economics model built on top of your SaaS revenue is incomplete.
+- **Overruns are discovered after the fact.** By the time a cost problem shows up on the provider invoice, the quarter it affected is already closed.
+
+**How AI Observly Helps**
+- **Per-customer & per-plan cost data.** The input your unit economics and contribution margin models are currently missing, without asking engineering to pull it manually.
+- **Plan-level profitability.** See which pricing tiers are structurally profitable and which are being propped up by your other plans.
+- **A shared source of truth.** The same cost numbers finance, product, and founders are looking at — no more reconciling spreadsheets before a board meeting.
+
+**CTA:** Give your margin models the missing input. → **Start monitoring now**
+
+---
+
+## Notes for Durgesh (not for Replit Agent)
+
+- No testimonials or specific stats are included in any page — real ones would strengthen these once you have them.
+- All 5 pages send "Start monitoring now" to the Pricing page/section rather than the homepage's default CTA destination. If you want persona-specific tracking (e.g. a URL param per persona pointing at Pricing), add that to the instruction above before running it.
+- Feature claims are limited to what's already live: per-customer/per-feature/per-plan cost visibility, the usage-report endpoint, and no stored API keys. Nothing about CSV export or alerting is mentioned, since those aren't shipped yet — add call-outs for those once they are.

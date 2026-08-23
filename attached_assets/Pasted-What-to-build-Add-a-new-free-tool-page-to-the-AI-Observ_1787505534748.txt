@@ -1,0 +1,45 @@
+What to build
+
+Add a new free tool page to the AI Observly site: "Plan & Pricing Margin Calculator." It lets someone add their pricing plans one at a time (name, price per customer, customer count, LLM/token cost, overhead, and an optional target margin), and instantly see each plan's real net margin after cost — plus what price they'd need to charge to hit a target margin.
+
+This is the same pattern as the two free tools already on the site (AI Blind Spot Quiz at /blind-spot-quiz and LLM Spend Analyzer at /spend-checkup): a standalone, self-contained tool page, no database, no backend calls, everything computed client-side in the browser.
+
+Where it goes
+Create the page at the route /pricing-margin-calculator.
+Wrap it in the site's existing header, nav, and footer — the same chrome used on every other page, including the other two free tools. Do not ship it as a bare standalone page.
+Add it to the "Free Tools" nav dropdown, after "LLM Spend Analyzer," labeled "Plan & Pricing Margin Calculator."
+Match the site's actual typography, colors, and spacing conventions. The reference code below uses its own placeholder color palette and fonts (Sora/Inter, indigo/blue accents) — restyle it to match the site's real theme, but keep the layout structure, states, and interactions exactly as described.
+Important constraints
+No database. No external API calls. Nothing stored or transmitted. All calculations happen entirely client-side, same as the other two free tools.
+Don't add analytics/tracking beyond whatever the site already applies sitewide.
+Keep the page title and meta description (or adapt them to the site's existing SEO/meta pattern) — this page needs to be indexable like the other free tools.
+How it should behave
+The page starts empty — no plan cards until the user adds one.
+A "+ Add Plan" button opens a modal form with these fields:
+Plan name (required)
+Price per customer / month (required, ≥ 0)
+Enrolled customers (required, ≥ 0)
+Total tokens (optional)
+Token / LLM cost (optional, defaults to 0)
+Additional overhead (optional, defaults to 0)
+Ideal margin goal % (optional)
+Clicking "Calculate Margin" validates the required fields, closes the modal, and adds a result card. Editing an existing plan reopens the same modal pre-filled and updates the card in place on submit.
+Each result card shows:
+Net Margin as a % and as a $/mo amount
+A cost-vs-revenue bar (cost portion vs. margin portion of revenue), with a small marker showing where the margin goal sits on that bar, if one is set
+Token/LLM Cost, Overhead, Total Tokens, Avg Cost/User
+If a margin goal is set: a panel showing the required price per customer to hit that goal, and whether the plan is already meeting it or needs a price increase
+A red "Losing $X/mo" strip if the plan's net margin is negative
+Edit and Delete actions
+A summary bar across the top aggregates Plans / Total Customers / Total Revenue / Blended Net Margin across all plans, and updates live as plans are added, edited, or removed.
+The empty state includes a "See it with example data" link that loads 4 example plans (Free/Starter/Pro/Enterprise) so a visitor can see the tool working before entering their own numbers.
+Exact formulas — keep these precise, do not approximate or change them
+Revenue = Price × Customers
+Total Cost = Token/LLM Cost + Additional Overhead
+Net Margin ($) = Revenue − Total Cost
+Net Margin (%) = (Net Margin ÷ Revenue) × 100 — if Revenue = 0, use −100% (division by zero fallback, not an error)
+Avg Cost / User = Total Cost ÷ Customers
+Required price per customer for a margin goal g%: Total Cost × 100 ÷ ((100 − g) × Customers)
+If Customers = 0: not calculable — show a message asking to add at least 1 customer.
+If g ≥ 100% and Total Cost > 0: not achievable by price alone — show a message that cost needs to come down, not just price.
+If g ≥ 100% and Total Cost = 0: any price above $0 satisfies it.
