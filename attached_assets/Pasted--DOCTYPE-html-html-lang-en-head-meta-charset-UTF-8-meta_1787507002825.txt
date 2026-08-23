@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Observly — Where We Fit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ffffff;
+    --bg-alt:#f8fafc;
+    --border:#e2e8f0;
+    --border-strong:#bfdbfe;
+    --blue:#2563eb;
+    --blue-dark:#1d4ed8;
+    --blue-50:#eff6ff;
+    --blue-100:#dbeafe;
+    --indigo:#6366f1;
+    --indigo-soft:#eef2ff;
+    --slate:#64748b;
+    --slate-soft:#f1f5f9;
+    --text:#0f172a;
+    --text-muted:#475569;
+    --text-dim:#94a3b8;
+    --font-display:'Space Grotesk',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'IBM Plex Mono',monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:88px 32px 96px;position:relative;}
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12px;letter-spacing:0.20em;color:var(--blue);
+    text-transform:uppercase;margin-bottom:18px;
+    display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:"";width:16px;height:1px;background:var(--blue);display:inline-block;}
+  h1{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(28px,4vw,46px);
+    line-height:1.16;
+    letter-spacing:-0.01em;
+    margin:0 0 20px;
+    max-width:800px;
+  }
+  h1 .hl{color:var(--blue);}
+  .sub{
+    font-size:16.5px;line-height:1.65;color:var(--text-muted);
+    max-width:660px;margin:0 0 20px;
+  }
+  .axis-hint{
+    font-size:14px;
+    line-height:1.6;
+    color:var(--text-muted);
+    background:var(--bg-alt);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 18px;
+    max-width:720px;
+    margin-bottom:36px;
+  }
+  .axis-hint strong{color:var(--text);}
+  .quadrant-card{
+    border:1px solid var(--border);
+    border-radius:20px;
+    background:#fff;
+    padding:8px 24px 24px;
+    position:relative;
+    box-shadow:0 1px 3px rgba(15,23,42,0.04), 0 16px 40px rgba(15,23,42,0.05);
+  }
+  .chart-frame{
+    display:flex;
+    align-items:stretch;
+    gap:6px;
+  }
+  .y-axis-col{
+    width:30px;
+    position:relative;
+    flex:none;
+  }
+  .y-axis-label{
+    position:absolute;
+    left:50%; top:50%;
+    width:520px;
+    transform:translate(-50%,-50%) rotate(-90deg);
+    text-align:center;
+    white-space:nowrap;
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:0.05em;
+  }
+  .y-axis-label .end{color:var(--text-dim);}
+  .y-axis-label .end.hi{color:var(--blue-dark);font-weight:600;}
+  .y-axis-label .arrow{color:var(--blue);margin:0 10px;}
+  .chart-main{flex:1;min-width:0;}
+  svg{width:100%;height:auto;display:block;overflow:visible;}
+  .x-axis-label{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:0.05em;
+    color:var(--text-dim);
+    text-align:center;
+    margin-top:14px;
+  }
+  .x-axis-label .end.hi{color:var(--blue-dark);font-weight:600;}
+  .x-axis-label .arrow{color:var(--blue);margin:0 10px;}
+  .qlabel{
+    font-family:var(--font-mono);
+    font-size:10.5px;
+    letter-spacing:0.09em;
+    text-transform:uppercase;
+    fill:var(--text-dim);
+  }
+  .qlabel.home{fill:var(--blue-dark); font-weight:600;}
+  .gridline{stroke:#eef2f7;stroke-width:1;}
+  .divider{stroke:#cbd5e1;stroke-width:1;stroke-dasharray:3 5;}
+  .point{cursor:pointer;}
+  .point circle.core{transition:r 0.15s ease, opacity 0.2s ease;stroke:#fff;stroke-width:2;}
+  .point:hover circle.core{r:9;}
+  .point.dimmed{opacity:0.18;}
+  .point-label{
+    font-family:var(--font-mono);
+    font-size:11px;
+    fill:var(--text-muted);
+    pointer-events:none;
+    transition:opacity 0.2s ease;
+  }
+  .point.dimmed .point-label{opacity:0.18;}
+  .home-ring{fill:none;stroke:var(--blue);stroke-width:1.5;opacity:0.55;}
+  @media (prefers-reduced-motion: no-preference){
+    .home-ring{ animation: pulse 2.6s ease-out infinite; }
+  }
+  @keyframes pulse{
+    0%{ r:11; opacity:0.6; }
+    100%{ r:26; opacity:0; }
+  }
+  .tooltip{
+    position:absolute;
+    display:none;
+    background:#fff;
+    border:1px solid var(--border-strong);
+    border-radius:12px;
+    padding:14px 16px;
+    max-width:250px;
+    box-shadow:0 12px 32px rgba(15,23,42,0.15);
+    pointer-events:none;
+    z-index:20;
+  }
+  .tooltip .t-name{
+    font-family:var(--font-display);
+    font-size:14.5px;font-weight:600;color:var(--text);margin-bottom:3px;
+  }
+  .tooltip .t-cat{
+    font-family:var(--font-mono);
+    font-size:10px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;
+  }
+  .tooltip .t-desc{font-size:12.5px;line-height:1.55;color:var(--text-muted);}
+  .legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px;}
+  .chip{
+    display:flex;align-items:center;gap:8px;
+    font-family:var(--font-mono);font-size:12px;color:var(--text-muted);
+    background:#fff;border:1px solid var(--border);
+    padding:8px 14px;border-radius:100px;cursor:pointer;user-select:none;
+    transition:border-color 0.15s ease, opacity 0.15s ease;
+  }
+  .chip:hover{border-color:var(--border-strong);}
+  .chip.off{opacity:0.35;}
+  .chip .dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  footer.note{
+    font-family:var(--font-mono);font-size:11.5px;color:var(--text-dim);
+    margin-top:22px;line-height:1.6;max-width:760px;
+  }
+  .y-axis-mobile{
+    display:none;
+    font-family:var(--font-mono);
+    font-size:11px;
+    letter-spacing:0.04em;
+    color:var(--text-dim);
+    margin-bottom:12px;
+  }
+  .y-axis-mobile .hi{color:var(--blue-dark);font-weight:600;}
+  .y-axis-mobile .arrow{color:var(--blue);margin:0 6px;}
+  @media (max-width:640px){
+    .wrap{padding:56px 18px 72px;}
+    .y-axis-col{display:none;}
+    .y-axis-mobile{display:block;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Where we fit</div>
+  <h1>The AI cost landscape has two axes.<br>We built for the <span class="hl">corner nobody else did.</span></h1>
+  <p class="sub">Every tool below answers a different question. Plotting them on two axes makes the gap obvious.</p>
+  <div class="axis-hint"><strong>How to read this:</strong> the horizontal axis is <strong>who the tool is built for</strong> — an engineering team, or a non-technical founder. The vertical axis is <strong>what problem it solves</strong> — tracing requests, or telling you if a customer is profitable. Hover any point for specifics.</div>
+
+  <div class="quadrant-card" id="card">
+    <div class="y-axis-mobile"><span class="lo">Observability &amp; Debugging</span><span class="arrow">→</span><span class="hi">Business Profitability &amp; Pricing</span></div>
+    <div class="chart-frame">
+      <div class="y-axis-col">
+        <div class="y-axis-label">
+          <span class="end lo">Observability &amp; Debugging</span><span class="arrow">→</span><span class="end hi">Business Profitability &amp; Pricing</span>
+        </div>
+      </div>
+      <div class="chart-main">
+        <svg viewBox="0 0 820 600" id="chart">
+          <defs>
+            <marker id="arrowHead" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#2563eb"/>
+            </marker>
+          </defs>
+
+          <!-- quadrant tints -->
+          <rect x="435" y="40" width="345" height="245" fill="#2563eb" opacity="0.045"/>
+          <rect x="90" y="40" width="345" height="245" fill="#6366f1" opacity="0.04"/>
+          <rect x="90" y="285" width="345" height="235" fill="#64748b" opacity="0.035"/>
+          <rect x="435" y="285" width="345" height="235" fill="#64748b" opacity="0.012"/>
+
+          <!-- gridlines -->
+          <g class="gridline">
+            <line x1="90" y1="112" x2="780" y2="112"/>
+            <line x1="90" y1="402" x2="780" y2="402"/>
+            <line x1="262" y1="40" x2="262" y2="520"/>
+            <line x1="608" y1="40" x2="608" y2="520"/>
+          </g>
+
+          <!-- divider lines -->
+          <line class="divider" x1="435" y1="40" x2="435" y2="520"/>
+          <line class="divider" x1="90" y1="285" x2="780" y2="285"/>
+
+          <!-- axes with arrowheads -->
+          <line x1="90" y1="520" x2="772" y2="520" stroke="#cbd5e1" stroke-width="1.5" marker-end="url(#arrowHead)"/>
+          <line x1="90" y1="520" x2="90" y2="48" stroke="#cbd5e1" stroke-width="1.5" marker-end="url(#arrowHead)"/>
+
+          <!-- quadrant labels -->
+          <text class="qlabel home" x="450" y="62">FOUNDER-FIRST PROFITABILITY</text>
+          <text class="qlabel" x="105" y="62">ENGINEERING-LED PROFITABILITY</text>
+          <text class="qlabel" x="105" y="500">DEVELOPER OBSERVABILITY</text>
+
+          <!-- AI Observly home ring -->
+          <circle class="home-ring" cx="697" cy="97" r="11"/>
+
+          <!-- points -->
+          <g class="point" data-name="AI Observly" data-cat="own" data-catlabel="AI Observly" data-desc="Per-customer margin, per-feature ROI, and plan-pricing guidance — built for non-technical AI SaaS founders." transform="translate(697,97)">
+            <circle class="core" r="9" fill="#2563eb"/>
+            <text class="point-label" x="14" y="4" font-weight="600" fill="#1d4ed8">AI Observly</text>
+          </g>
+
+          <g class="point" data-name="Costr" data-cat="direct" data-catlabel="Per-Customer Cost Tool" data-desc="Per-customer AI cost attribution via a proxy header. Indie-priced, but no plan-tier pricing guidance." transform="translate(490,228)">
+            <circle class="core" r="6" fill="#0ea5b7"/>
+            <text class="point-label" x="12" y="4">Costr</text>
+          </g>
+
+          <g class="point" data-name="PerUnit" data-cat="direct" data-catlabel="Per-Customer Cost Tool" data-desc="Cost by customer, feature, and pricing tier. $99/mo early access, metadata-tagging setup." transform="translate(456,261)">
+            <circle class="core" r="6" fill="#0ea5b7"/>
+            <text class="point-label" x="12" y="18">PerUnit</text>
+          </g>
+
+          <g class="point" data-name="MarginDash" data-cat="direct" data-catlabel="Per-Customer Cost Tool" data-desc="Per-customer &amp; per-feature margin with Stripe sync and budget enforcement. SDK-first, engineering-oriented setup." transform="translate(366,144)">
+            <circle class="core" r="6" fill="#0ea5b7"/>
+            <text class="point-label" x="12" y="4">MarginDash</text>
+          </g>
+
+          <g class="point" data-name="Helicone" data-cat="obs" data-catlabel="LLM Observability" data-desc="Request-level observability and cost tagging. No revenue or margin data — built for debugging, not pricing." transform="translate(242,342)">
+            <circle class="core" r="6" fill="#94a3b8"/>
+            <text class="point-label" x="12" y="4">Helicone</text>
+          </g>
+
+          <g class="point" data-name="Langfuse" data-cat="obs" data-catlabel="LLM Observability" data-desc="Open-source tracing and prompt debugging. Deep trace views, but no cost-to-revenue link." transform="translate(200,378)">
+            <circle class="core" r="6" fill="#94a3b8"/>
+            <text class="point-label" x="12" y="4">Langfuse</text>
+          </g>
+
+          <g class="point" data-name="LangSmith" data-cat="obs" data-catlabel="LLM Observability" data-desc="Agent evaluation and debugging for LangChain apps. Cost is a side effect of tracing, not the focus." transform="translate(173,412)">
+            <circle class="core" r="6" fill="#94a3b8"/>
+            <text class="point-label" x="12" y="4">LangSmith</text>
+          </g>
+
+          <g class="point" data-name="CloudZero" data-cat="finops" data-catlabel="Cloud &amp; AI FinOps" data-desc="Enterprise-grade cost-per-customer across cloud + AI spend. Powerful, but built for finance/platform teams and enterprise budgets." transform="translate(269,88)">
+            <circle class="core" r="6" fill="#6366f1"/>
+            <text class="point-label" x="12" y="4">CloudZero</text>
+          </g>
+
+          <g class="point" data-name="Amberflo" data-cat="finops" data-catlabel="Cloud &amp; AI FinOps" data-desc="Usage-based billing and cost attribution by customer or workload. Custom enterprise pricing, not indie-scale." transform="translate(242,172)">
+            <circle class="core" r="6" fill="#6366f1"/>
+            <text class="point-label" x="-72" y="4">Amberflo</text>
+          </g>
+
+        </svg>
+        <div class="x-axis-label">
+          <span class="end lo">Developers &amp; Engineering Teams</span><span class="arrow">→</span><span class="end hi">Non-Technical Founders</span>
+        </div>
+      </div>
+    </div>
+    <div class="tooltip" id="tooltip">
+      <div class="t-name" id="t-name"></div>
+      <div class="t-cat" id="t-cat"></div>
+      <div class="t-desc" id="t-desc"></div>
+    </div>
+  </div>
+
+  <div class="legend" id="legend">
+    <div class="chip" data-filter="own"><span class="dot" style="background:#2563eb"></span>AI Observly</div>
+    <div class="chip" data-filter="direct"><span class="dot" style="background:#0ea5b7"></span>Per-customer cost tools</div>
+    <div class="chip" data-filter="obs"><span class="dot" style="background:#94a3b8"></span>LLM observability</div>
+    <div class="chip" data-filter="finops"><span class="dot" style="background:#6366f1"></span>Cloud &amp; AI FinOps</div>
+  </div>
+
+  <footer class="note">Positioning reflects publicly documented target audiences, setup model, and feature scope as of August 2026 — a qualitative read of the market, not a scored benchmark.</footer>
+</div>
+
+<script>
+  const tooltip = document.getElementById('tooltip');
+  const card = document.getElementById('card');
+  const tName = document.getElementById('t-name');
+  const tCat = document.getElementById('t-cat');
+  const tDesc = document.getElementById('t-desc');
+  const catColors = {own:'#2563eb', direct:'#0ea5b7', obs:'#64748b', finops:'#6366f1'};
+
+  document.querySelectorAll('.point').forEach(pt => {
+    pt.addEventListener('mouseenter', (e) => { showTip(pt, e); });
+    pt.addEventListener('mousemove', positionTooltip);
+    pt.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
+    pt.addEventListener('click', (e) => {
+      if (tooltip.style.display === 'block' && tName.textContent === pt.dataset.name) {
+        tooltip.style.display = 'none';
+      } else {
+        showTip(pt, e);
+      }
+    });
+  });
+
+  function showTip(pt, e){
+    const d = pt.dataset;
+    tName.textContent = d.name;
+    tCat.textContent = d.catlabel;
+    tCat.style.color = catColors[d.cat];
+    tDesc.textContent = d.desc;
+    tooltip.style.display = 'block';
+    positionTooltip(e);
+  }
+
+  function positionTooltip(e){
+    const rect = card.getBoundingClientRect();
+    let x = e.clientX - rect.left + 16;
+    let y = e.clientY - rect.top + 16;
+    if (x + 260 > rect.width) x = e.clientX - rect.left - 266;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  }
+
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('off');
+      const active = [...document.querySelectorAll('.chip:not(.off)')].map(c => c.dataset.filter);
+      document.querySelectorAll('.point').forEach(pt => {
+        pt.classList.toggle('dimmed', active.length > 0 && !active.includes(pt.dataset.cat));
+      });
+    });
+  });
+</script>
+</body>
+</html>

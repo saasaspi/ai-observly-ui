@@ -1,0 +1,36 @@
+Build a new component (name it something like WhereWeFit or PositioningMatrix, matching this codebase's naming conventions) and place it in the exact spot the old section occupied.
+
+What it shows
+
+A scatter/quadrant chart plotting AI Observly against 8 competitors on two axes:
+
+X-axis (horizontal): who the tool is built for — from "Developers & Engineering Teams" (left) to "Non-Technical Founders" (right)
+Y-axis (vertical): what problem it solves — from "Observability & Debugging" (bottom) to "Business Profitability & Pricing" (top)
+
+AI Observly sits alone in the top-right corner. A dashed divider splits the chart into four quadrants, three of which are labeled directly on the chart: Founder-First Profitability (top-right, where AI Observly sits), Engineering-Led Profitability (top-left), and Developer Observability (bottom-left). The bottom-right quadrant is intentionally empty/unlabeled.
+
+The data (9 points)
+Tool	Category	X (0–100)	Y (0–100)	One-line description shown on hover
+AI Observly	own	88	90	Per-customer margin, per-feature ROI, and plan-pricing guidance — built for non-technical AI SaaS founders.
+Costr	direct (Per-Customer Cost Tool)	58	62	Per-customer AI cost attribution via a proxy header. Indie-priced, but no plan-tier pricing guidance.
+PerUnit	direct (Per-Customer Cost Tool)	53	55	Cost by customer, feature, and pricing tier. $99/mo early access, metadata-tagging setup.
+MarginDash	direct (Per-Customer Cost Tool)	40	80	Per-customer & per-feature margin with Stripe sync and budget enforcement. SDK-first, engineering-oriented setup.
+Helicone	obs (LLM Observability)	22	38	Request-level observability and cost tagging. No revenue or margin data — built for debugging, not pricing.
+Langfuse	obs (LLM Observability)	16	34	Open-source tracing and prompt debugging. Deep trace views, but no cost-to-revenue link.
+LangSmith	obs (LLM Observability)	12	26	Agent evaluation and debugging for LangChain apps. Cost is a side effect of tracing, not the focus.
+CloudZero	finops (Cloud & AI FinOps)	26	92	Enterprise-grade cost-per-customer across cloud + AI spend. Powerful, but built for finance/platform teams and enterprise budgets.
+Amberflo	finops (Cloud & AI FinOps)	22	74	Usage-based billing and cost attribution by customer or workload. Custom enterprise pricing, not indie-scale.
+
+(The reference implementation below has this data pre-converted to pixel coordinates on an 820×600 viewBox — you can use the SVG as-is, or use the 0–100 values above if you rebuild it as a native chart.)
+
+Required interactions
+Hover any point → a tooltip appears showing the tool's name, category, and one-line description.
+Tap a point on mobile → same tooltip, toggles open/closed on repeat tap.
+Click a legend chip (AI Observly / Per-customer cost tools / LLM observability / Cloud & AI FinOps) → dims every point not in that category. Click again to restore. Multiple chips can be active at once.
+The "AI Observly" point has a pulsing ring around it to draw the eye — respect prefers-reduced-motion and disable the pulse for users who have that set.
+On narrow/mobile screens, the rotated vertical axis label should switch to a plain horizontal caption above the chart instead of trying to rotate in a cramped space (see the reference implementation's mobile handling — it already solves this).
+Design direction — important
+
+The reference implementation below uses a specific blue/white palette, and Space Grotesk / Inter / IBM Plex Mono fonts, because that's my best approximation of this site's theme — I don't have access to the live site's actual design tokens.
+
+Override my colors and fonts with whatever this codebase already uses (existing Tailwind theme colors, CSS variables, or design tokens for the primary blue, body text, muted text, and borders). Match the container width, section padding, and heading/body type scale already used by other homepage sections, so this doesn't look bolted on. Only carry over the structure, data, and interaction logic from the reference below — not necessarily its exact visual styling.

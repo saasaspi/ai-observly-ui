@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { PublicLayout } from "@/components/public-layout";
+import { PositioningMatrix } from "@/components/positioning-matrix";
 import Link from "next/link";
 import {
   ArrowRight, CheckCircle2, AlertCircle, TrendingDown, DollarSign,
@@ -423,19 +424,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── SOLUTION OVERVIEW ── */}
-      <section id="solution" className="py-20 px-6 bg-primary/5 border-y border-primary/10">
-        <div className="max-w-3xl mx-auto text-center">
-          <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">The fix</p>
-          <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-6">
-            From &ldquo;here&apos;s the invoice&rdquo; to &ldquo;here&apos;s the margin&rdquo;
-          </h2>
-          <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg leading-relaxed">
-            AI Observly sits between your LLM provider and your product, tagging every request with a <code className="text-primary bg-primary/10 px-1.5 py-0.5 rounded text-sm font-mono">customer_id</code>, a feature, and a plan. Instead of one flat number at the end of the month, you get a live P&amp;L for your AI spend — who costs you the most, what it costs to run each feature, and whether each pricing tier is actually profitable.
-          </p>
-        </div>
-      </section>
-
       {/* ── HOW IT WORKS ── */}
       <section id="how-it-works" className="py-24 px-6 bg-card border-y border-border">
         <div className="max-w-5xl mx-auto">
@@ -623,45 +611,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── SOCIAL PROOF ── */}
-      <section id="social-proof" className="py-24 px-6 bg-background">
-        <div className="max-w-5xl mx-auto text-center">
-          <div data-reveal className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-8">
-            <GitBranch className="w-4 h-4 mr-2" /> Built in public
-          </div>
-          <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Trusted by early builders</h2>
-          <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg mb-12 max-w-lg mx-auto">Join 143+ founders already on the waitlist — and growing.</p>
-          <div className="grid md:grid-cols-3 gap-6 text-left mb-12">
-            {[
-              { quote: "Finally. I've been staring at my OpenAI bill every month wondering which customer is eating it. This is exactly what I needed.", name: "Sarah K.", role: "Solo founder, AI writing tool", avatar: "SK", delay: "0s" },
-              { quote: "I repriced my Pro plan within a week of seeing the real cost breakdown by tier. Already back in the black on AI.", name: "Marcus T.", role: "Indie hacker, productivity SaaS", avatar: "MT", delay: "0.1s" },
-              { quote: "Langfuse was overkill for what I needed. AI Observly took 10 minutes to set up and showed me which features were losing money.", name: "Priya R.", role: "Founder, AI customer support tool", avatar: "PR", delay: "0.2s" },
-            ].map(({ quote, name, role, avatar, delay }) => (
-              <div
-                key={name}
-                data-reveal
-                style={{ transitionDelay: delay }}
-                className="bg-card border border-border rounded-xl p-6 shadow-sm flex flex-col gap-4 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
-              >
-                <MessageSquare className="w-5 h-5 text-primary/50" />
-                <p className="text-foreground text-sm leading-relaxed flex-1">&ldquo;{quote}&rdquo;</p>
-                <div className="flex items-center gap-3 pt-2 border-t border-border">
-                  <div className="w-9 h-9 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center font-outfit">{avatar}</div>
-                  <div><p className="text-sm font-semibold text-foreground">{name}</p><p className="text-xs text-muted-foreground">{role}</p></div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center justify-center gap-8 flex-wrap">
-            {[{ label: "AI providers supported", value: "3+" },{ label: "Avg setup time", value: "< 10 min" }].map(({ label, value }) => (
-              <div key={label} data-reveal className="text-center">
-                <p className="text-3xl font-bold font-outfit text-primary">{value}</p>
-                <p className="text-sm text-muted-foreground">{label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ── POSITIONING MATRIX ── */}
+      <PositioningMatrix />
 
       {/* ── LATEST FROM BLOG ── */}
       <LatestFromBlog />

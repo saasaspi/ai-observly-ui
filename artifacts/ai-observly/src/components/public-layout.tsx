@@ -463,7 +463,8 @@ export function PublicLayout({ children }: { children: ReactNode }) {
 
       <footer className="border-t border-border py-12 bg-card">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-10">
+            {/* Brand */}
             <div className="col-span-2 md:col-span-1">
               <Link href="/" className="inline-block mb-3">
                 <Image
@@ -478,8 +479,10 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 AI cost &amp; margin tracking for founders who ship fast.
               </p>
             </div>
+
+            {/* Features */}
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-3">Product</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Features</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link href="/features/per-customer-cost-attribution" className="hover:text-foreground transition-colors">
@@ -508,25 +511,46 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 </li>
               </ul>
             </div>
+
+            {/* Free Tools */}
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-3">Resources</h4>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Free Tools</h4>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <Link href="/spend-checkup" className="hover:text-foreground transition-colors">
+                    LLM Spend Analyzer
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/blind-spot-quiz" className="hover:text-foreground transition-colors">
+                    AI Blind Spot Quiz
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tools/plan-pricing-margin-calculator" className="hover:text-foreground transition-colors">
+                    Margin Calculator
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/tools" className="hover:text-foreground transition-colors font-medium text-primary">
+                    View all tools →
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Blog & Docs */}
+            <div>
+              <h4 className="text-sm font-semibold text-foreground mb-3">Blog &amp; Docs</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link href="/blog" className="hover:text-foreground transition-colors">
-                    Blog
+                    All Posts
                   </Link>
                 </li>
                 <li>
                   <Link href="/docs" className="hover:text-foreground transition-colors">
-                    Docs
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/spend-checkup"
-                    className="hover:text-foreground transition-colors font-medium text-primary"
-                  >
-                    Free LLM Spend Analyzer
+                    Documentation
                   </Link>
                 </li>
                 <li>
@@ -536,6 +560,8 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 </li>
               </ul>
             </div>
+
+            {/* Account */}
             <div>
               <h4 className="text-sm font-semibold text-foreground mb-3">Account</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
@@ -545,8 +571,8 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                   </Link>
                 </li>
                 <li>
-                  <Link href="/signup" className="hover:text-foreground transition-colors">
-                    Start Monitoring now
+                  <Link href="/signup" className="hover:text-foreground transition-colors font-medium text-primary">
+                    Start monitoring free
                   </Link>
                 </li>
               </ul>
