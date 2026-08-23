@@ -14,8 +14,11 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   const [productsOpen, setProductsOpen] = useState(false);
   const [blogsOpen, setBlogsOpen] = useState(false);
   const [freeToolsOpen, setFreeToolsOpen] = useState(false);
+  const [featuresOpen, setFeaturesOpen] = useState(false);
+  const [activeFeaturesTab, setActiveFeaturesTab] = useState<"core" | "tools" | "trust">("core");
   const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
   const [mobileFreeToolsOpen, setMobileFreeToolsOpen] = useState(false);
+  const [mobileFeaturesOpen, setMobileFeaturesOpen] = useState(false);
   const [navPosts, setNavPosts] = useState<NavPost[]>([]);
   const isHome = pathname === "/";
 
@@ -23,6 +26,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   const productsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const blogsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const freeToolsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const featuresTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -61,6 +65,32 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   const closeFreeTools = () => {
     freeToolsTimer.current = setTimeout(() => setFreeToolsOpen(false), 120);
   };
+  const openFeatures = () => {
+    if (featuresTimer.current) clearTimeout(featuresTimer.current);
+    setFeaturesOpen(true);
+  };
+  const closeFeatures = () => {
+    featuresTimer.current = setTimeout(() => setFeaturesOpen(false), 160);
+  };
+
+  // Mega-menu content
+  const coreFeatures = [
+    { title: "Per-Customer Cost Attribution", desc: "See exactly which customers are profitable and which are eating your margin", href: "/features/per-customer-cost-attribution" },
+    { title: "Per-Feature Margins & ROI", desc: "Know which features are worth building and which are burning budget", href: "/features/per-feature-margins-roi" },
+    { title: "Plan & Pricing Profitability", desc: "See net margin by plan, not just revenue", href: "/features/plan-pricing-profitability" },
+    { title: "Margin Alerts", desc: "Get notified the moment a customer or plan turns margin-negative", href: "/features" },
+  ];
+  const freeToolItems = [
+    { title: "LLM Spend Analyzer", desc: "Upload your billing CSV, get an instant cost breakdown", href: "/spend-checkup" },
+    { title: "AI Blind Spot Quiz", desc: "Find your AI cost blind spots in 2 minutes", href: "/blind-spot-quiz" },
+    { title: "Plan & Pricing Margin Calculator", desc: "Model your plan margins and back-calculate your ideal price", href: "/tools/plan-pricing-margin-calculator" },
+  ];
+  const trustItems = [
+    { title: "No Proxy Architecture", desc: "Nothing routes through our servers", href: "/security" },
+    { title: "No Stored API Keys", desc: "We never see or store your provider keys", href: "/security" },
+    { title: "Data Retention", desc: "30 days on Free, 90 days on Pro", href: "/security" },
+  ];
+  const megaTabItems = activeFeaturesTab === "core" ? coreFeatures : activeFeaturesTab === "tools" ? freeToolItems : trustItems;
 
   const dropdownBase =
     "absolute top-full left-0 mt-1 bg-card border border-border rounded-xl shadow-lg py-1.5 z-50";
@@ -110,6 +140,83 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                   <a href={sectionHref("who-its-for")} className={dropdownLink}>
                     Who it&apos;s for
                   </a>
+                </div>
+              )}
+            </div>
+
+            {/* Features mega-menu */}
+            <div className="relative" onMouseEnter={openFeatures} onMouseLeave={closeFeatures}>
+              <button className="flex items-center gap-1 px-3 py-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                Features <ChevronDown className="w-3.5 h-3.5" />
+              </button>
+              {featuresOpen && (
+                <div className="absolute top-full left-0 mt-2 bg-card border border-border rounded-2xl shadow-xl z-50 flex gap-0 overflow-hidden" style={{ width: 640 }}>
+                  {/* Left: tabs + grid */}
+                  <div className="flex-1 p-5">
+                    {/* Tab strip */}
+                    <div className="flex gap-1 mb-4">
+                      {(["core", "tools", "trust"] as const).map((tab) => {
+                        const labels = { core: "Core Features", tools: "Free Tools", trust: "Trust & Security" };
+                        return (
+                          <button
+                            key={tab}
+                            onClick={() => setActiveFeaturesTab(tab)}
+                            onMouseEnter={() => setActiveFeaturesTab(tab)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                              activeFeaturesTab === tab
+                                ? "bg-primary text-primary-foreground shadow-sm"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                            }`}
+                          >
+                            {labels[tab]}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* 2-column grid */}
+                    <div className="grid grid-cols-2 gap-2">
+                      {megaTabItems.map((item) => (
+                        <Link
+                          key={item.href + item.title}
+                          href={item.href}
+                          onClick={() => setFeaturesOpen(false)}
+                          className="group flex flex-col gap-0.5 rounded-xl p-3 hover:bg-muted transition-colors"
+                        >
+                          <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">{item.title}</span>
+                          <span className="text-xs text-muted-foreground leading-snug">{item.desc}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Right: preview card */}
+                  <div className="w-48 shrink-0 border-l border-border bg-muted/30 p-4 flex flex-col gap-3">
+                    <div className="rounded-xl border border-border bg-card overflow-hidden">
+                      <div className="flex items-center gap-1 px-2 py-1.5 border-b border-border bg-muted/50">
+                        <div className="w-2 h-2 rounded-full bg-red-400/70" />
+                        <div className="w-2 h-2 rounded-full bg-yellow-400/70" />
+                        <div className="w-2 h-2 rounded-full bg-green-400/70" />
+                      </div>
+                      <div className="p-2 space-y-1">
+                        {[["Acme Corp", "-$60", "text-red-500"], ["Verity Labs", "+$95", "text-green-600"], ["Moonshot", "+$315", "text-green-600"]].map(([n, m, c]) => (
+                          <div key={n} className="flex justify-between text-[9px]">
+                            <span className="text-muted-foreground">{n}</span>
+                            <span className={`font-bold ${c}`}>{m}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground leading-snug mb-0.5">Explore how AI Observly prices out</p>
+                      <p className="text-[10px] text-muted-foreground mb-3">See which plan fits your customer base.</p>
+                      <Link
+                        href="/pricing"
+                        onClick={() => setFeaturesOpen(false)}
+                        className="block text-center text-xs font-semibold bg-primary text-primary-foreground rounded-lg px-3 py-2 hover:opacity-90 transition-opacity"
+                      >
+                        View Pricing
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -278,6 +385,50 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               </div>
             )}
 
+            {/* Features — expandable accordion */}
+            <button
+              className="flex items-center justify-between w-full px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              onClick={() => setMobileFeaturesOpen(!mobileFeaturesOpen)}
+            >
+              Features
+              {mobileFeaturesOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+            {mobileFeaturesOpen && (
+              <div className="pl-4 flex flex-col gap-0.5">
+                <p className="px-3 pt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Core Features</p>
+                {[
+                  { label: "Per-Customer Cost Attribution", href: "/features/per-customer-cost-attribution" },
+                  { label: "Per-Feature Margins & ROI", href: "/features/per-feature-margins-roi" },
+                  { label: "Plan & Pricing Profitability", href: "/features/plan-pricing-profitability" },
+                  { label: "Margin Alerts", href: "/features" },
+                ].map((item) => (
+                  <Link key={item.href} href={item.href} className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
+                    {item.label}
+                  </Link>
+                ))}
+                <p className="px-3 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Free Tools</p>
+                {[
+                  { label: "LLM Spend Analyzer", href: "/spend-checkup" },
+                  { label: "AI Blind Spot Quiz", href: "/blind-spot-quiz" },
+                  { label: "Plan & Pricing Margin Calculator", href: "/tools/plan-pricing-margin-calculator" },
+                ].map((item) => (
+                  <Link key={item.href} href={item.href} className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
+                    {item.label}
+                  </Link>
+                ))}
+                <p className="px-3 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Trust & Security</p>
+                {[
+                  { label: "No Proxy Architecture", href: "/security" },
+                  { label: "No Stored API Keys", href: "/security" },
+                  { label: "Data Retention", href: "/security" },
+                ].map((item) => (
+                  <Link key={item.label} href={item.href} className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+
             {/* Docs */}
             <Link
               href="/docs"
@@ -382,9 +533,19 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               <h4 className="text-sm font-semibold text-foreground mb-3">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <a href="/#features" className="hover:text-foreground transition-colors">
-                    Features
-                  </a>
+                  <Link href="/features/per-customer-cost-attribution" className="hover:text-foreground transition-colors">
+                    Per-Customer Attribution
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/features/per-feature-margins-roi" className="hover:text-foreground transition-colors">
+                    Per-Feature Margins
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/features/plan-pricing-profitability" className="hover:text-foreground transition-colors">
+                    Plan Profitability
+                  </Link>
                 </li>
                 <li>
                   <Link href="/pricing" className="hover:text-foreground transition-colors">

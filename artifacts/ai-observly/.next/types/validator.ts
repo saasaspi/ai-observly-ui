@@ -146,6 +146,33 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../src/app/features/per-customer-cost-attribution/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/features/per-customer-cost-attribution">> = Specific
+  const handler = {} as typeof import("../../src/app/features/per-customer-cost-attribution/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/features/per-feature-margins-roi/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/features/per-feature-margins-roi">> = Specific
+  const handler = {} as typeof import("../../src/app/features/per-feature-margins-roi/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/features/plan-pricing-profitability/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/features/plan-pricing-profitability">> = Specific
+  const handler = {} as typeof import("../../src/app/features/plan-pricing-profitability/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../src/app/login/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/login">> = Specific

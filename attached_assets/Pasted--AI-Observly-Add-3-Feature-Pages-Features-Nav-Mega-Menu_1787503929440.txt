@@ -1,0 +1,378 @@
+# AI Observly — Add 3 Feature Pages + Features Nav Mega-Menu
+
+Paste this entire file into Replit Agent chat in one message. Everything Agent
+needs — page copy, layout pattern, CTA rules, and the nav mega-menu spec — is in
+this one file. No other files needed.
+
+---
+
+## 0. Context
+
+Match the existing site's visual design system exactly (same color theme, fonts,
+spacing, buttons, section components, animation style) for everything below.
+These should look like native pages of this site, not a bolt-on.
+
+We're adding three new feature pages and a hover mega-menu on the "Features" nav
+item.
+
+---
+
+## 1. Page layout pattern (use this structure for all three pages below)
+
+1. Hero: H1 + subheadline + primary CTA button + secondary text link, illustration on the right or as a background element.
+2. A row of 3 feature cards (icon in a rounded square, bold title, 1–2 line description).
+3. A large product-preview panel: a screenshot or embed of the relevant part of the AI Observly dashboard, with a caption underneath.
+4. Four alternating sections: each one is a heading + paragraph + a CTA link on one side, and an image/screenshot on the other side. Alternate which side the image is on going down the page (image-right, then image-left, then image-right, then image-left).
+5. A tabbed panel: 3 tabs for different personas, each tab showing a short headline, a paragraph, and a "learn more" link.
+6. A small "Explore More Features" cross-link row pointing to the other two new pages (and the relevant free tool).
+7. An FAQ accordion with 4 question/answer pairs.
+8. A full-width footer CTA banner with a headline, one line of subtext, and a button.
+
+Lines like `[IMAGE: ...]` below are placeholders describing what should go there —
+use an existing dashboard screenshot if one is already in the project's assets,
+otherwise use a simple styled placeholder graphic in the site's existing
+illustration style. Do not leave a broken image tag.
+
+## 2. CTA rule for all three pages — important
+
+**Every single CTA button and link on these three pages must point to the pricing
+page/section (`/pricing`)** — the hero primary CTA, every "View Pricing" link
+inside the benefit sections, the footer CTA, and the product-preview CTA. None of
+these three pages should link to the signup page. This is intentional: these are
+bottom-of-funnel pages meant to push the reader toward Pricing, not straight to
+signup.
+
+The only exceptions are the "See how it works" secondary hero link (anchor-scrolls
+down the same page) and the persona-tab and related-feature links (which point to
+the other pages, as written below).
+
+Reuse whatever CTA button component the rest of the site already uses — same
+styling, same hover state. Don't create a new button style.
+
+## 3. Add all three pages to sitemap.xml and internal links
+
+Add all three routes to the footer "Product" or "Features" link column, and to the
+sitemap if one is generated automatically. Add a "Related" cross-link between all
+three new pages and between each of them and the existing Free Tools pages.
+
+---
+
+## 4. PAGE 1 — Per-Customer Cost Attribution
+
+route: `/features/per-customer-cost-attribution`
+meta_title: Per-Customer AI Cost Attribution | AI Observly
+meta_description: See exactly which customers are profitable and which are quietly burning your AI margin. Per-customer LLM cost attribution for non-technical SaaS founders. No proxy, no code changes.
+
+### HERO
+H1: See exactly which customers are burning your AI margin
+SUBHEAD: AI Observly attributes every LLM and API dollar to the customer who spent it — so you know who's profitable and who's quietly eating your margin, before it shows up on your P&L.
+CTA_PRIMARY: [View Pricing](/pricing)
+CTA_SECONDARY: [See how it works ↓](#how-it-works)
+[IMAGE: hero illustration — a customer list morphing into cost/revenue bars, blue/white theme matching existing site]
+
+### FEATURE_CARDS (3-up row)
+1. TITLE: Automatic Cost Ledger, Per Customer
+   BODY: Every API call and token is tagged to the customer_id that triggered it — automatically, from day one. No manual tagging, no spreadsheets, no engineering project.
+2. TITLE: Margin-Negative Alerts
+   BODY: Get flagged the moment a customer's AI spend crosses what they're paying you — not 30 days later when the provider invoice lands.
+3. TITLE: Top 5 Free, Unlock the Rest
+   BODY: Start free with your top 5 customers' cost, revenue, and margin fully unlocked. Upgrade to unlock the rest of your customer base.
+
+### PRODUCT_PREVIEW (id="how-it-works")
+[IMAGE/EMBED: dashboard screenshot — customer table with columns: Customer, Plan, AI Cost, Revenue, Margin %. Locked rows shown blurred with a small lock icon and "Unlock" label, matching the free-tier blur behavior]
+CAPTION: Customer names are always visible. Cost, revenue, and margin unlock as you upgrade.
+CTA: [View Pricing](/pricing)
+
+### BENEFIT_SECTIONS (alternate image-left/image-right)
+
+**Section 1: Know your true cost-to-serve, per customer**
+BODY: Revenue per customer is easy. Cost-to-serve for AI-powered products isn't — until now. AI Observly pulls usage straight from your LLM and API providers and rolls it up by customer, so "cost to serve" stops being a guess.
+CTA: [View Pricing](/pricing)
+[IMAGE: cost-to-serve breakdown chart per customer]
+
+**Section 2: Catch margin-negative customers before renewal**
+BODY: A single power user on a flat-rate plan can quietly wipe out the margin of ten normal ones. AI Observly surfaces margin-negative accounts as they happen, so you can fix pricing, add usage limits, or have the conversation before the renewal — not after.
+CTA: [View Pricing](/pricing)
+[IMAGE: alert/notification UI showing a customer crossing into negative margin]
+
+**Section 3: No proxy, no stored API keys**
+BODY: AI Observly never sits between your app and your LLM provider. A lightweight, fire-and-forget usage-report call sends us the numbers we need — your requests, your data, and your provider API keys stay exactly where they are.
+CTA: [View Pricing](/pricing)
+[IMAGE: simple architecture diagram — Your App → LLM Provider (direct), with a small dotted line "usage report" arrow to AI Observly]
+
+**Section 4: Built for founders, not for engineers**
+BODY: No SQL, no query builder, no dashboard-of-dashboards. If you can read a spreadsheet, you can read your customer margins — in plain English, with the follow-up question already answered.
+CTA: [View Pricing](/pricing)
+[IMAGE: clean dashboard screenshot with plain-language summary strip at top, e.g. "3 customers are costing you more than they pay"]
+
+### PERSONA_TABS
+TAB 1 — SaaS Founders & Indie Hackers
+  HEADLINE: Stop finding out about margin problems from your bank balance
+  BODY: You're already watching MRR. AI Observly gives you the other half of the picture — what each customer actually costs you to serve — so growth doesn't quietly become a losing bet.
+  LINK: [AI Observly for Founders](/use-cases/founders)
+
+TAB 2 — AI Product Managers
+  HEADLINE: Tie usage data to unit economics, not just engagement
+  BODY: You already track feature usage. AI Observly adds the cost layer, so "engaged customer" and "profitable customer" stop being two different conversations.
+  LINK: [AI Observly for Product Managers](/use-cases/product-managers)
+
+TAB 3 — Customer Success & Ops
+  HEADLINE: Know which accounts need a plan conversation
+  BODY: See which customers are trending margin-negative before the renewal call, not during it.
+  LINK: [AI Observly for Customer Success](/use-cases/customer-success)
+
+### RELATED_FEATURES
+- Per-Feature Margins & ROI → /features/per-feature-margins-roi
+- Plan & Pricing Profitability → /features/plan-pricing-profitability
+- LLM Spend Analyzer (free tool) → /spend-checkup
+
+### FAQ
+Q1: What is per-customer AI cost attribution?
+A1: It's the practice of tracking exactly how much LLM/API spend each of your customers generates, instead of only seeing one combined provider bill. AI Observly automates this by rolling up usage per customer_id.
+
+Q2: How is this different from Helicone or Langfuse?
+A2: Helicone and Langfuse are developer-facing observability tools built around requests, latency, and errors. AI Observly is built specifically to answer one question for non-technical founders: which customers are profitable, and which ones aren't.
+
+Q3: Do I need to add a proxy or change my code?
+A3: No. AI Observly doesn't sit between your app and your LLM provider. You send a lightweight usage report from your existing code — no proxy, no rewritten API calls, no stored provider keys.
+
+Q4: What do I see on the free plan?
+A4: Your top 5 customers' cost, revenue, and margin, fully unlocked, on one provider. Every other customer name is still visible — the cost data just stays blurred until you upgrade.
+
+### FOOTER_CTA
+HEADLINE: Stop guessing which customers are actually profitable
+SUBHEAD: See your real per-customer margins in minutes, not after next quarter's invoice.
+CTA: [View Pricing](/pricing)
+
+---
+
+## 5. PAGE 2 — Per-Feature Margins & ROI
+
+route: `/features/per-feature-margins-roi`
+meta_title: Per-Feature AI Margins & ROI | AI Observly
+meta_description: Find out which features in your AI product are profitable and which ones are quietly draining your LLM budget. Feature-level cost and ROI tracking for non-technical founders.
+
+### HERO
+H1: Find out which features are actually worth building
+SUBHEAD: AI Observly breaks LLM spend down by feature, not just by customer — so you can see which parts of your product are profitable, and which ones are quietly draining your AI budget.
+CTA_PRIMARY: [View Pricing](/pricing)
+CTA_SECONDARY: [See how it works ↓](#how-it-works)
+[IMAGE: hero illustration — a product feature list with cost bars next to each, blue/white theme matching existing site]
+
+### FEATURE_CARDS (3-up row)
+1. TITLE: Feature-Level Cost Breakdown
+   BODY: See exactly how much every AI feature costs to run — per call, per day, per month — broken out from your total provider bill automatically.
+2. TITLE: ROI Scorecard per Feature
+   BODY: Pair cost with usage and revenue impact so you can see, feature by feature, what's paying for itself and what isn't.
+3. TITLE: Usage-vs-Cost Correlation
+   BODY: Spot the features where usage is climbing but cost is climbing faster — the earliest warning sign of a feature that needs re-pricing or re-engineering.
+
+### PRODUCT_PREVIEW (id="how-it-works")
+[IMAGE/EMBED: dashboard screenshot — feature list with columns: Feature, Calls, AI Cost, % of Total Spend, Trend]
+CAPTION: Every AI-powered feature in your product, ranked by what it actually costs you.
+CTA: [View Pricing](/pricing)
+
+### BENEFIT_SECTIONS (alternate image-left/image-right)
+
+**Section 1: Stop subsidizing features nobody pays for**
+BODY: Not every AI feature earns its keep. AI Observly shows you which ones are driving real usage and revenue, and which are burning tokens for a feature customers barely touch.
+CTA: [View Pricing](/pricing)
+[IMAGE: feature cost ranking, sorted highest-cost first]
+
+**Section 2: Prioritize your roadmap with real cost data**
+BODY: "Should we build this?" gets a lot easier to answer when you know what your existing AI features actually cost to run at scale. Use real per-feature cost history instead of a guess when scoping the next one.
+CTA: [View Pricing](/pricing)
+[IMAGE: roadmap-style view with cost-per-feature annotations]
+
+**Section 3: See the full picture — tokens, calls, and dollars**
+BODY: Token counts and call volume tell you what's happening. Dollars tell you if it matters. AI Observly shows both side by side, per feature, so nothing gets lost in translation between engineering and the P&L.
+CTA: [View Pricing](/pricing)
+[IMAGE: side-by-side tokens/calls/cost mini-charts for one feature]
+
+**Section 4: One lightweight endpoint, no rebuild required**
+BODY: Tag usage by feature the same simple way you already tag it by customer — one fire-and-forget usage report, no proxy, no stored provider keys, live in minutes.
+CTA: [View Pricing](/pricing)
+[IMAGE: simple architecture diagram — Your App → LLM Provider (direct), with a small dotted "usage report" arrow to AI Observly]
+
+### PERSONA_TABS
+TAB 1 — SaaS Founders & Indie Hackers
+  HEADLINE: Know which features are actually growing the business
+  BODY: You shipped the AI feature to drive growth. AI Observly tells you whether it's driving growth profitably.
+  LINK: [AI Observly for Founders](/use-cases/founders)
+
+TAB 2 — AI Product Managers
+  HEADLINE: Bring cost into the prioritization conversation
+  BODY: Usage analytics tell you what people click. AI Observly tells you what it costs when they do — so cost becomes a real input into what you build next, not an afterthought at invoice time.
+  LINK: [AI Observly for Product Managers](/use-cases/product-managers)
+
+TAB 3 — Engineering Leads
+  HEADLINE: See the cost impact of shipping decisions
+  BODY: Model choice, prompt length, and retry logic all show up in the bill. Per-feature cost tracking makes that visible without digging through raw provider logs.
+  LINK: [AI Observly for Engineering](/use-cases/engineering)
+
+### RELATED_FEATURES
+- Per-Customer Cost Attribution → /features/per-customer-cost-attribution
+- Plan & Pricing Profitability → /features/plan-pricing-profitability
+- LLM Spend Analyzer (free tool) → /spend-checkup
+
+### FAQ
+Q1: What does "per-feature margin" mean for an AI product?
+A1: It means knowing the AI cost of each individual feature (e.g. an AI summary tool, a chat assistant, an auto-tagging feature) rather than just one blended provider bill for your whole product.
+
+Q2: Do I have to tag every API call manually?
+A2: You add a feature identifier the same lightweight way you'd tag a customer — a small addition to your existing usage report call, no rebuild required.
+
+Q3: How is this different from a general LLM observability tool?
+A3: Tools like Helicone or Langfuse focus on requests, latency, and errors for developers. AI Observly is built to answer a business question — which features make money and which ones cost more than they're worth.
+
+Q4: Can I see feature cost trends over time?
+A4: Yes — feature-level cost and usage trends are tracked over time so you can see whether a feature's cost is climbing faster than its usage or revenue.
+
+### FOOTER_CTA
+HEADLINE: Know which features are actually paying for themselves
+SUBHEAD: Feature-level AI cost and ROI, without the spreadsheet.
+CTA: [View Pricing](/pricing)
+
+---
+
+## 6. PAGE 3 — Plan & Pricing Profitability
+
+route: `/features/plan-pricing-profitability`
+meta_title: Plan & Pricing Profitability for AI Products | AI Observly
+meta_description: See net margin by pricing plan after AI costs, not just gross revenue. Model overhead, back-calculate the price you need, and reprice with confidence.
+
+### HERO
+H1: Know which pricing plans are actually making you money
+SUBHEAD: Revenue by plan is easy to see. Net margin after AI cost isn't — until now. AI Observly shows you profitability by plan tier, and what price you'd need to hit your margin goal.
+CTA_PRIMARY: [View Pricing](/pricing)
+CTA_SECONDARY: [See how it works ↓](#how-it-works)
+[IMAGE: hero illustration — three pricing plan cards with a margin bar under each, blue/white theme matching existing site]
+
+### FEATURE_CARDS (3-up row)
+1. TITLE: Plan-Level Margin Dashboard
+   BODY: See AI cost, revenue, and net margin rolled up by plan tier — not just by individual customer — so you know which tiers are healthy and which are quietly underwater.
+2. TITLE: Ideal Margin Calculator
+   BODY: Set a target margin and AI Observly back-calculates the price you'd need to charge to hit it, based on your actual AI cost per customer on that plan.
+3. TITLE: Overhead-Aware Modeling
+   BODY: Add infrastructure and overhead costs alongside raw LLM spend, so plan margin reflects what a customer really costs you — not just the provider invoice.
+
+### PRODUCT_PREVIEW (id="how-it-works")
+[IMAGE/EMBED: dashboard screenshot — plan comparison table with columns: Plan, Customers, Avg AI Cost, Avg Revenue, Net Margin %]
+CAPTION: Every pricing tier, ranked by what it actually nets you after AI cost.
+CTA: [View Pricing](/pricing)
+
+### BENEFIT_SECTIONS (alternate image-left/image-right)
+
+**Section 1: Revenue isn't profit — see margin by plan**
+BODY: A plan can look great on the revenue report and still be losing money once you account for AI cost. AI Observly shows net margin per plan so pricing decisions are based on what a tier actually nets you, not just what it bills.
+CTA: [View Pricing](/pricing)
+[IMAGE: plan margin comparison bar chart]
+
+**Section 2: Reprice with confidence, not guesswork**
+BODY: Thinking about raising prices on your Pro tier? See the actual AI cost driving that decision first, and use the margin calculator to find the price that gets you to your target margin — not a number pulled out of thin air.
+CTA: [View Pricing](/pricing)
+[IMAGE: "ideal margin" calculator UI — input target margin %, output suggested price]
+
+**Section 3: Model overhead, not just token cost**
+BODY: Token cost is only part of the picture. Add hosting, storage, and other per-customer overhead so your margin numbers reflect the business, not just the LLM invoice.
+CTA: [View Pricing](/pricing)
+[IMAGE: cost breakdown showing AI cost + overhead stacked per plan]
+
+**Section 4: From free calculator to full plan tracking**
+BODY: Start with the free Plan & Pricing Margin Calculator to model a few scenarios by hand. When you're ready to track it live against real usage data, AI Observly keeps the numbers current automatically.
+CTA: [View Pricing](/pricing)
+[IMAGE: side-by-side of the free calculator and the live dashboard version]
+
+### PERSONA_TABS
+TAB 1 — SaaS Founders & Indie Hackers
+  HEADLINE: Price your plans against reality, not intuition
+  BODY: You picked your pricing before you knew what AI usage would look like at scale. AI Observly shows you where that guess was right, and where it wasn't.
+  LINK: [AI Observly for Founders](/use-cases/founders)
+
+TAB 2 — AI Product Managers
+  HEADLINE: Connect pricing strategy to real usage data
+  BODY: See how plan-level margin shifts as usage patterns change, so pricing changes are grounded in what customers are actually doing.
+  LINK: [AI Observly for Product Managers](/use-cases/product-managers)
+
+TAB 3 — Finance & Ops
+  HEADLINE: A cleaner number for AI cost of goods sold
+  BODY: Get a plan-level view of AI cost that's easier to reconcile against revenue than a single combined provider invoice.
+  LINK: [AI Observly for Finance & Ops](/use-cases/finance)
+
+### RELATED_FEATURES
+- Per-Customer Cost Attribution → /features/per-customer-cost-attribution
+- Per-Feature Margins & ROI → /features/per-feature-margins-roi
+- Plan & Pricing Margin Calculator (free tool) → /tools/plan-pricing-margin-calculator
+
+### FAQ
+Q1: What does "plan profitability" mean for an AI product?
+A1: It means looking at net margin — revenue minus AI cost and overhead — for each pricing tier, instead of just looking at revenue per plan on its own.
+
+Q2: How does the Ideal Margin Calculator work?
+A2: You set a target margin percentage, and it uses your actual average AI cost per customer on that plan to back-calculate the price you'd need to charge to hit that margin.
+
+Q3: Can I include costs other than LLM/API spend?
+A3: Yes — you can layer in infrastructure, hosting, or other per-customer overhead alongside raw provider cost, so plan margin reflects your real cost to serve.
+
+Q4: Is this the same as the free Plan & Pricing Margin Calculator?
+A4: The free calculator lets you model scenarios manually. The full dashboard tracks plan margin automatically against your real, live usage data.
+
+### FOOTER_CTA
+HEADLINE: Know which plans are actually profitable
+SUBHEAD: Net margin by pricing tier, and the price you need to hit your goal.
+CTA: [View Pricing](/pricing)
+
+---
+
+## 7. Features hover mega-menu
+
+When someone **hovers** over "Features" in the top nav (desktop only — see mobile
+note below), show a large dropdown panel instead of a simple list, in the same
+style as the attached reference screenshot — replicate that structure with our own
+content:
+
+**Left side of the panel: 3 tabs, stacked as a small horizontal tab strip at the
+top, "Core Features" active by default:**
+
+- Tab 1 — **Core Features** (default active): a 2-column, 2-row grid of items, each with a small icon, bold title, and one line of description:
+  - Per-Customer Cost Attribution — "See exactly which customers are profitable and which are eating your margin" → links to `/features/per-customer-cost-attribution`
+  - Per-Feature Margins & ROI — "Know which features are worth building and which are burning budget" → links to `/features/per-feature-margins-roi`
+  - Plan & Pricing Profitability — "See net margin by plan, not just revenue" → links to `/features/plan-pricing-profitability`
+  - Margin Alerts — "Get notified the moment a customer or plan turns margin-negative" → links to `/features` (or the relevant anchor if this isn't a standalone page yet)
+
+- Tab 2 — **Free Tools**: same 2-column grid style, 3 items:
+  - LLM Spend Analyzer — "Upload your billing CSV, get an instant cost breakdown" → `/spend-checkup`
+  - AI Blind Spot Quiz — "Find your AI cost blind spots in 2 minutes" → `/blind-spot-quiz`
+  - Plan & Pricing Margin Calculator — "Model your plan margins and back-calculate your ideal price" → `/tools/plan-pricing-margin-calculator`
+
+- Tab 3 — **Trust & Security**: same grid style, 3 items:
+  - No Proxy Architecture — "Nothing routes through our servers" → `/security` (or anchor)
+  - No Stored API Keys — "We never see or store your provider keys" → `/security`
+  - Data Retention — "30 days on Free, 90 days on Pro" → `/security`
+
+**Right side of the panel: one preview card**, matching the reference image's
+right-hand card:
+- Small dashboard screenshot at the top (use the customer cost/margin table screenshot)
+- Headline: "Explore how AI Observly prices out"
+- One line of subtext: "See which plan fits your customer base."
+- A button: **View Pricing** → `/pricing`
+
+Behavior notes (match the reference image's interaction):
+- The tab strip and grid update instantly on click/hover, no page reload.
+- The whole panel appears on hover of "Features" in the nav and closes when the mouse leaves both the nav item and the panel (with a small delay, ~150–200ms, so it doesn't flicker on accidental mouse-out).
+- Style the panel with the same card/shadow/rounded-corner treatment as the rest of the site (white background, soft shadow, rounded corners, subtle border).
+
+**Mobile:** hover doesn't exist on touch devices. On mobile/tablet, replace this
+whole interaction with a simple expandable accordion under "Features" in the
+mobile nav menu — tapping "Features" expands a flat list of the same links (no
+tabs, no right-side preview card, just the linked items grouped under small
+section labels: Core Features / Free Tools / Trust & Security).
+
+---
+
+## 8. Verify before finishing
+
+- All CTAs on the 3 new pages resolve to `/pricing`.
+- The Features mega-menu opens on hover on desktop and as an accordion on mobile.
+- All new pages use the same header/footer as the rest of the site.
+- No console errors, no broken image placeholders.

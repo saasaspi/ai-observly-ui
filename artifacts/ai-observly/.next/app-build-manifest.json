@@ -21,35 +21,30 @@
       "static/chunks/main-app.js",
       "static/chunks/app/napi/recent-posts/route.js"
     ],
-    "/blog/page": [
+    "/features/per-customer-cost-attribution/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/blog/page.js"
+      "static/chunks/app/features/per-customer-cost-attribution/page.js"
     ],
-    "/blog/[slug]/page": [
+    "/features/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/blog/[slug]/page.js"
+      "static/chunks/app/features/[id]/page.js"
     ],
-    "/blind-spot-quiz/layout": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/blind-spot-quiz/layout.js"
+      "static/chunks/app/_not-found/page.js"
     ],
-    "/blind-spot-quiz/page": [
+    "/features/per-feature-margins-roi/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/blind-spot-quiz/page.js"
+      "static/chunks/app/features/per-feature-margins-roi/page.js"
     ],
-    "/signup/page": [
+    "/features/plan-pricing-profitability/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/signup/page.js"
-    ],
-    "/docs/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/docs/page.js"
+      "static/chunks/app/features/plan-pricing-profitability/page.js"
     ]
   }
 }

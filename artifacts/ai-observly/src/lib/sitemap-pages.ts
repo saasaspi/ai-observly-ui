@@ -25,4 +25,7 @@ export const STATIC_PAGES: StaticPage[] = [
   { path: '/docs',          changeFrequency: 'monthly', priority: 0.7 },
   { path: '/spend-checkup',    changeFrequency: 'monthly', priority: 0.7 },
   { path: '/blind-spot-quiz', changeFrequency: 'monthly', priority: 0.7 },
+  { path: '/features/per-customer-cost-attribution', changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/features/per-feature-margins-roi',       changeFrequency: 'monthly', priority: 0.8 },
+  { path: '/features/plan-pricing-profitability',    changeFrequency: 'monthly', priority: 0.8 },
 ]
