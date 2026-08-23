@@ -3,7 +3,7 @@ import { ReactNode, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, X, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { Menu, X, Sparkles, ChevronDown, ChevronUp, BarChart3, Crosshair, Calculator } from "lucide-react";
 
 type NavPost = { _id: string; title: string; slug: string }
 
@@ -15,7 +15,6 @@ export function PublicLayout({ children }: { children: ReactNode }) {
   const [blogsOpen, setBlogsOpen] = useState(false);
   const [freeToolsOpen, setFreeToolsOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
-  const [activeFeaturesTab, setActiveFeaturesTab] = useState<"core" | "tools" | "trust">("core");
   const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
   const [mobileFreeToolsOpen, setMobileFreeToolsOpen] = useState(false);
   const [mobileFeaturesOpen, setMobileFeaturesOpen] = useState(false);
@@ -78,19 +77,12 @@ export function PublicLayout({ children }: { children: ReactNode }) {
     { title: "Per-Customer Cost Attribution", desc: "See exactly which customers are profitable and which are eating your margin", href: "/features/per-customer-cost-attribution" },
     { title: "Per-Feature Margins & ROI", desc: "Know which features are worth building and which are burning budget", href: "/features/per-feature-margins-roi" },
     { title: "Plan & Pricing Profitability", desc: "See net margin by plan, not just revenue", href: "/features/plan-pricing-profitability" },
-    { title: "Margin Alerts", desc: "Get notified the moment a customer or plan turns margin-negative", href: "/features" },
   ];
   const freeToolItems = [
-    { title: "LLM Spend Analyzer", desc: "Upload your billing CSV, get an instant cost breakdown", href: "/spend-checkup" },
-    { title: "AI Blind Spot Quiz", desc: "Find your AI cost blind spots in 2 minutes", href: "/blind-spot-quiz" },
-    { title: "Plan & Pricing Margin Calculator", desc: "Model your plan margins and back-calculate your ideal price", href: "/tools/plan-pricing-margin-calculator" },
+    { title: "LLM Spend Analyzer", desc: "Upload your billing CSV, get an instant cost breakdown", href: "/spend-checkup", Icon: BarChart3 },
+    { title: "AI Blind Spot Quiz", desc: "Find your AI cost blind spots in 2 minutes", href: "/blind-spot-quiz", Icon: Crosshair },
+    { title: "Plan & Pricing Margin Calculator", desc: "Model your plan margins and back-calculate your ideal price", href: "/tools/plan-pricing-margin-calculator", Icon: Calculator },
   ];
-  const trustItems = [
-    { title: "No Proxy Architecture", desc: "Nothing routes through our servers", href: "/security" },
-    { title: "No Stored API Keys", desc: "We never see or store your provider keys", href: "/security" },
-    { title: "Data Retention", desc: "30 days on Free, 90 days on Pro", href: "/security" },
-  ];
-  const megaTabItems = activeFeaturesTab === "core" ? coreFeatures : activeFeaturesTab === "tools" ? freeToolItems : trustItems;
 
   const dropdownBase =
     "absolute top-full left-0 mt-1 bg-card border border-border rounded-xl shadow-lg py-1.5 z-50";
@@ -134,9 +126,6 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                   <a href={sectionHref("how-it-works")} className={dropdownLink}>
                     How it works
                   </a>
-                  <a href={sectionHref("features")} className={dropdownLink}>
-                    Features
-                  </a>
                   <a href={sectionHref("who-its-for")} className={dropdownLink}>
                     Who it&apos;s for
                   </a>
@@ -150,34 +139,14 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 Features <ChevronDown className="w-3.5 h-3.5" />
               </button>
               {featuresOpen && (
-                <div className="absolute top-full left-0 mt-2 bg-card border border-border rounded-2xl shadow-xl z-50 flex gap-0 overflow-hidden" style={{ width: 640 }}>
-                  {/* Left: tabs + grid */}
+                <div className="absolute top-full left-0 mt-2 bg-card border border-border rounded-2xl shadow-xl z-50 flex gap-0 overflow-hidden" style={{ width: 560 }}>
+                  {/* Left: 2-col grid of core features */}
                   <div className="flex-1 p-5">
-                    {/* Tab strip */}
-                    <div className="flex gap-1 mb-4">
-                      {(["core", "tools", "trust"] as const).map((tab) => {
-                        const labels = { core: "Core Features", tools: "Free Tools", trust: "Trust & Security" };
-                        return (
-                          <button
-                            key={tab}
-                            onClick={() => setActiveFeaturesTab(tab)}
-                            onMouseEnter={() => setActiveFeaturesTab(tab)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                              activeFeaturesTab === tab
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                            }`}
-                          >
-                            {labels[tab]}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {/* 2-column grid */}
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Core Features</p>
                     <div className="grid grid-cols-2 gap-2">
-                      {megaTabItems.map((item) => (
+                      {coreFeatures.map((item) => (
                         <Link
-                          key={item.href + item.title}
+                          key={item.href}
                           href={item.href}
                           onClick={() => setFeaturesOpen(false)}
                           className="group flex flex-col gap-0.5 rounded-xl p-3 hover:bg-muted transition-colors"
@@ -189,7 +158,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                     </div>
                   </div>
                   {/* Right: preview card */}
-                  <div className="w-48 shrink-0 border-l border-border bg-muted/30 p-4 flex flex-col gap-3">
+                  <div className="w-44 shrink-0 border-l border-border bg-muted/30 p-4 flex flex-col gap-3">
                     <div className="rounded-xl border border-border bg-card overflow-hidden">
                       <div className="flex items-center gap-1 px-2 py-1.5 border-b border-border bg-muted/50">
                         <div className="w-2 h-2 rounded-full bg-red-400/70" />
@@ -206,8 +175,8 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-foreground leading-snug mb-0.5">Explore how AI Observly prices out</p>
-                      <p className="text-[10px] text-muted-foreground mb-3">See which plan fits your customer base.</p>
+                      <p className="text-xs font-semibold text-foreground leading-snug mb-0.5">See your margin by plan</p>
+                      <p className="text-[10px] text-muted-foreground mb-3">Find out which customers are profitable.</p>
                       <Link
                         href="/pricing"
                         onClick={() => setFeaturesOpen(false)}
@@ -283,7 +252,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               Pricing
             </Link>
 
-            {/* Free Tools dropdown */}
+            {/* Free Tools mega-menu */}
             <div
               className="relative"
               onMouseEnter={openFreeTools}
@@ -297,22 +266,31 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 Free Tools <ChevronDown className="w-3.5 h-3.5" />
               </button>
               {freeToolsOpen && (
-                <div className={`${dropdownBase} w-56`}>
-                  <Link
-                    href="/blind-spot-quiz"
-                    className={dropdownLink}
-                    onClick={() => setFreeToolsOpen(false)}
-                  >
-                    🔍 AI Blind Spot Quiz
-                  </Link>
-                  <Link
-                    href="/spend-checkup"
-                    className={dropdownLink}
-                    onClick={() => setFreeToolsOpen(false)}
-                    data-testid="link-spend-checkup"
-                  >
-                    📊 LLM Spend Analyzer
-                  </Link>
+                <div className="absolute top-full right-0 mt-2 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden" style={{ width: 480 }}>
+                  <div className="p-5">
+                    <div className="grid grid-cols-2 gap-1">
+                      {freeToolItems.map(({ title, href, Icon }) => (
+                        <Link
+                          key={href}
+                          href={href}
+                          onClick={() => setFreeToolsOpen(false)}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted transition-colors group"
+                        >
+                          <Icon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors shrink-0" strokeWidth={1.5} />
+                          <span className="text-sm text-foreground group-hover:text-primary transition-colors font-medium leading-snug">{title}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="border-t border-border px-5 py-3">
+                    <Link
+                      href="/tools"
+                      onClick={() => setFreeToolsOpen(false)}
+                      className="text-sm font-semibold text-primary hover:opacity-80 transition-opacity flex items-center gap-1"
+                    >
+                      View all free tools →
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>
@@ -369,13 +347,6 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                   How it works
                 </a>
                 <a
-                  href={sectionHref("features")}
-                  className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  Features
-                </a>
-                <a
                   href={sectionHref("who-its-for")}
                   className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                   onClick={() => setMobileOpen(false)}
@@ -395,35 +366,9 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             </button>
             {mobileFeaturesOpen && (
               <div className="pl-4 flex flex-col gap-0.5">
-                <p className="px-3 pt-1 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Core Features</p>
-                {[
-                  { label: "Per-Customer Cost Attribution", href: "/features/per-customer-cost-attribution" },
-                  { label: "Per-Feature Margins & ROI", href: "/features/per-feature-margins-roi" },
-                  { label: "Plan & Pricing Profitability", href: "/features/plan-pricing-profitability" },
-                  { label: "Margin Alerts", href: "/features" },
-                ].map((item) => (
+                {coreFeatures.map((item) => (
                   <Link key={item.href} href={item.href} className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
-                    {item.label}
-                  </Link>
-                ))}
-                <p className="px-3 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Free Tools</p>
-                {[
-                  { label: "LLM Spend Analyzer", href: "/spend-checkup" },
-                  { label: "AI Blind Spot Quiz", href: "/blind-spot-quiz" },
-                  { label: "Plan & Pricing Margin Calculator", href: "/tools/plan-pricing-margin-calculator" },
-                ].map((item) => (
-                  <Link key={item.href} href={item.href} className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
-                    {item.label}
-                  </Link>
-                ))}
-                <p className="px-3 pt-2 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Trust & Security</p>
-                {[
-                  { label: "No Proxy Architecture", href: "/security" },
-                  { label: "No Stored API Keys", href: "/security" },
-                  { label: "Data Retention", href: "/security" },
-                ].map((item) => (
-                  <Link key={item.label} href={item.href} className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
-                    {item.label}
+                    {item.title}
                   </Link>
                 ))}
               </div>
@@ -473,19 +418,23 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             </button>
             {mobileFreeToolsOpen && (
               <div className="pl-4 flex flex-col gap-0.5">
+                {freeToolItems.map(({ title, href, Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                    {title}
+                  </Link>
+                ))}
                 <Link
-                  href="/blind-spot-quiz"
-                  className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                  href="/tools"
+                  className="px-3 py-2 rounded-md text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
                   onClick={() => setMobileOpen(false)}
                 >
-                  🔍 AI Blind Spot Quiz
-                </Link>
-                <Link
-                  href="/spend-checkup"
-                  className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  📊 LLM Spend Analyzer
+                  View all free tools →
                 </Link>
               </div>
             )}

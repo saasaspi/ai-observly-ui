@@ -3,7 +3,6 @@
   "/icon.png/route": "app/icon.png/route.js",
   "/page": "app/page.js",
   "/features/per-customer-cost-attribution/page": "app/features/per-customer-cost-attribution/page.js",
-  "/_not-found/page": "app/_not-found/page.js",
   "/features/per-feature-margins-roi/page": "app/features/per-feature-margins-roi/page.js",
   "/features/plan-pricing-profitability/page": "app/features/plan-pricing-profitability/page.js"
 }
