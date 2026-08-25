@@ -2,8 +2,5 @@
   "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
   "/icon.png/route": "app/icon.png/route.js",
   "/page": "app/page.js",
-  "/features/plan-pricing-profitability/page": "app/features/plan-pricing-profitability/page.js",
-  "/use-cases/finance/page": "app/use-cases/finance/page.js",
-  "/tools/page": "app/tools/page.js",
-  "/use-cases/product-managers/page": "app/use-cases/product-managers/page.js"
+  "/blog/page": "app/blog/page.js"
 }

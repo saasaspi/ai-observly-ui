@@ -2,13 +2,25 @@
 import { PortableText, type PortableTextComponents } from '@portabletext/react'
 import { slugifyHeading } from '@/lib/sanity/toc'
 
+type PortableTextTable = {
+  rows?: Array<{
+    cells?: string[]
+  }>
+}
+
 const components: PortableTextComponents = {
   block: {
     normal: ({ children }) => (
       <p className="mb-5 text-foreground leading-relaxed text-[1.0625rem]">{children}</p>
     ),
     h2: ({ children, value }) => {
-      const text = (value.children ?? []).map((c: { text?: string }) => c.text ?? '').join('')
+      const text = (value.children ?? [])
+        .map((child) => (
+          typeof child === 'object' && child !== null && 'text' in child && typeof child.text === 'string'
+            ? child.text
+            : ''
+        ))
+        .join('')
       const id = slugifyHeading(text)
       return (
         <h2
@@ -20,7 +32,13 @@ const components: PortableTextComponents = {
       )
     },
     h3: ({ children, value }) => {
-      const text = (value.children ?? []).map((c: { text?: string }) => c.text ?? '').join('')
+      const text = (value.children ?? [])
+        .map((child) => (
+          typeof child === 'object' && child !== null && 'text' in child && typeof child.text === 'string'
+            ? child.text
+            : ''
+        ))
+        .join('')
       const id = slugifyHeading(text)
       return (
         <h3
@@ -68,6 +86,45 @@ const components: PortableTextComponents = {
   listItem: {
     bullet: ({ children }) => <li className="leading-relaxed">{children}</li>,
     number: ({ children }) => <li className="leading-relaxed">{children}</li>,
+  },
+  types: {
+    table: ({ value }: { value: PortableTextTable }) => {
+      const rows = value?.rows ?? []
+      if (rows.length === 0) return null
+
+      const header = rows[0]?.cells ?? []
+      const body = rows.slice(1)
+
+      return (
+        <div className="my-8 overflow-x-auto rounded-xl border border-border">
+          <table className="w-full min-w-[520px] border-collapse text-sm">
+            <thead className="bg-muted/60">
+              <tr>
+                {header.map((cell, index) => (
+                  <th
+                    key={index}
+                    className="border-b border-border px-4 py-3 text-left font-semibold text-foreground"
+                  >
+                    {cell}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {body.map((row, rowIndex) => (
+                <tr key={rowIndex} className="even:bg-muted/30">
+                  {(row.cells ?? []).map((cell, cellIndex) => (
+                    <td key={cellIndex} className="border-b border-border px-4 py-3 text-muted-foreground last:border-b-0">
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+    },
   },
 }
 

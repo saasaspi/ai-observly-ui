@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { TableInput } from '../components/table-input'
 
 /**
  * tableRow — a single row in a table, holding an array of plain-text cells.
@@ -32,6 +33,16 @@ export const tableSchema = defineType({
   name: 'table',
   title: 'Table',
   type: 'object',
+  initialValue: {
+    rows: [
+      { _type: 'tableRow', cells: ['', '', ''] },
+      { _type: 'tableRow', cells: ['', '', ''] },
+      { _type: 'tableRow', cells: ['', '', ''] },
+    ],
+  },
+  components: {
+    input: TableInput,
+  },
   fields: [
     defineField({
       name: 'rows',
