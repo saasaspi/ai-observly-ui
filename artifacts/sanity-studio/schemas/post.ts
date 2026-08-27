@@ -67,6 +67,45 @@ export const postSchema = defineType({
     }),
 
     defineField({
+      name: 'faq',
+      title: 'FAQs',
+      description: 'Add frequently asked questions and answers for this blog post.',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'faqItem',
+          title: 'FAQ',
+          fields: [
+            defineField({
+              name: 'question',
+              title: 'Question',
+              type: 'string',
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'answer',
+              title: 'Answer',
+              type: 'text',
+              rows: 5,
+              validation: (Rule) => Rule.required(),
+            }),
+          ],
+          preview: {
+            select: {
+              title: 'question',
+            },
+            prepare({ title }) {
+              return {
+                title: title || 'Untitled question',
+              }
+            },
+          },
+        },
+      ],
+    }),
+
+    defineField({
       name: 'topic',
       title: 'Topic',
       type: 'string',

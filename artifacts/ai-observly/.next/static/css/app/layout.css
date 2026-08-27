@@ -2161,6 +2161,9 @@
   .pt-8 {
     padding-top: calc(var(--spacing) * 8);
   }
+  .pt-12 {
+    padding-top: calc(var(--spacing) * 12);
+  }
   .pt-14 {
     padding-top: calc(var(--spacing) * 14);
   }
@@ -2383,6 +2386,9 @@
   }
   .whitespace-pre {
     white-space: pre;
+  }
+  .whitespace-pre-line {
+    white-space: pre-line;
   }
   .whitespace-pre-wrap {
     white-space: pre-wrap;
@@ -2883,6 +2889,9 @@
   .slide-in-from-right-4 {
     --tw-enter-translate-x: calc(4*var(--spacing));
   }
+  .group-open\:rotate-45:is(:where(.group):is([open], :popover-open, :open) *) {
+    rotate: 45deg;
+  }
   .group-focus-within\/menu-item\:opacity-100:is(:where(.group\/menu-item):focus-within *) {
     opacity: 100%;
   }
@@ -3087,6 +3096,18 @@
   .peer-data-\[size\=sm\]\/menu-button\:top-1:is(:where(.peer\/menu-button)[data-size="sm"] ~ *) {
     top: var(--spacing);
   }
+  .marker\:hidden ::marker {
+    display: none;
+  }
+  .marker\:hidden::marker {
+    display: none;
+  }
+  .marker\:hidden ::-webkit-details-marker {
+    display: none;
+  }
+  .marker\:hidden::-webkit-details-marker {
+    display: none;
+  }
   .file\:border-0::file-selector-button {
     border-style: var(--tw-border-style);
     border-width: 0px;
@@ -3169,6 +3190,10 @@
     @supports (color: color-mix(in lab, red, red)) {
       background-color: color-mix(in oklab, hsl(var(--muted)) 30%, transparent);
     }
+  }
+  .open\:shadow-sm:is([open], :popover-open, :open) {
+    --tw-shadow: 0 1px 3px 0 var(--tw-shadow-color, rgb(0 0 0 / 0.1)), 0 1px 2px -1px var(--tw-shadow-color, rgb(0 0 0 / 0.1));
+    box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
   }
   @media (hover: hover) {
     .hover\:-translate-y-0\.5:hover {

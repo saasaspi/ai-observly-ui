@@ -230,6 +230,40 @@ export default async function BlogPostPage({
               <p className="text-muted-foreground italic">Content coming soon.</p>
             )}
 
+            {/* FAQs */}
+            {post.faq && post.faq.length > 0 && (
+              <section className="mt-16 border-t border-border pt-12" aria-labelledby="blog-faq-heading">
+                <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">FAQs</p>
+                <h2
+                  id="blog-faq-heading"
+                  className="text-2xl md:text-3xl font-bold font-outfit text-foreground mb-6"
+                >
+                  Frequently asked questions
+                </h2>
+                <div className="space-y-3">
+                  {post.faq.map((faq, index) => (
+                    <details
+                      key={faq._key ?? `${faq.question}-${index}`}
+                      className="group rounded-xl border border-border bg-card open:shadow-sm"
+                    >
+                      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-semibold text-foreground marker:hidden">
+                        <span>{faq.question}</span>
+                        <span
+                          aria-hidden="true"
+                          className="shrink-0 text-2xl font-normal leading-none text-primary transition-transform duration-200 group-open:rotate-45"
+                        >
+                          +
+                        </span>
+                      </summary>
+                      <div className="border-t border-border px-5 py-4">
+                        <p className="whitespace-pre-line leading-relaxed text-muted-foreground">{faq.answer}</p>
+                      </div>
+                    </details>
+                  ))}
+                </div>
+              </section>
+            )}
+
             {/* CTA */}
             <BlogCta />
           </article>

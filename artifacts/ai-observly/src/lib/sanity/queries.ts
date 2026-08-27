@@ -7,6 +7,12 @@ export type SanityImageAsset = {
   crop?: { top: number; bottom: number; left: number; right: number }
 }
 
+export type PostFaq = {
+  _key?: string
+  question: string
+  answer: string
+}
+
 export type Post = {
   _id: string
   title: string
@@ -14,6 +20,7 @@ export type Post = {
   coverImage?: SanityImageAsset
   publishedAt: string
   body?: unknown[]
+  faq?: PostFaq[]
   seoTitle?: string
   metaDescription?: string
   topic?: string
@@ -72,6 +79,7 @@ export const POST_QUERY = `
     coverImage,
     publishedAt,
     body,
+    faq,
     seoTitle,
     metaDescription,
     topic
