@@ -15,6 +15,10 @@ type PortableTextImage = {
     _ref?: string
     _type?: string
   }
+  dimensions?: {
+    width?: number
+    height?: number
+  }
   alt?: string
   caption?: string
 }
@@ -103,18 +107,19 @@ const components: PortableTextComponents = {
       if (!value?.asset?._ref) return null
 
       const imageUrl = urlFor(value).width(1400).auto('format').url()
+      const imageWidth = value.dimensions?.width ?? 1400
+      const imageHeight = value.dimensions?.height ?? 800
 
       return (
         <figure className="my-8">
-          <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-border bg-muted/30">
-            <Image
-              src={imageUrl}
-              alt={value.alt || 'Blog image'}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 760px"
-            />
-          </div>
+          <Image
+            src={imageUrl}
+            alt={value.alt || 'Blog image'}
+            width={imageWidth}
+            height={imageHeight}
+            className="block h-auto w-full rounded-xl border border-border"
+            sizes="(max-width: 768px) 100vw, 760px"
+          />
           {value.caption && (
             <figcaption className="mt-2 text-center text-sm text-muted-foreground">
               {value.caption}

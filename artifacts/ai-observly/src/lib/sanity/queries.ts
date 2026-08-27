@@ -78,7 +78,10 @@ export const POST_QUERY = `
     "slug": ${SLUG_PROJECTION},
     coverImage,
     publishedAt,
-    body,
+    body[]{
+      ...,
+      "dimensions": asset->metadata.dimensions
+    },
     faq,
     seoTitle,
     metaDescription,
