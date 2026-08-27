@@ -21,10 +21,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/napi/recent-posts/route.js"
     ],
-    "/blog/page": [
+    "/blog/[slug]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/blog/page.js"
+      "static/chunks/app/blog/[slug]/page.js"
     ]
   }
 }

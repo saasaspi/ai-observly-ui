@@ -1,11 +1,22 @@
 "use client";
 import { PortableText, type PortableTextComponents } from '@portabletext/react'
 import { slugifyHeading } from '@/lib/sanity/toc'
+import { urlFor } from '@/lib/sanity/image'
+import Image from 'next/image'
 
 type PortableTextTable = {
   rows?: Array<{
     cells?: string[]
   }>
+}
+
+type PortableTextImage = {
+  asset?: {
+    _ref?: string
+    _type?: string
+  }
+  alt?: string
+  caption?: string
 }
 
 const components: PortableTextComponents = {
@@ -88,6 +99,30 @@ const components: PortableTextComponents = {
     number: ({ children }) => <li className="leading-relaxed">{children}</li>,
   },
   types: {
+    image: ({ value }: { value: PortableTextImage }) => {
+      if (!value?.asset?._ref) return null
+
+      const imageUrl = urlFor(value).width(1400).auto('format').url()
+
+      return (
+        <figure className="my-8">
+          <div className="relative min-h-[220px] w-full overflow-hidden rounded-xl border border-border bg-muted/30">
+            <Image
+              src={imageUrl}
+              alt={value.alt || 'Blog image'}
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, 760px"
+            />
+          </div>
+          {value.caption && (
+            <figcaption className="mt-2 text-center text-sm text-muted-foreground">
+              {value.caption}
+            </figcaption>
+          )}
+        </figure>
+      )
+    },
     table: ({ value }: { value: PortableTextTable }) => {
       const rows = value?.rows ?? []
       if (rows.length === 0) return null
