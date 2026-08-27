@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { BodyPortableTextInput } from '../components/body-portable-text-input'
 import { DeferredAltTextInput } from '../components/deferred-alt-text-input'
 
 export const postSchema = defineType({
@@ -64,6 +65,9 @@ export const postSchema = defineType({
           ],
         },
       ],
+      components: {
+        input: BodyPortableTextInput,
+      },
     }),
 
     defineField({
