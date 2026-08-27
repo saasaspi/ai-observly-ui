@@ -106,12 +106,12 @@ const components: PortableTextComponents = {
 
       return (
         <figure className="my-8">
-          <div className="relative min-h-[220px] w-full overflow-hidden rounded-xl border border-border bg-muted/30">
+          <div className="relative aspect-video w-full overflow-hidden rounded-xl border border-border bg-muted/30">
             <Image
               src={imageUrl}
               alt={value.alt || 'Blog image'}
               fill
-              className="object-contain"
+              className="object-cover"
               sizes="(max-width: 768px) 100vw, 760px"
             />
           </div>

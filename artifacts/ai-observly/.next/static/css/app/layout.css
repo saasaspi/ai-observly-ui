@@ -840,9 +840,6 @@
   .min-h-\[100dvh\] {
     min-height: 100dvh;
   }
-  .min-h-\[220px\] {
-    min-height: 220px;
-  }
   .min-h-\[calc\(100dvh-4rem\)\] {
     min-height: calc(100dvh - 4rem);
   }
@@ -2010,9 +2007,6 @@
   }
   .fill-primary {
     fill: hsl(var(--primary));
-  }
-  .object-contain {
-    object-fit: contain;
   }
   .object-cover {
     object-fit: cover;
