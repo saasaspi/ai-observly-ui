@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { DeferredAltTextInput } from '../components/deferred-alt-text-input'
 
 export const postSchema = defineType({
   name: 'post',
@@ -53,9 +54,12 @@ export const postSchema = defineType({
             defineField({
               name: 'alt',
               title: 'Alt text',
-              type: 'string',
+              type: 'text',
               description: 'Describe the image for screen readers and accessibility.',
               validation: (Rule) => Rule.max(160),
+              components: {
+                input: DeferredAltTextInput,
+              },
             }),
           ],
         },
