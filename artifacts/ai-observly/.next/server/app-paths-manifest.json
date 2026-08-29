@@ -1,7 +1,7 @@
 {
   "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
-  "/icon.png/route": "app/icon.png/route.js",
   "/page": "app/page.js",
-  "/docs/[slug]/page": "app/docs/[slug]/page.js",
-  "/docs/page": "app/docs/page.js"
+  "/icon.png/route": "app/icon.png/route.js",
+  "/docs/page": "app/docs/page.js",
+  "/docs/[slug]/page": "app/docs/[slug]/page.js"
 }

@@ -29,6 +29,12 @@ export const docsPortableTextMembers = [
     type: 'docInlineImage',
   }),
   defineArrayMember({
+    type: 'image',
+    options: {
+      hotspot: true,
+    },
+  }),
+  defineArrayMember({
     type: 'table',
   }),
 ]

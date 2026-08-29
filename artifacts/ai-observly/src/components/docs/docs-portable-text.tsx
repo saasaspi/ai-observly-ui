@@ -4,6 +4,7 @@ import { PortableText, PortableTextComponents, PortableTextProps } from '@portab
 import { DocSteps } from './doc-steps';
 import { DocCodeBlock } from './doc-code-block';
 import { DocInlineImage } from './doc-inline-image';
+import { DocImage } from './doc-image';
 import { DocTable } from './doc-table';
 
 function slugify(text: string) {
@@ -31,6 +32,7 @@ const components: PortableTextComponents = {
     docSteps: DocSteps,
     docCodeBlock: DocCodeBlock,
     docInlineImage: DocInlineImage,
+    image: DocImage,
     table: DocTable,
   },
   block: {

@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { BodyPortableTextInput } from '../components/body-portable-text-input'
 import { DocStepTitleInput } from '../components/doc-step-title-input'
 import { docsPortableTextMembers } from './doc-rich-text'
 
@@ -27,6 +28,9 @@ export const docStepSchema = defineType({
           type: 'dialog',
           width: 2,
         },
+      },
+      components: {
+        input: BodyPortableTextInput,
       },
       of: docsPortableTextMembers,
       validation: (Rule) => Rule.required().min(1),

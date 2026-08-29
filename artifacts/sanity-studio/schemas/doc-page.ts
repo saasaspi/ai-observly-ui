@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { BodyPortableTextInput } from '../components/body-portable-text-input'
 import { docsBodyMembers } from './doc-rich-text'
 
 export const docPageSchema = defineType({
@@ -57,6 +58,9 @@ export const docPageSchema = defineType({
           type: 'dialog',
           width: 2,
         },
+      },
+      components: {
+        input: BodyPortableTextInput,
       },
       of: docsBodyMembers,
       validation: (Rule) => Rule.required().min(1),

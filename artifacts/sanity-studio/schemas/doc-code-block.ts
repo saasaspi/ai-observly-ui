@@ -1,9 +1,13 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { DocCodeVariantInput } from '../components/doc-code-variant-input'
 
 export const docCodeVariantSchema = defineType({
   name: 'docCodeVariant',
   title: 'Code Variant',
   type: 'object',
+  components: {
+    input: DocCodeVariantInput,
+  },
   fields: [
     defineField({
       name: 'tabLabel',
