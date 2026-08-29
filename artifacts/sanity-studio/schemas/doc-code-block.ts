@@ -1,19 +1,19 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
-import { DeferredStringInput } from '../components/deferred-string-input'
+import { DocCodeVariantInput } from '../components/doc-code-variant-input'
 
 export const docCodeVariantSchema = defineType({
   name: 'docCodeVariant',
   title: 'Code Variant',
   type: 'object',
+  components: {
+    input: DocCodeVariantInput,
+  },
   fields: [
     defineField({
       name: 'tabLabel',
       title: 'Tab label',
       type: 'string',
       description: 'Optional. Leave blank when this code block has only one variant.',
-      components: {
-        input: DeferredStringInput,
-      },
     }),
     defineField({
       name: 'language',
@@ -21,9 +21,6 @@ export const docCodeVariantSchema = defineType({
       type: 'string',
       description: 'Use a language name such as bash, powershell, cmd, javascript, typescript, json, yaml, xml, or python.',
       validation: (Rule) => Rule.required(),
-      components: {
-        input: DeferredStringInput,
-      },
     }),
     defineField({
       name: 'code',
@@ -37,9 +34,6 @@ export const docCodeVariantSchema = defineType({
       title: 'Filename caption',
       type: 'string',
       description: 'Optional caption shown below the code block, such as browserstack.yml.',
-      components: {
-        input: DeferredStringInput,
-      },
     }),
   ],
   preview: {
