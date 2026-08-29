@@ -1,4 +1,4 @@
-import { defineArrayMember } from 'sanity'
+import { defineArrayMember, defineField } from 'sanity'
 
 export const docsPortableTextMembers = [
   defineArrayMember({
@@ -27,6 +27,25 @@ export const docsPortableTextMembers = [
   }),
   defineArrayMember({
     type: 'docInlineImage',
+  }),
+  // Keep previously pasted/uploaded Docs images valid while authors add alt text.
+  // New clipboard pastes use docInlineImage above.
+  defineArrayMember({
+    type: 'image',
+    title: 'Legacy Documentation Image',
+    options: {
+      hotspot: true,
+    },
+    fields: [
+      defineField({
+        name: 'alt',
+        title: 'Alt text',
+        type: 'text',
+        rows: 2,
+        description: 'Describe what this image communicates for screen readers.',
+        validation: (Rule) => Rule.required().max(160),
+      }),
+    ],
   }),
   defineArrayMember({
     type: 'table',
