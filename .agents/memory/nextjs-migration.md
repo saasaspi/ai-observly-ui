@@ -14,11 +14,18 @@ The `api-server` artifact in this monorepo owns the `/api` path in the Replit pr
 **How to apply:** Any new Next.js API route must go under `src/app/napi/`, not `src/app/api/`.
 
 ## Stale .next cache causes 500s after heavy refactors
-When many new pages/components are added in one session, the dev server can serve from a stale `.next` chunk manifest and throw `Cannot find module './NNN.js'` 500s. Fix: `rm -rf .next` then restart the workflow. The build will recompile from scratch cleanly.
+When many new pages/components are added in one session, the dev server can serve from a stale `.next` chunk manifest and throw `Cannot find module './NNN.js'` 500s. Running `next build` while `next dev` is active can also replace chunks in the shared `.next` directory. Always restart the web workflow after a production build; if the error persists, clear `.next` and restart.
 
 **Why:** Next.js dev mode caches chunk IDs; adding many new imports shifts IDs, making old cached references invalid.
 
-**How to apply:** After any large batch of file additions/changes, if 500s appear with "Cannot find module" errors, clear `.next` and restart before debugging further.
+**How to apply:** Restart the web workflow after every production build. After large file changes, clear `.next` and restart before deeper debugging if missing-module 500s persist.
+
+## React type split and Radix primitives
+The workspace currently resolves incompatible React type versions. The global typecheck reports JSX incompatibilities for otherwise working Radix components.
+
+**Why:** Replacing an accessible primitive with a hand-built substitute to silence these errors can regress focus management, while changing React types is a broad project-wide migration.
+
+**How to apply:** Reuse the existing runtime-tested UI primitives. If a new isolated surface must remain free of added diagnostics, contain the type mismatch at a local compatibility boundary rather than weakening interaction behavior.
 
 ## recharts SSR note
 recharts works fine in `"use client"` pages (Next.js still hydrates them server-side). No `dynamic(() => import(...), { ssr: false })` needed as long as all chart-containing components carry `"use client"`.

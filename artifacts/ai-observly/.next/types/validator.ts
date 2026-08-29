@@ -119,6 +119,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../src/app/docs/[slug]/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/docs/[slug]">> = Specific
+  const handler = {} as typeof import("../../src/app/docs/[slug]/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../src/app/docs/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/docs">> = Specific
@@ -487,6 +496,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends LayoutConfig<"/blind-spot-quiz">> = Specific
   const handler = {} as typeof import("../../src/app/blind-spot-quiz/layout.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/docs/layout.tsx
+{
+  type __IsExpected<Specific extends LayoutConfig<"/docs">> = Specific
+  const handler = {} as typeof import("../../src/app/docs/layout.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
