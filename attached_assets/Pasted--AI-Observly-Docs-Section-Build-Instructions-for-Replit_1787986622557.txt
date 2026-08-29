@@ -1,0 +1,66 @@
+# AI Observly — Docs Section Build Instructions (for Replit Agent)
+
+## Goal
+Add a new documentation section at `aiobservly.com/docs`, powered by the same Sanity Studio/project already used for the blog. The docs layout should follow a standard 3-column technical-docs pattern (same shape as BrowserStack's docs): a navigation sidebar on the left, the article content in the middle, and an auto-generated "On this page" table of contents on the right.
+
+## Hard constraints — read first
+- **Do not modify any existing blog schema files, blog routes, blog components, or blog styling.** The blog is finished and must keep working exactly as it does today.
+- Do not create a new Sanity dataset or a new Sanity project. Use the existing project/dataset — the free plan supports unlimited content types, this is just a new schema living next to the blog's schema.
+- All new work should live in new files (new schema files, new route folder, new components) so nothing shared with the blog gets touched.
+- Visual styling (fonts, colors, spacing, buttons) must reuse the site's existing design tokens/CSS so the docs section looks like part of aiobservly.com — not a separate-looking site.
+
+## 1. New Sanity schema — two document types
+
+**`docCategory`** (groups pages into sections shown in the left nav, e.g. "Getting Started", "Integrations", "API Reference")
+- `title` (string)
+- `slug` (slug, source: title)
+- `order` (number) — controls the category's position in the left nav
+
+**`docPage`** (an individual docs article)
+- `title` (string)
+- `slug` (slug, source: title) — enter just the page segment, e.g. `getting-started`, not the full path
+- `category` (reference to `docCategory`) — determines which section it's grouped under in the left nav
+- `order` (number) — controls position within its category, and is also used to compute "previous/next page" at the bottom of the article
+- `excerpt` (text, short) — used for search results and link previews
+- `body` (portable text / rich text array) — the main article content. Require that all major sections use proper H2/H3 heading blocks, since these headings are what auto-generate the right-hand "On this page" list
+- `relatedDocs` (array of references to other `docPage` documents, optional) — for a manually curated "related articles" list if the automatic prev/next isn't enough
+
+## 2. Routes
+
+- `aiobservly.com/docs` — an index/landing page listing all categories and their pages
+- `aiobservly.com/docs/[slug]` — individual doc article page, rendered from a `docPage` document by slug
+- These are new routes, separate from the existing `/blogs/[slug]` route. Do not reuse or branch off the blog's route file — create fresh ones.
+
+## 3. Page layout — three columns
+
+**Left column: navigation sidebar**
+- Persistent across every `/docs/*` page
+- Renders all `docCategory` documents (ordered by `order`), each with its child `docPage` documents nested underneath (ordered by their own `order`)
+- Highlights the currently active page
+- Include a simple search/filter input at the top that filters the nav list by title as the user types
+- On mobile: collapse this into a toggle/drawer (hidden by default, opens on tap) rather than showing it inline
+
+**Middle column: article content**
+- Breadcrumb (Category > Page title) above the title
+- Renders the `body` portable text content
+- At the bottom of the article, add a "Next steps" style pager: link to the next `docPage` in the same category by `order` (and previous, if not the first page). If `relatedDocs` is filled in, show those as an additional "Related articles" list beneath the pager.
+
+**Right column: "On this page"**
+- Auto-generated from the H2/H3 headings inside that page's `body` — do not make this a manually-entered field, it should be computed from the actual content headings each time the page renders
+- Each heading becomes a clickable anchor link that jumps to that section
+- Sticky positioned so it stays visible while scrolling the middle column
+- Highlight the section currently in view as the user scrolls (scrollspy behavior)
+- On mobile: hide this column entirely (standard pattern — on-page navigation isn't useful on small screens)
+
+## 4. What NOT to build
+- No separate visual theme for docs — pull from the same global styles/design tokens the rest of the site already uses
+- No new Sanity dataset, no new Sanity project, no changes to blog-related files
+- No manual entry field for the table of contents — it must be derived from headings automatically
+
+## 5. Quick test checklist once built
+- [ ] Creating a new `docCategory` and a `docPage` under it in Sanity Studio shows up correctly in the left nav without a deploy
+- [ ] Visiting `aiobservly.com/docs/[slug]` renders the 3-column layout with working ToC anchors
+- [ ] Scrolling the article highlights the correct section in the right-hand ToC
+- [ ] Next/previous pager links to the correct adjacent page within the same category
+- [ ] Mobile view collapses the left nav into a drawer and hides the right ToC
+- [ ] Existing `/blogs/[slug]` pages and blog styling are completely unaffected
