@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { docsBodyMembers } from './doc-rich-text'
 
 export const docPageSchema = defineType({
   name: 'docPage',
@@ -50,22 +51,7 @@ export const docPageSchema = defineType({
       title: 'Body',
       type: 'array',
       description: 'Use Heading 2 and Heading 3 styles for sections shown in On this page.',
-      of: [
-        defineArrayMember({
-          type: 'block',
-          styles: [
-            { title: 'Normal', value: 'normal' },
-            { title: 'Heading 2', value: 'h2' },
-            { title: 'Heading 3', value: 'h3' },
-            { title: 'Heading 4', value: 'h4' },
-            { title: 'Quote', value: 'blockquote' },
-          ],
-          lists: [
-            { title: 'Bullet', value: 'bullet' },
-            { title: 'Numbered', value: 'number' },
-          ],
-        }),
-      ],
+      of: docsBodyMembers,
       validation: (Rule) => Rule.required().min(1),
     }),
     defineField({

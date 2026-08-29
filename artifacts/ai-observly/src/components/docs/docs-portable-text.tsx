@@ -1,4 +1,9 @@
+'use client';
+
 import { PortableText, PortableTextComponents, PortableTextProps } from '@portabletext/react';
+import { DocSteps } from './doc-steps';
+import { DocCodeBlock } from './doc-code-block';
+import { DocInlineImage } from './doc-inline-image';
 
 function slugify(text: string) {
   return text.toString().toLowerCase().trim()
@@ -21,6 +26,11 @@ function headingId(value: unknown) {
 }
 
 const components: PortableTextComponents = {
+  types: {
+    docSteps: DocSteps,
+    docCodeBlock: DocCodeBlock,
+    docInlineImage: DocInlineImage,
+  },
   block: {
     normal: ({ children }) => (
       <p className="leading-7 [&:not(:first-child)]:mt-6 text-muted-foreground">{children}</p>
