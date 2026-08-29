@@ -28,6 +28,9 @@ export const docsPortableTextMembers = [
   defineArrayMember({
     type: 'docInlineImage',
   }),
+  defineArrayMember({
+    type: 'table',
+  }),
 ]
 
 export const docsBodyMembers = [

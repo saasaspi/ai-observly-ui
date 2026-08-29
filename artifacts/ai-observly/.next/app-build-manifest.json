@@ -26,15 +26,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/docs/layout.js"
     ],
-    "/docs/[slug]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/docs/[slug]/page.js"
-    ],
     "/docs/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/docs/page.js"
+    ],
+    "/docs/[slug]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/docs/[slug]/page.js"
     ]
   }
 }

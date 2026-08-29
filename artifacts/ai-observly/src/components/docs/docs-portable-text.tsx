@@ -4,6 +4,7 @@ import { PortableText, PortableTextComponents, PortableTextProps } from '@portab
 import { DocSteps } from './doc-steps';
 import { DocCodeBlock } from './doc-code-block';
 import { DocInlineImage } from './doc-inline-image';
+import { DocTable } from './doc-table';
 
 function slugify(text: string) {
   return text.toString().toLowerCase().trim()
@@ -30,6 +31,7 @@ const components: PortableTextComponents = {
     docSteps: DocSteps,
     docCodeBlock: DocCodeBlock,
     docInlineImage: DocInlineImage,
+    table: DocTable,
   },
   block: {
     normal: ({ children }) => (

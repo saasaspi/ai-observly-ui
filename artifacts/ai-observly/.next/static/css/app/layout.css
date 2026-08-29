@@ -2371,6 +2371,9 @@
   .align-middle {
     vertical-align: middle;
   }
+  .align-top {
+    vertical-align: top;
+  }
   .font-mono {
     font-family: var(--app-font-mono);
   }
@@ -3338,6 +3341,15 @@
   .last\:border-b-0:last-child {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 0px;
+  }
+  .odd\:bg-background:nth-child(odd) {
+    background-color: hsl(var(--background));
+  }
+  .even\:bg-muted\/20:nth-child(even) {
+    background-color: hsl(var(--muted));
+    @supports (color: color-mix(in lab, red, red)) {
+      background-color: color-mix(in oklab, hsl(var(--muted)) 20%, transparent);
+    }
   }
   .even\:bg-muted\/30:nth-child(even) {
     background-color: hsl(var(--muted));
