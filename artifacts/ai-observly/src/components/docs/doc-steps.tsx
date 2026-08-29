@@ -14,6 +14,19 @@ export interface DocStepsProps {
   };
 }
 
+function stepHeadingId(title: string, key: string, index: number) {
+  const titleSlug = title
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/&/g, '-and-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
+  const keySlug = key.replace(/[^\w-]+/g, '').toLowerCase();
+
+  return `${titleSlug || `step-${index + 1}`}-${keySlug || index + 1}`;
+}
+
 export function DocSteps({ value }: DocStepsProps) {
   if (!value.steps || value.steps.length === 0) return null;
 
@@ -31,7 +44,10 @@ export function DocSteps({ value }: DocStepsProps) {
             
             <div className="flex-1 min-w-0 pt-0.5">
               {step.title && (
-                <h3 className="text-lg font-semibold tracking-tight text-foreground mb-3 font-outfit">
+                <h3
+                  id={stepHeadingId(step.title, step._key, index)}
+                  className="text-lg font-semibold tracking-tight text-foreground mb-3 font-outfit scroll-m-20"
+                >
                   {step.title}
                 </h3>
               )}
