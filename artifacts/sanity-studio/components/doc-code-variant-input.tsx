@@ -149,7 +149,20 @@ export function DocCodeVariantInput({
         />
       </label>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+      <div
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 10,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          borderTop: '1px solid #d1d5db',
+          background: '#ffffff',
+          padding: '0.75rem 0',
+        }}
+      >
         <span style={{ color: 'var(--card-muted-fg-color)', fontSize: '0.75rem' }}>
           {hasRequiredValues ? 'All required fields are ready to save.' : 'Language and code are required.'}
         </span>
@@ -159,14 +172,18 @@ export function DocCodeVariantInput({
           disabled={readOnly || !hasChanges || !hasRequiredValues}
           style={{
             flexShrink: 0,
-            border: 0,
-            borderRadius: '0.25rem',
-            background: hasChanges && hasRequiredValues ? 'var(--brand-primary-color)' : 'var(--card-muted-bg-color)',
-            color: hasChanges && hasRequiredValues ? 'var(--card-bg-color)' : 'var(--card-muted-fg-color)',
+            minWidth: 112,
+            border: '1px solid',
+            borderColor: hasChanges && hasRequiredValues ? '#1d4ed8' : '#9ca3af',
+            borderRadius: 5,
+            background: hasChanges && hasRequiredValues ? '#1d4ed8' : '#e5e7eb',
+            color: hasChanges && hasRequiredValues ? '#ffffff' : '#374151',
             cursor: readOnly || !hasChanges || !hasRequiredValues ? 'default' : 'pointer',
-            fontSize: '0.75rem',
-            fontWeight: 600,
-            padding: '0.5rem 0.75rem',
+            fontSize: '0.8125rem',
+            fontWeight: 700,
+            padding: '0.55rem 0.8rem',
+            opacity: 1,
+            visibility: 'visible',
           }}
         >
           Save variant

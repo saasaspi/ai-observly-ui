@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
+import { DocStepTitleInput } from '../components/doc-step-title-input'
 import { docsPortableTextMembers } from './doc-rich-text'
 
 export const docStepSchema = defineType({
@@ -11,6 +12,9 @@ export const docStepSchema = defineType({
       title: 'Step title',
       type: 'string',
       validation: (Rule) => Rule.required(),
+      components: {
+        input: DocStepTitleInput,
+      },
     }),
     defineField({
       name: 'content',

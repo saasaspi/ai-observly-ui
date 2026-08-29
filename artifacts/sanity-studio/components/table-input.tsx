@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { set, type ObjectInputProps } from 'sanity'
 
 type TableRow = {
@@ -27,18 +27,26 @@ function makeRows(rowCount: number, columnCount: number): TableRow[] {
 }
 
 export function TableInput({ value, onChange }: TableInputProps) {
-  const rows = value?.rows ?? []
+  const [rows, setRows] = useState<TableRow[]>(value?.rows ?? [])
+  const [savedRows, setSavedRows] = useState<TableRow[]>(value?.rows ?? [])
   const columnCount = useMemo(
     () => (rows.length > 0 ? Math.max(1, ...rows.map((row) => row.cells?.length ?? 0)) : 3),
     [rows],
   )
+  const hasChanges = JSON.stringify(rows) !== JSON.stringify(savedRows)
 
-  const updateRows = (nextRows: TableRow[]) => {
+  useEffect(() => {
+    const nextRows = value?.rows ?? []
+    setRows(nextRows)
+    setSavedRows(nextRows)
+  }, [value?.rows])
+
+  const saveTable = () => {
     onChange(
       set({
         ...(value ?? {}),
         _type: 'table',
-        rows: nextRows.map((row) => ({
+        rows: rows.map((row) => ({
           ...row,
           _key: row._key ?? newKey(),
           _type: 'tableRow',
@@ -46,7 +54,10 @@ export function TableInput({ value, onChange }: TableInputProps) {
         })),
       }),
     )
+    setSavedRows(rows)
   }
+
+  const updateRows = (nextRows: TableRow[]) => setRows(nextRows)
 
   const updateCell = (rowIndex: number, columnIndex: number, text: string) => {
     const nextRows = rows.map((row, currentRowIndex) => {
@@ -181,6 +192,33 @@ export function TableInput({ value, onChange }: TableInputProps) {
           </table>
         </div>
       )}
+      <div
+        style={{
+          position: 'sticky',
+          bottom: 0,
+          zIndex: 10,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          borderTop: '1px solid #d1d5db',
+          background: '#ffffff',
+          marginTop: 12,
+          padding: '10px 0',
+        }}
+      >
+        <span style={{ color: '#4b5563', fontSize: 12 }}>
+          {hasChanges ? 'Table has unsaved changes.' : 'Table changes are saved.'}
+        </span>
+        <button
+          type="button"
+          onClick={saveTable}
+          disabled={!hasChanges}
+          style={hasChanges ? primaryButtonStyle : disabledSaveButtonStyle}
+        >
+          Save table
+        </button>
+      </div>
     </div>
   )
 }
@@ -200,6 +238,17 @@ const secondaryButtonStyle: React.CSSProperties = {
   ...primaryButtonStyle,
   background: '#fff',
   color: '#2276d2',
+}
+
+const disabledSaveButtonStyle: React.CSSProperties = {
+  ...primaryButtonStyle,
+  minWidth: 100,
+  borderColor: '#9ca3af',
+  background: '#e5e7eb',
+  color: '#374151',
+  cursor: 'default',
+  opacity: 1,
+  visibility: 'visible',
 }
 
 const emptyStateStyle: React.CSSProperties = {
