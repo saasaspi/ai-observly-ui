@@ -1,4 +1,5 @@
 import { defineField, defineType } from 'sanity'
+import { DeferredAltTextInput } from '../components/deferred-alt-text-input'
 
 export const docInlineImageSchema = defineType({
   name: 'docInlineImage',
@@ -20,6 +21,9 @@ export const docInlineImageSchema = defineType({
       type: 'text',
       rows: 2,
       description: 'Describe what this image communicates for screen readers.',
+      components: {
+        input: DeferredAltTextInput,
+      },
       validation: (Rule) => Rule.required().max(160),
     }),
   ],

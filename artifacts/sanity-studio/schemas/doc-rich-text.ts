@@ -1,4 +1,5 @@
 import { defineArrayMember, defineField } from 'sanity'
+import { DeferredAltTextInput } from '../components/deferred-alt-text-input'
 
 export const docsPortableTextMembers = [
   defineArrayMember({
@@ -43,6 +44,9 @@ export const docsPortableTextMembers = [
         type: 'text',
         rows: 2,
         description: 'Describe what this image communicates for screen readers.',
+        components: {
+          input: DeferredAltTextInput,
+        },
         validation: (Rule) => Rule.required().max(160),
       }),
     ],
