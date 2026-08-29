@@ -1,5 +1,4 @@
 import { defineArrayMember, defineField, defineType } from 'sanity'
-import { DocStepTitleInput } from '../components/doc-step-title-input'
 import { docsPortableTextMembers } from './doc-rich-text'
 
 export const docStepSchema = defineType({
@@ -12,15 +11,18 @@ export const docStepSchema = defineType({
       title: 'Step title',
       type: 'string',
       validation: (Rule) => Rule.required(),
-      components: {
-        input: DocStepTitleInput,
-      },
     }),
     defineField({
       name: 'content',
       title: 'Description / content',
       type: 'array',
       description: 'Add text, inline code, code blocks, or images for this step.',
+      options: {
+        modal: {
+          type: 'dialog',
+          width: 2,
+        },
+      },
       of: docsPortableTextMembers,
       validation: (Rule) => Rule.required().min(1),
     }),
@@ -55,6 +57,12 @@ export const docStepsSchema = defineType({
       name: 'steps',
       title: 'Steps',
       type: 'array',
+      options: {
+        modal: {
+          type: 'dialog',
+          width: 2,
+        },
+      },
       of: [
         defineArrayMember({
           type: 'docStep',

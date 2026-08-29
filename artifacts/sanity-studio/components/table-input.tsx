@@ -28,36 +28,26 @@ function makeRows(rowCount: number, columnCount: number): TableRow[] {
 
 export function TableInput({ value, onChange }: TableInputProps) {
   const [rows, setRows] = useState<TableRow[]>(value?.rows ?? [])
-  const [savedRows, setSavedRows] = useState<TableRow[]>(value?.rows ?? [])
   const columnCount = useMemo(
     () => (rows.length > 0 ? Math.max(1, ...rows.map((row) => row.cells?.length ?? 0)) : 3),
     [rows],
   )
-  const hasChanges = JSON.stringify(rows) !== JSON.stringify(savedRows)
 
   useEffect(() => {
     const nextRows = value?.rows ?? []
     setRows(nextRows)
-    setSavedRows(nextRows)
   }, [value?.rows])
 
-  const saveTable = () => {
-    onChange(
-      set({
-        ...(value ?? {}),
-        _type: 'table',
-        rows: rows.map((row) => ({
-          ...row,
-          _key: row._key ?? newKey(),
-          _type: 'tableRow',
-          cells: row.cells ?? [],
-        })),
-      }),
-    )
-    setSavedRows(rows)
+  const updateRows = (nextRows: TableRow[]) => {
+    const normalizedRows = nextRows.map((row) => ({
+      ...row,
+      _key: row._key ?? newKey(),
+      _type: 'tableRow' as const,
+      cells: row.cells ?? [],
+    }))
+    setRows(normalizedRows)
+    onChange(set(normalizedRows, ['rows']))
   }
-
-  const updateRows = (nextRows: TableRow[]) => setRows(nextRows)
 
   const updateCell = (rowIndex: number, columnIndex: number, text: string) => {
     const nextRows = rows.map((row, currentRowIndex) => {
@@ -113,7 +103,7 @@ export function TableInput({ value, onChange }: TableInputProps) {
         <div>
           <div style={{ fontWeight: 600, fontSize: 14 }}>Table editor</div>
           <div style={{ color: '#6b7280', fontSize: 12, marginTop: 3 }}>
-            The first row is displayed as the table header on your blog.
+            Changes autosave as you type. The first row is displayed as the table header.
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -192,33 +182,6 @@ export function TableInput({ value, onChange }: TableInputProps) {
           </table>
         </div>
       )}
-      <div
-        style={{
-          position: 'sticky',
-          bottom: 0,
-          zIndex: 10,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 12,
-          borderTop: '1px solid #d1d5db',
-          background: '#ffffff',
-          marginTop: 12,
-          padding: '10px 0',
-        }}
-      >
-        <span style={{ color: '#4b5563', fontSize: 12 }}>
-          {hasChanges ? 'Table has unsaved changes.' : 'Table changes are saved.'}
-        </span>
-        <button
-          type="button"
-          onClick={saveTable}
-          disabled={!hasChanges}
-          style={hasChanges ? primaryButtonStyle : disabledSaveButtonStyle}
-        >
-          Save table
-        </button>
-      </div>
     </div>
   )
 }
@@ -238,17 +201,6 @@ const secondaryButtonStyle: React.CSSProperties = {
   ...primaryButtonStyle,
   background: '#fff',
   color: '#2276d2',
-}
-
-const disabledSaveButtonStyle: React.CSSProperties = {
-  ...primaryButtonStyle,
-  minWidth: 100,
-  borderColor: '#9ca3af',
-  background: '#e5e7eb',
-  color: '#374151',
-  cursor: 'default',
-  opacity: 1,
-  visibility: 'visible',
 }
 
 const emptyStateStyle: React.CSSProperties = {
