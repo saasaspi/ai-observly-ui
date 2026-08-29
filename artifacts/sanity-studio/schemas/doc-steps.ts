@@ -18,6 +18,7 @@ export const docStepSchema = defineType({
       type: 'array',
       description: 'Add text, inline code, code blocks, or images for this step.',
       options: {
+        treeEditing: false,
         modal: {
           type: 'dialog',
           width: 2,
@@ -58,6 +59,7 @@ export const docStepsSchema = defineType({
       title: 'Steps',
       type: 'array',
       options: {
+        treeEditing: false,
         modal: {
           type: 'dialog',
           width: 2,

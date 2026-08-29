@@ -52,6 +52,7 @@ export const docPageSchema = defineType({
       type: 'array',
       description: 'Use Heading 2 and Heading 3 styles for sections shown in On this page.',
       options: {
+        treeEditing: false,
         modal: {
           type: 'dialog',
           width: 2,

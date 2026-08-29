@@ -58,6 +58,7 @@ export const docCodeBlockSchema = defineType({
       type: 'array',
       description: 'Add one variant for a single code block, or multiple variants to show tabs.',
       options: {
+        treeEditing: false,
         modal: {
           type: 'dialog',
           width: 2,
