@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
+import { AmplitudeInit } from "@/components/amplitude-init";
 
 export const metadata: Metadata = {
   title: "AI Observly",
@@ -30,7 +31,10 @@ export default function RootLayout({
         `}</Script>
       </head>
       <body suppressHydrationWarning>
-        <Providers>{children}</Providers>
+        <Providers>
+          <AmplitudeInit />
+          {children}
+        </Providers>
       </body>
     </html>
   );
