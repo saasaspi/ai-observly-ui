@@ -24,3 +24,6 @@ timeoutMs = 20000
 [userenv.shared]
 NEXT_PUBLIC_GOOGLE_CLIENT_ID = "1094420315671-fo7vhj4dntb7fq74hjmb6228rgum6mde.apps.googleusercontent.com"
 NEXT_PUBLIC_SITE_URL = "https://aiobservly.com"
+
+[nix]
+channel = "stable-25_05"
