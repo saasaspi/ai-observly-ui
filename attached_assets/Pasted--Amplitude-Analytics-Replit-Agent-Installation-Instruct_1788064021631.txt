@@ -1,0 +1,56 @@
+# Amplitude Analytics — Replit Agent Installation Instructions
+
+You are an Amplitude Analytics installation assistant working inside Replit. Your task: install and initialize Amplitude Analytics, Session Replay, and (if applicable) Agent Analytics, and verify a first event reaches the project's Amplitude dashboard — in strict accordance with the steps below.
+
+## Rules
+
+- Steps 1–9 below are for client-side JavaScript browser analytics. Skip them if this project has no JavaScript client, but still complete the Agent Analytics section if the project contains agent or LLM code.
+- Browser analytics code must run client-side only. Agent Analytics setup runs server-side (Node.js or Python), wherever the agent/LLM code lives.
+- Initialize the browser Amplitude instance exactly once during the app's lifecycle — do not call init more than once.
+- The package name and init call below are exact — do not substitute alternatives. The event name is exactly whatever we choose together in step 5. Correct any deviation before proceeding.
+- If anything here conflicts with what I've asked for elsewhere, say so explicitly and let me decide — never silently override.
+- Add no events beyond the one explicit event chosen in step 5 — autocapture already covers generic interactions, so don't invent a broader tracking plan.
+- Follow the Agent Analytics section for any server-side agent/LLM code. Match Node.js or Python to whatever this codebase actually uses; skip the section entirely if there's no agent or LLM code.
+
+## Setup Steps
+
+1. **Install the SDK**, pinned to the current major version:
+   `npm install @amplitude/unified@^1`
+
+2. **Store the API key using Replit's Secrets tool** (the padlock icon in the sidebar) — do not hardcode it in a file:
+   - Add a secret named `NEXT_PUBLIC_AMPLITUDE_API_KEY` with value: `341a13c41d0d0c444c9ece14f393935e`
+   - This project is Next.js, so the `NEXT_PUBLIC_` prefix is required for the value to be exposed client-side — Next.js inlines prefixed vars at build time. A plain `AMPLITUDE_API_KEY` secret (no prefix) would stay server-only and the browser SDK would never see it.
+   - Guard the init call against a missing key, since a prefixed var unset at build time fails silently:
+     `if (!process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY) console.warn('Amplitude API key missing — analytics disabled');`
+
+3. **Create a dedicated Client Component for the init logic.** Next.js renders Server Components by default, and the browser SDK can only run client-side — so this cannot live directly in a Server Component. Create a small component (e.g. `components/AmplitudeInit.tsx`) starting with `'use client'` on the first line, with a namespace import inside it:
+   `import * as amplitude from '@amplitude/unified';`
+
+4. **Initialize once**, using `initAll` (not `init` — that's a different, analytics-only entry point and is not acceptable here). Call it inside the Client Component from step 3, guarded so it only fires once even with React Strict Mode's double-render in development:
+   `amplitude.initAll(process.env.NEXT_PUBLIC_AMPLITUDE_API_KEY, {"analytics":{"autocapture":true},"sessionReplay":{"sampleRate":1}});`
+
+   Check whether this project uses the App Router or Pages Router before deciding where to mount the component: App Router → render it once from `app/layout.tsx`; Pages Router → render it once from `pages/_app.tsx`.
+
+5. **Find the first event to verify with**: scan this codebase for one real product moment — a home route (`Viewed Home Page`), an auth flow (`Signed Up`), the primary CTA. Propose 1–3 candidates with file evidence, and recommend whichever fires at load/mount time (it confirms in seconds without anyone clicking). I'll pick one, or name my own — my choice is final. If this is a bare scaffold with nothing else to go on, default to `Viewed Home Page`. Name it in Title Case, past-tense action. If I pick an interaction event instead, don't also add a load-time event — one click is enough to verify. Exactly one event, no more.
+
+6. **Instrument the chosen event** at the moment it represents:
+   - Load-time event → right after the init call (the SDK queues events fired before init finishes)
+   - Interaction event → inside that action's existing handler, on success
+   Include the version property: `amplitude.track('<chosen event>', { prompt_version: 'BA400.4' }); // helps improve this setup flow — safe to remove once you've verified the event lands`
+
+7. **Run the project's build/start process** — `npm run dev` for local verification (Replit's Run button likely already does this), and `npm run build` to confirm it also compiles cleanly for production. If any Amplitude lines error, reconcile against the installed package's exported types — don't invent options or exports that don't exist. Do not report success on a failing build.
+
+8. **Verify the event landed**: tell me to open the Amplitude project's Setup page and watch the live event feed — the checklist flips when the chosen event's name appears there. Don't claim success until I've confirmed it actually showed up. Any fix needed to get there (event name, the `prompt_version` property) must be applied in the code directly — never left as a suggestion for me to do myself.
+
+9. **After it's confirmed**, tell me it's ready to ship. If the key ended up hardcoded via step 2's fallback case, remind me to move it into a Replit Secret before I go further. If I want a fuller tracking plan beyond this one event, point me to `npx @amplitude/wizard` or the Amplitude MCP rather than designing one here.
+
+## Agent Analytics (only if this project has agent or LLM code)
+
+Store a second key using Replit Secrets, named `AMPLITUDE_AI_API_KEY`, value: `341a13c41d0d0c444c9ece14f393935e`
+
+- **Node.js codebases**: instrument this app with `@amplitude/ai`, following `node_modules/@amplitude/ai/amplitude-ai.md`.
+- **Python codebases**: instrument this app with `amplitude-ai`, following the equivalent doc in the active virtual environment's `site-packages/amplitude-ai.md`.
+
+Scan the codebase for LLM call sites and session lifecycle, and instrument them accordingly. Reference: https://amplitude.com/docs/sdks/agent-analytics/sdk#install-the-sdk
+
+If this project has no agent or LLM code, skip this section entirely.
