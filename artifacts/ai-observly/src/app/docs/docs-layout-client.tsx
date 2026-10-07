@@ -42,20 +42,20 @@ export function DocsLayoutClient({ children, navData }: DocsLayoutClientProps) {
   }, [pathname]);
 
   return (
-    <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col md:flex-row">
+    <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-w-0 flex flex-col lg:flex-row">
       {/* Mobile Header / Nav Toggle */}
-      <div className="md:hidden flex items-center justify-between py-4 border-b border-border sticky top-16 z-40 bg-background/95 backdrop-blur-md">
+      <div className="lg:hidden flex items-center justify-between py-3 border-b border-border sticky top-16 z-40 bg-background/95 backdrop-blur-md">
         <p className="text-sm font-semibold text-foreground tracking-tight font-outfit">Documentation</p>
         <MobileSheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <MobileSheetTrigger asChild>
             <button
-              className="text-muted-foreground hover:text-foreground p-1 rounded-md"
+              className="flex h-11 w-11 items-center justify-center text-muted-foreground hover:text-foreground rounded-md"
               aria-label="Open docs navigation"
             >
               <Menu className="w-5 h-5" />
             </button>
           </MobileSheetTrigger>
-          <MobileSheetContent side="left" className="w-4/5 max-w-sm p-0 flex flex-col z-[60]">
+          <MobileSheetContent side="left" className="docs-mobile-sheet w-4/5 max-w-sm p-0 flex flex-col z-[60]">
             <MobileSheetHeader className="p-4 border-b border-border text-left">
               <MobileSheetTitle>Documentation</MobileSheetTitle>
               <MobileSheetDescription className="sr-only">
@@ -74,12 +74,12 @@ export function DocsLayoutClient({ children, navData }: DocsLayoutClientProps) {
       </div>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:block w-64 shrink-0 border-r border-border py-8 pr-6 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+      <aside className="hidden lg:block w-64 shrink-0 border-r border-border py-8 pr-6 sticky top-16 h-[calc(100dvh-4rem)] overflow-y-auto">
         <DocsSidebar categories={navData.categories} uncategorized={navData.uncategorized} />
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 min-w-0 md:px-8">
+      <div className="flex-1 min-w-0 lg:px-8">
         {children}
       </div>
     </div>

@@ -1,4 +1,17 @@
 {
+  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
   "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/blog/page": "app/blog/page.js",
+  "/blog/[slug]/page": "app/blog/[slug]/page.js",
+  "/tools/page": "app/tools/page.js",
+  "/pricing/page": "app/pricing/page.js",
+  "/docs/page": "app/docs/page.js",
+  "/docs/[slug]/page": "app/docs/[slug]/page.js",
+  "/spend-checkup/page": "app/spend-checkup/page.js",
+  "/blind-spot-quiz/page": "app/blind-spot-quiz/page.js",
+  "/tools/plan-pricing-margin-calculator/page": "app/tools/plan-pricing-margin-calculator/page.js",
+  "/use-cases/founders/page": "app/use-cases/founders/page.js",
+  "/features/ai-savings/page": "app/features/ai-savings/page.js",
+  "/features/per-customer-cost-attribution/page": "app/features/per-customer-cost-attribution/page.js"
 }

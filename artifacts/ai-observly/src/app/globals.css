@@ -347,6 +347,34 @@ a:hover > .hp-arrow { transform: translateX(4px); }
 }
 .public-site .font-outfit { font-family: var(--font-outfit), 'Outfit', sans-serif; }
 
+/* Public website only: phone and tablet layouts, without changing dashboard UI. */
+.public-site main { min-width: 0; }
+.public-site h1 { overflow-wrap: break-word; text-wrap: balance; }
+.public-site .portable-text { min-width: 0; overflow-wrap: anywhere; }
+.public-site .portable-text pre { max-width: 100%; overflow-x: auto; }
+.public-site .portable-text :not(pre) > code { overflow-wrap: anywhere; }
+.docs-mobile-sheet button { min-height: 44px; min-width: 44px; }
+.docs-mobile-sheet nav a { min-height: 44px; display: flex; align-items: center; }
+
+@media (max-width: 1023px) {
+  .public-site #public-mobile-navigation a { min-height: 44px; }
+  .public-site #public-mobile-navigation button { min-height: 44px; }
+}
+
+@media (max-width: 767px) {
+  .public-site main > section { padding-inline: 1rem; }
+  .public-site > footer > div { padding-inline: 1rem; }
+  .public-site #hero { padding-top: clamp(3.5rem, 12vw, 5rem); }
+  .public-site h1 { font-size: clamp(1.875rem, 8vw, 2.5rem); }
+  .public-site #hero h1 { font-size: clamp(2rem, 9vw, 3rem); line-height: 1.12; }
+  .public-site #hero .text-lg { font-size: 1rem; line-height: 1.7; }
+  .public-site h2.text-3xl, .public-site h2.text-4xl { font-size: clamp(1.5rem, 6.5vw, 1.875rem); }
+  .public-site input:not([type="checkbox"]):not([type="radio"]),
+  .public-site select, .public-site textarea { font-size: 1rem; min-height: 44px; }
+  .public-site .blog-prose p, .public-site .blog-prose li { font-size: 1rem; line-height: 1.75; }
+  .public-site nav[aria-label="Breadcrumb"] span { min-width: 0; overflow-wrap: anywhere; }
+}
+
 /* ── Blog reading experience (blog-*) ── */
 .public-site .blog-prose p, .public-site .blog-prose li { font-size: 1.125rem; line-height: 1.8; }
 .public-site .blog-prose p { margin-bottom: 1.5rem; color: hsl(var(--foreground) / 0.88); }

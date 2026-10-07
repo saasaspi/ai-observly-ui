@@ -158,12 +158,12 @@ function PlanModal({
             {errors.name && <p className="text-xs text-red-500 mt-1">{errors.name}</p>}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-4">
             {field("Price / customer / month *", "price", { prefix: "$", placeholder: "49" })}
             {field("Enrolled customers *", "customers", { placeholder: "100" })}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-4">
             {field("Token / LLM cost / mo", "tokenCost", { optional: true, prefix: "$", placeholder: "0" })}
             {field("Additional overhead / mo", "overhead", { optional: true, prefix: "$", placeholder: "0" })}
           </div>
@@ -291,7 +291,7 @@ function PlanCard({ plan, onEdit, onDelete }: { plan: Plan; onEdit: () => void; 
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-0.5">
                   {label as string}
                 </p>
-                <p className="text-sm font-bold text-foreground">{value as string}</p>
+                <p className="text-sm font-bold text-foreground break-words">{value as string}</p>
               </div>
             ))}
         </div>

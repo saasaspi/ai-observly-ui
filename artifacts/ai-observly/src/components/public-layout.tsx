@@ -35,6 +35,31 @@ export function PublicLayout({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    setMobileOpen(false);
+    setMobileProductsOpen(false);
+    setMobileFeaturesOpen(false);
+    setMobileFreeToolsOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMobileOpen(false);
+        document.querySelector<HTMLButtonElement>('[aria-controls="public-mobile-navigation"]')?.focus();
+      }
+    };
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const closeOnDesktop = () => { if (desktop.matches) setMobileOpen(false); };
+    document.addEventListener("keydown", closeOnEscape);
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+      desktop.removeEventListener("change", closeOnDesktop);
+    };
+  }, [mobileOpen]);
+
   // Fetch recent posts for Blogs dropdown on mount
   useEffect(() => {
     fetch("/napi/recent-posts?limit=5")
@@ -105,20 +130,20 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             : "border-border/40 bg-background/90 backdrop-blur-md"
         }`}
       >
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <Link href="/" className="shrink-0" data-testid="link-home">
             <Image
               src="/logo.png"
               alt="AI Observly"
               width={2172}
               height={724}
-              className="h-10 w-auto"
+              className="h-8 sm:h-10 w-auto max-w-[calc(100vw-6.5rem)] object-contain"
               priority
             />
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
+          <nav className="hidden lg:flex items-center gap-1 text-sm font-medium">
             {/* Products dropdown */}
             <div
               className="relative"
@@ -317,7 +342,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             </div>
           </nav>
 
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
             <Link
               href="/login"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-muted"
@@ -335,9 +360,11 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           </div>
 
           <button
-            className="md:hidden p-2 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="lg:hidden flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
+            aria-label={mobileOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={mobileOpen}
+            aria-controls="public-mobile-navigation"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -345,11 +372,12 @@ export function PublicLayout({ children }: { children: ReactNode }) {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-border bg-background/95 backdrop-blur-md px-6 py-4 flex flex-col gap-1">
+          <nav id="public-mobile-navigation" aria-label="Mobile navigation" className="lg:hidden max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-t border-border bg-background/95 backdrop-blur-md px-4 sm:px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] flex flex-col gap-1">
             {/* Products — expandable */}
             <button
               className="flex items-center justify-between w-full px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               onClick={() => setMobileProductsOpen(!mobileProductsOpen)}
+              aria-expanded={mobileProductsOpen}
             >
               Products
               {mobileProductsOpen ? (
@@ -381,6 +409,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             <button
               className="flex items-center justify-between w-full px-3 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               onClick={() => setMobileFeaturesOpen(!mobileFeaturesOpen)}
+              aria-expanded={mobileFeaturesOpen}
             >
               Features
               {mobileFeaturesOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -426,6 +455,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             <button
               className="flex items-center justify-between w-full px-3 py-2.5 rounded-md text-sm font-semibold text-primary hover:bg-primary/10 transition-colors"
               onClick={() => setMobileFreeToolsOpen(!mobileFreeToolsOpen)}
+              aria-expanded={mobileFreeToolsOpen}
             >
               <span className="flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5" />
@@ -476,7 +506,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 Start Monitoring now
               </Link>
             </div>
-          </div>
+          </nav>
         )}
       </header>
 
