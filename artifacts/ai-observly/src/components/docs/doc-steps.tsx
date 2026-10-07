@@ -44,12 +44,12 @@ export function DocSteps({ value }: DocStepsProps) {
             
             <div className="flex-1 min-w-0 pt-0.5">
               {step.title && (
-                <h3
+                <h2
                   id={stepHeadingId(step.title, step._key, index)}
                   className="text-lg font-semibold tracking-tight text-foreground mb-3 font-outfit scroll-m-20"
                 >
                   {step.title}
-                </h3>
+                </h2>
               )}
               {step.content && step.content.length > 0 && (
                 <div className="mt-2 [&>div:first-child>p:first-child]:mt-0">

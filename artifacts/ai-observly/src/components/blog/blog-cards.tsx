@@ -28,7 +28,7 @@ function Meta({ post }: { post: BlogCardData }) {
 function Cover({ post, sizes, ratio }: { post: BlogCardData; sizes: string; ratio: string }) {
   return post.imageUrl ? (
     <div className={`relative w-full ${ratio} overflow-hidden bg-muted`}>
-      <Image src={post.imageUrl} alt="" fill className="object-cover" sizes={sizes} />
+      <Image src={post.imageUrl} alt={`Featured illustration for ${post.title}`} fill className="object-cover" sizes={sizes} />
     </div>
   ) : (
     <div className={`w-full ${ratio} bg-primary/5 flex items-center justify-center px-6 text-center`}>

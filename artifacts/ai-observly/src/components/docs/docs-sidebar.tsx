@@ -67,9 +67,9 @@ export function DocsSidebar({ categories, uncategorized, onNavigate }: DocsSideb
 
         {filteredCategories.map((category) => (
           <div key={category._id} className="space-y-3">
-            <h3 className="font-semibold text-sm text-foreground tracking-tight px-2">
+            <p className="font-semibold text-sm text-foreground tracking-tight px-2 font-outfit">
               {category.title}
-            </h3>
+            </p>
             {category.docs?.length > 0 ? (
               <ul className="space-y-1">
                 {category.docs.map((doc) => {
@@ -101,9 +101,9 @@ export function DocsSidebar({ categories, uncategorized, onNavigate }: DocsSideb
 
         {filteredUncategorized.length > 0 && (
           <div className="space-y-3">
-            <h3 className="font-semibold text-sm text-foreground tracking-tight px-2">
+            <p className="font-semibold text-sm text-foreground tracking-tight px-2 font-outfit">
               Overview
-            </h3>
+            </p>
             <ul className="space-y-1">
               {filteredUncategorized.map((doc) => {
                 const href = `/docs/${doc.slug}`;

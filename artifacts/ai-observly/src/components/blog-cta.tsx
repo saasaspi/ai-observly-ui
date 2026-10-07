@@ -7,9 +7,9 @@ export function BlogCta() {
   return (
     <div className="mt-16 bg-primary/5 border border-primary/20 rounded-2xl p-8 text-center">
       <p className="text-sm font-medium text-primary mb-2">AI Observly</p>
-      <h3 className="text-xl font-bold font-outfit text-foreground mb-3">
+      <h2 className="text-xl font-bold font-outfit text-foreground mb-3">
         Not sure where your AI budget is going?
-      </h3>
+      </h2>
       <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
         Take our free 90-second quiz to find your AI cost blind spots — see if
         you know what you&apos;re really spending, and whether it&apos;s profitable.
@@ -18,6 +18,7 @@ export function BlogCta() {
         <Link href="/features/ai-savings" className="text-primary hover:underline">AI Savings</Link>
         <Link href="/features/ai-response-speed" className="text-primary hover:underline">AI Response Speed</Link>
         <Link href="/features/ai-reliability" className="text-primary hover:underline">AI Reliability</Link>
+        <Link href="/pricing" className="text-primary hover:underline">Compare AI Observly plans</Link>
       </div>
       <Link
         href="/blind-spot-quiz"

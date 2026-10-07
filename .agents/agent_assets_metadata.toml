@@ -1,0 +1,30 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "_AtNCDZ6tDZacOnKdug9n"
+uri = "file://reports/seo/technical-seo-report.html"
+type = "html"
+title = "Technical SEO audit and checklist"
+description = "37-page audit, before/after Lighthouse scores, remaining performance gaps, and hosting actions."
+logical_id = "5b346c9e-a15e-4e41-9164-3b1519b7c828"
+content_hash = "sha256:854e5a59052481f6ce3420260fda2aeab39a6a82e09413c58938204cb4457379"
+size = 12150
+mtime_ms = 1791385116964
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:ad4d9fe8-b60d-4eb3-9a92-5d2f2237e86b/5b346c9e-a15e-4e41-9164-3b1519b7c828/d891b28d-0cb8-43e6-a941-fb3631df2b69"
+storage_version_token = "1791385241992591"
+content_type = "text/html"
+
+[[outputs]]
+id = "V2khNlcPxdVlqssx6jwy_"
+uri = "file://reports/seo/lighthouse-after.html"
+type = "html"
+title = "Lighthouse, after SEO changes"
+description = "Full mobile Lighthouse report from the local Next.js production build."
+logical_id = "dd121b51-addb-47f5-8d7f-ffcdd6eb4adc"
+content_hash = "sha256:7e5c67dee6260a0d1211b18e4182eab7be9ca42f898b416fbddf61c6a1f96c38"
+size = 939441
+mtime_ms = 1791385211182
+storage_uri = "gcs://replit-rams-assets-sisko/rams/assets/repl:ad4d9fe8-b60d-4eb3-9a92-5d2f2237e86b/dd121b51-addb-47f5-8d7f-ffcdd6eb4adc/f0f9c9f4-e16a-4f76-a6e2-c6cda066f9e8"
+storage_version_token = "1791385243398056"
+content_type = "text/html"

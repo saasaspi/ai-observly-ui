@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { FeaturePageShell } from "@/components/feature-page-shell";
 import {
   SavingsHeroVisual, SavingsTableVisual, SavingsRankingVisual, SavingsExplainerVisual,
 } from "@/components/new-feature-visuals";
 import { PiggyBank, BarChart2, TrendingUp } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "AI Savings: See How Much Repeated AI Work You Reuse | AI Observly",
-  description:
-    "See how much repeated AI work is reused instead of charged at full price, what it saved you in dollars, and which busy features are missing out. Plain language, built for founders.",
-};
+export const metadata: Metadata = pageMetadata("/features/ai-savings");
 
 export default function AiSavingsPage() {
   return (

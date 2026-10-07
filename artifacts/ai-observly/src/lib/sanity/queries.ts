@@ -19,6 +19,8 @@ export type Post = {
   slug: string
   coverImage?: SanityImageAsset
   publishedAt: string
+  _updatedAt?: string
+  _createdAt?: string
   body?: unknown[]
   faq?: PostFaq[]
   seoTitle?: string
@@ -78,6 +80,8 @@ export const POST_QUERY = `
     "slug": ${SLUG_PROJECTION},
     coverImage,
     publishedAt,
+    _updatedAt,
+    _createdAt,
     body[]{
       ...,
       "dimensions": asset->metadata.dimensions

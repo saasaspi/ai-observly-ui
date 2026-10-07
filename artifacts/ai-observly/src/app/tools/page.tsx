@@ -2,12 +2,9 @@ import { PublicLayout } from "@/components/public-layout";
 import Link from "next/link";
 import { BarChart3, Crosshair, Calculator, ArrowRight, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Free Tools for AI Product Builders | AI Observly",
-  description:
-    "Free calculators and diagnostics for founders building AI products — understand your LLM costs, pricing blind spots, and plan margins in minutes.",
-};
+export const metadata: Metadata = pageMetadata("/tools");
 
 const tools = [
   {

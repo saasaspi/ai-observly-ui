@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { PublicLayout } from "@/components/public-layout";
 import { SetupPaths } from "@/components/setup-paths";
 import { PositioningMatrix } from "@/components/positioning-matrix";
-import Link from "next/link";
+import Link from "@/components/public-link";
 import {
   ArrowRight, CheckCircle2, AlertCircle, TrendingDown, DollarSign,
   Zap, BarChart2, Users, ChevronDown, ChevronUp,
@@ -13,6 +13,9 @@ import {
 import Image from "next/image";
 import { urlFor } from "@/lib/sanity/image";
 import { NEW_FEATURES, LAUNCH_POST } from "@/lib/new-features";
+import { useHomepagePosts } from "@/components/homepage-content";
+import { JsonLd } from "@/components/seo";
+import { applicationSchema, faqSchema, SITE_URL } from "@/lib/seo";
 
 const faqs = [
   {
@@ -45,7 +48,7 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         <h3 className="font-semibold text-foreground text-base leading-snug">{q}</h3>
         {open ? <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0" /> : <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />}
       </div>
-      {open && <div className="px-6 pb-6 text-muted-foreground leading-relaxed border-t border-border pt-4">{a}</div>}
+      <div hidden={!open} className="px-6 pb-6 text-muted-foreground leading-relaxed border-t border-border pt-4">{a}</div>
     </div>
   );
 }
@@ -128,24 +131,10 @@ function ScrollProgress() {
 
 // ── Count-up animation for dashboard mockup numbers ───────────────────────────
 function useCountUp(target: number, active: boolean, duration = 900): number {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    if (!active) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setValue(target);
-      return;
-    }
-    let id = 0;
-    const startTime = performance.now();
-    const raf = (now: number) => {
-      const t = Math.min((now - startTime) / duration, 1);
-      const eased = 1 - Math.pow(1 - t, 3);
-      setValue(Math.round(target * eased));
-      if (t < 1) id = requestAnimationFrame(raf);
-    };
-    id = requestAnimationFrame(raf);
-    return () => cancelAnimationFrame(id);
-  }, [active, target, duration]);
+  // Stable labels avoid repeated React renders and text-layout work during hydration.
+  void active;
+  void duration;
+  const value = target;
   return value;
 }
 
@@ -219,8 +208,9 @@ function DashboardMockup() {
                 key={i}
                 className="flex-1 rounded-t-sm bg-primary/20 hover:bg-primary/40"
                 style={{
-                  height: animated ? `${(h / max) * 100}%` : "0%",
-                  transition: `height 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 40}ms`,
+                  height: `${(h / max) * 100}%`,
+                  transformOrigin: "bottom",
+                  transition: `transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 40}ms`,
                 }}
               />
             ))}
@@ -281,14 +271,8 @@ function formatBlogDate(iso: string) {
 const noDash = (t: string) => t.replace(/\s*[\u2014]\s*/g, ", ");
 
 function LatestFromBlog() {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const posts = useHomepagePosts();
 
-  useEffect(() => {
-    fetch("/napi/recent-posts?limit=3")
-      .then((r) => r.json())
-      .then((data) => setPosts(Array.isArray(data) ? data.slice(0, 3) : []))
-      .catch(() => {});
-  }, []);
 
   if (posts.length === 0) return null;
 
@@ -375,6 +359,9 @@ export default function LandingPage() {
 
   return (
     <PublicLayout>
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "WebSite", name: "AI Observly", url: SITE_URL }} />
+      <JsonLd data={applicationSchema("/")} />
+      <JsonLd data={faqSchema(faqs.map(({ q, a }) => ({ question: q, answer: a })))} />
       <ScrollProgress />
       {/* ── HERO ── */}
       <section id="hero" className="relative pt-28 pb-10 px-6 overflow-hidden">

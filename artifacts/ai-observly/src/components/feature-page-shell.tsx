@@ -1,6 +1,10 @@
 "use client";
+import { JsonLd } from "@/components/seo";
+import { faqSchema } from "@/lib/seo";
+import { usePathname } from "next/navigation";
+import { LAUNCH_POST } from "@/lib/new-features";
 import { useState, useEffect } from "react";
-import Link from "next/link";
+import Link from "@/components/public-link";
 import { PublicLayout } from "@/components/public-layout";
 import {
   ChevronDown, ChevronUp, ArrowRight,
@@ -90,17 +94,21 @@ function FaqItem({ q, a }: { q: string; a: string }) {
           <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />
         )}
       </div>
-      {open && (
-        <div className="px-6 pb-6 text-muted-foreground leading-relaxed border-t border-border pt-4">
+        <div hidden={!open} className="px-6 pb-6 text-muted-foreground leading-relaxed border-t border-border pt-4">
           {a}
         </div>
-      )}
     </div>
   );
 }
 
 // ── Main shell ─────────────────────────────────────────────────────────────────
 export function FeaturePageShell({ data }: { data: FeaturePageData }) {
+  const pathname = usePathname();
+  const guide = pathname.includes("ai-savings") || pathname.includes("ai-response-speed") || pathname.includes("ai-reliability")
+    ? { href: `/blog/${LAUNCH_POST.slug}`, title: "A founder's guide to AI savings, speed and reliability" }
+    : pathname.includes("per-customer")
+    ? { href: "/blog/ai-cost-per-customer-dashboard-what-to-track", title: "What to track in an AI cost per customer dashboard" }
+    : { href: "/blog/calculate-ai-margin-per-customer", title: "How to calculate AI margin per customer" };
   useScrollReveal();
   const [activeTab, setActiveTab] = useState(0);
 
@@ -153,7 +161,7 @@ export function FeaturePageShell({ data }: { data: FeaturePageData }) {
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
                 {card.icon}
               </div>
-              <h3 className="font-bold font-outfit text-foreground text-lg mb-2">{card.title}</h3>
+              <h2 className="font-bold font-outfit text-foreground text-lg mb-2">{card.title}</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">{card.body}</p>
             </div>
           ))}
@@ -277,6 +285,7 @@ export function FeaturePageShell({ data }: { data: FeaturePageData }) {
       </section>
 
       {/* ── FAQ ── */}
+      <JsonLd data={faqSchema(data.faqs.map(({ q, a }) => ({ question: q, answer: a })))} />
       <section className="py-16 px-6 bg-card border-y border-border">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold font-outfit text-foreground mb-8 text-center">Frequently asked questions</h2>
@@ -289,6 +298,10 @@ export function FeaturePageShell({ data }: { data: FeaturePageData }) {
       </section>
 
       {/* ── FOOTER CTA ── */}
+      <div className="max-w-4xl mx-auto px-6 pb-10 text-sm">
+        <Link href="/blog" className="pub-link">Read practical guides to AI costs and margins</Link>
+        <Link href={guide.href} className="pub-link mt-3 block">{guide.title}</Link>
+      </div>
       <section className="py-16 md:py-24 px-6 bg-primary text-primary-foreground">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold font-outfit mb-3 leading-snug">

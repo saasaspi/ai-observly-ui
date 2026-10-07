@@ -6,6 +6,8 @@ import { NextReads } from "@/components/blog/blog-cards";
 import { minutesFromText, type BlogCardData } from "@/lib/blog-utils";
 import { BlogCta } from "@/components/blog-cta";
 import { LAUNCH_POST, NEW_FEATURES } from "@/lib/new-features";
+import { SITE_URL, ORGANIZATION_ID } from "@/lib/seo";
+import { Breadcrumbs, JsonLd } from "@/components/seo";
 import {
   SavingsHeroVisual, SpeedHeroVisual, ReliabilityHeroVisual,
 } from "@/components/new-feature-visuals";
@@ -78,23 +80,19 @@ export function LaunchCard() {
 export function LaunchArticle({ nextReads = [] }: { nextReads?: BlogCardData[] }) {
   return (
     <PublicLayout>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
+      <JsonLd data={{
             "@context": "https://schema.org",
-            "@type": "Article",
+            "@type": "BlogPosting",
             headline: LAUNCH_POST.title,
             description: LAUNCH_POST.description,
-            publisher: { "@type": "Organization", name: "AI Observly" },
-          }),
-        }}
-      />
+            datePublished: "2026-10-07", dateModified: "2026-10-07",
+            author: { "@type": "Organization", "@id": ORGANIZATION_ID, name: "AI Observly" },
+            publisher: { "@type": "Organization", "@id": ORGANIZATION_ID, name: "AI Observly", logo: { "@type": "ImageObject", url: `${SITE_URL}/logo.png` } },
+            url: `${SITE_URL}/blog/${LAUNCH_POST.slug}`,
+            image: `${SITE_URL}/social/blog/${LAUNCH_POST.slug}`,
+          }} />
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 w-full blog-article">
-        <Link href="/blog" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
-          <ArrowLeft className="w-4 h-4" />
-          All posts
-        </Link>
+        <Breadcrumbs items={[{ name: "Home", path: "/" }, { name: "Blog", path: "/blog" }, { name: LAUNCH_POST.title, path: `/blog/${LAUNCH_POST.slug}` }]} />
         <article>
           <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary mb-4">{LABEL}</span>
           <h1 className="text-3xl md:text-4xl font-bold font-outfit tracking-tight text-foreground mb-6 leading-tight">

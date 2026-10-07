@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { UseCaseShell } from "@/components/use-case-shell";
 
-export const metadata: Metadata = {
-  title: "AI Cost & Margin Tracking for Founders | AI Observly",
-  description:
-    "See which customers and features are quietly burning your AI margins — before they burn your runway. Built for non-technical founders, live in minutes.",
-};
+export const metadata: Metadata = pageMetadata("/use-cases/founders");
 
 export default function FoundersPage() {
   return (

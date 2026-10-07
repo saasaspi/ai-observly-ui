@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { FeaturePageShell } from "@/components/feature-page-shell";
 import {
   HeroVisualPlanProfitability,
@@ -10,11 +11,7 @@ import {
 } from "@/components/feature-page-shell";
 import { CreditCard, Calculator, Layers } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Plan & Pricing Profitability for AI Products | AI Observly",
-  description:
-    "See net margin by pricing plan after AI costs, not just gross revenue. Model overhead, back-calculate the price you need, and reprice with confidence.",
-};
+export const metadata: Metadata = pageMetadata("/features/plan-pricing-profitability");
 
 export default function PlanPricingProfitabilityPage() {
   return (

@@ -1,0 +1,50 @@
+Perform a complete technical SEO overhaul of the AI Observly website (Next.js, Sanity CMS for blog and docs, live at https://aiobservly.com). Work through every section below in order, fix issues directly in the codebase, and don't change the visual design, copy, or existing functionality unless a fix requires it. Before you start, audit the current state. When you finish, give me a pass/fail checklist and before/after Lighthouse scores.
+
+1. CRAWLABILITY AND INDEXABILITY
+- Create a robots.txt that allows all public pages, blocks /dashboard, /api, login, signup, onboarding, and any internal routes, and points to the sitemap. Explicitly allow Googlebot, Bingbot, GPTBot, ClaudeBot, PerplexityBot, and Google-Extended.
+- Generate a dynamic XML sitemap covering the homepage, marketing pages, free tools (/spend-checkup, /blind-spot-quiz, and the margin calculator), /docs and every docs page, /blog and every blog post from Sanity. Exclude dashboard and auth pages. Include accurate last-modified dates and make it update automatically when new Sanity content is published.
+- Add a self-referencing canonical tag to every public page using only the https://aiobservly.com version.
+- Add noindex to all dashboard, login, signup, and onboarding pages.
+- 301 redirect aiobservly.replit.app to aiobservly.com, and 301 the www or non-www variant to one chosen main version. Enforce one trailing-slash style everywhere. Before enabling the replit.app redirect, check whether login callbacks, webhooks, or API endpoints depend on that domain and tell me if so.
+- Add a custom 404 page with links to the homepage, blog, and docs, and make sure it returns a real 404 status code.
+- Add 301 redirects for any renamed or removed URLs (for example the old static /docs page and the old "Free Spend Checkup" naming).
+
+2. RENDERING AND METADATA
+- Make sure every public page is server-rendered or statically generated so all content is visible in the raw HTML without JavaScript. Convert anything important that renders only in the browser.
+- Use Next.js's built-in metadata system on every public page: a unique title under 60 characters and meta description under 160 characters with the main keyword near the start, Open Graph and Twitter card tags, and a unique social share image per page.
+- For blog and docs pages, pull title, description, and image dynamically from Sanity, with sensible fallbacks if a field is empty.
+- Use a site-wide title template like "Page name | AI Observly".
+- Exactly one H1 per page with a logical H2/H3 hierarchy that never skips levels.
+- Descriptive alt text on every meaningful image.
+- Add a full favicon set including an Apple touch icon and web manifest.
+
+3. STRUCTURED DATA (JSON-LD)
+- Organization (site-wide) with name, logo, URL, and social links including https://x.com/dsvnaregalkar.
+- WebSite on the homepage.
+- SoftwareApplication on the homepage and product/feature pages.
+- BlogPosting on every blog post, with AI Observly as author and publisher (no individual byline), plus published and modified dates and the featured image.
+- BreadcrumbList on blog, docs, and tool pages.
+- FAQPage on any page with an FAQ section.
+- WebApplication on each free tool page.
+- TechArticle on documentation pages.
+- Pull values dynamically from Sanity where relevant, and make sure the markup matches what's visible on the page.
+
+4. PERFORMANCE (target mobile Lighthouse 90+, LCP under 2.5s, CLS under 0.1, INP under 200ms)
+- Use the Next.js image component for all images with explicit dimensions, modern formats, and lazy loading below the fold. Prioritize the hero image.
+- Load fonts through the Next.js font system with swap, limit weights to what's needed, and avoid layout shift.
+- Make sure landing page animations use only transform and opacity, don't delay content on first load, and respect reduced-motion settings.
+- Defer non-critical scripts (GA4 and any widgets) so they don't block rendering.
+- Remove unused JavaScript and CSS, and lazy-load heavy components.
+- Use static generation with periodic revalidation for Sanity-powered pages.
+- Reserve space for dynamic content so nothing jumps around.
+- Enable compression and long-lived caching for static assets.
+
+5. SITE STRUCTURE, LINKING, AND SECURITY
+- URLs should be lowercase, short, hyphenated, and keyword-meaningful, with no query-string versions of pages indexed.
+- Add visible breadcrumbs (matching the schema) to blog posts and docs.
+- Make sure every blog post links to related posts, the relevant feature page, and the pricing section, and every feature page links back to relevant blog content. No important page should be more than 3 clicks from the homepage. Use descriptive anchor text, never "click here".
+- Add security headers (HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy), enforce HTTPS everywhere, and fix any mixed-content warnings.
+- Make sure the site is fully responsive with adequately sized tap targets and no horizontal scrolling on mobile.
+
+6. FINAL VERIFICATION
+Run a final audit and report pass/fail for: robots.txt, sitemap contents, canonicals, noindex on private pages, redirects, 404 behavior, metadata on every page, structured data validity, Lighthouse scores, and broken internal links. Fix anything that fails, and list separately anything that needs action outside the codebase.

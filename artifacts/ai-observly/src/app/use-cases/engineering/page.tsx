@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { UseCaseShell } from "@/components/use-case-shell";
 
-export const metadata: Metadata = {
-  title: "Lightweight AI Cost Attribution for Engineering Teams | AI Observly",
-  description:
-    "One fire-and-forget endpoint. No proxy in your request path. No stored API keys. Get per-customer cost attribution without building it yourself.",
-};
+export const metadata: Metadata = pageMetadata("/use-cases/engineering");
 
 export default function EngineeringPage() {
   return (

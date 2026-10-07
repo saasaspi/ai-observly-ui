@@ -4,6 +4,7 @@ import { PublicLayout } from '@/components/public-layout'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { Search } from 'lucide-react'
+import { pageMetadata } from '@/lib/seo'
 import { LAUNCH_POST } from '@/lib/new-features'
 import { LAUNCH_READ_MINUTES } from '@/components/launch-article'
 import { BlogCard, FeaturedCard } from '@/components/blog/blog-cards'
@@ -14,10 +15,7 @@ import {
 
 export const revalidate = 60
 
-export const metadata: Metadata = {
-  title: 'Blog | AI Observly',
-  description: 'Insights on AI cost, speed, reliability, unit economics, and margin visibility for founders.',
-}
+export const metadata: Metadata = pageMetadata('/blog')
 
 function href(topic?: string, q?: string) {
   const p = new URLSearchParams()

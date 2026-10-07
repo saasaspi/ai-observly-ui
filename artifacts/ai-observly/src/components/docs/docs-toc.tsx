@@ -60,7 +60,7 @@ export function DocsToc() {
 
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-sm text-foreground tracking-tight">On this page</h3>
+      <p className="font-semibold text-sm text-foreground tracking-tight font-outfit">On this page</p>
       <nav className="flex flex-col gap-2">
         {items.map((item) => (
           <a

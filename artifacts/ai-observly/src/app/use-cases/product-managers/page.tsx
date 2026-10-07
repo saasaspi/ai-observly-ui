@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { UseCaseShell } from "@/components/use-case-shell";
 
-export const metadata: Metadata = {
-  title: "Feature-Level AI Cost & ROI Data for Product Managers | AI Observly",
-  description:
-    "Tie every AI feature to its true cost-to-serve. Prioritise your roadmap with real margin data instead of gut feel.",
-};
+export const metadata: Metadata = pageMetadata("/use-cases/product-managers");
 
 export default function ProductManagersPage() {
   return (

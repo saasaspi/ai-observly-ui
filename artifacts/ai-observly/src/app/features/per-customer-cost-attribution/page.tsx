@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { FeaturePageShell } from "@/components/feature-page-shell";
 import {
   HeroVisualCustomerAttribution,
@@ -10,11 +11,7 @@ import {
 } from "@/components/feature-page-shell";
 import { Users, Bell, Unlock } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Per-Customer AI Cost Attribution | AI Observly",
-  description:
-    "See exactly which customers are profitable and which are quietly burning your AI margin. Per-customer LLM cost attribution for non-technical SaaS founders. No proxy, no code changes.",
-};
+export const metadata: Metadata = pageMetadata("/features/per-customer-cost-attribution");
 
 export default function PerCustomerCostAttributionPage() {
   return (

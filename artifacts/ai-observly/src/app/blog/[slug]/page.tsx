@@ -13,6 +13,8 @@ import type { Metadata } from 'next'
 import { ArrowLeft } from 'lucide-react'
 import { LaunchArticle } from '@/components/launch-article'
 import { LAUNCH_POST } from '@/lib/new-features'
+import { pageMetadata, SITE_URL, ORGANIZATION_ID, faqSchema } from '@/lib/seo'
+import { Breadcrumbs, JsonLd } from '@/components/seo'
 import { BlogShare } from '@/components/blog/blog-share'
 import { BlogMobileToc } from '@/components/blog/blog-mobile-toc'
 import { NextReads, TopicBadge } from '@/components/blog/blog-cards'
@@ -34,34 +36,19 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params
   if (slug === LAUNCH_POST.slug) {
-    return {
-      title: LAUNCH_POST.title,
-      description: LAUNCH_POST.description,
-      openGraph: { type: 'article', title: LAUNCH_POST.title, description: LAUNCH_POST.description },
-    }
+    return pageMetadata(`/blog/${slug}`, { title: LAUNCH_POST.title, description: LAUNCH_POST.description, article: true, published: '2026-10-07', modified: '2026-10-07' })
   }
   const post: Post | null = await client.fetch(POST_QUERY, { slug }, { next: { revalidate: 60 } })
   if (!post) return {}
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ai-observly.replit.app'
+  const siteUrl = SITE_URL
   const coverUrl = post.coverImage
     ? urlFor(post.coverImage).width(1200).height(630).fit('crop').auto('format').url()
     : undefined
 
-  return {
-    title: post.seoTitle || post.title,
-    description: post.metaDescription,
-    alternates: {
-      canonical: `${siteUrl}/blog/${slug}`,
-    },
-    openGraph: {
-      type: 'article',
-      title: post.seoTitle || post.title,
-      description: post.metaDescription,
-      publishedTime: post.publishedAt,
-      images: coverUrl ? [{ url: coverUrl, width: 1200, height: 630 }] : undefined,
-    },
-  }
+  return pageMetadata(`/blog/${slug}`, { title: post.seoTitle || post.title,
+    description: post.metaDescription || portableTextToPlain(post.body).slice(0, 159) || `AI cost insights: ${post.title}`,
+    image: coverUrl, article: true, published: post.publishedAt, modified: post._updatedAt || post.publishedAt })
 }
 
 function toCard(p: PostWithLength): BlogCardData {
@@ -108,7 +95,7 @@ export default async function BlogPostPage({
   const tocEntries = post.body && post.body.length > 0 ? extractToc(post.body) : []
   const hasToC = tocEntries.length > 0
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://ai-observly.replit.app'
+  const siteUrl = SITE_URL
   const coverUrl = post.coverImage
     ? urlFor(post.coverImage).width(1600).height(640).fit('crop').auto('format').url()
     : null
@@ -116,25 +103,27 @@ export default async function BlogPostPage({
   // JSON-LD Article structured data
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Article',
+    '@type': 'BlogPosting',
     headline: post.title,
     datePublished: post.publishedAt,
+    dateModified: post._updatedAt || post.publishedAt,
+    author: { '@type': 'Organization', '@id': ORGANIZATION_ID, name: 'AI Observly' },
     publisher: {
       '@type': 'Organization',
       name: 'AI Observly',
+      '@id': ORGANIZATION_ID,
       url: siteUrl,
+      logo: { '@type': 'ImageObject', url: `${siteUrl}/logo.png` },
     },
-    ...(coverUrl ? { image: coverUrl } : {}),
+    image: coverUrl || `${siteUrl}/social/blog/${slug}`,
     url: `${siteUrl}/blog/${slug}`,
   }
 
   return (
     <PublicLayout>
       {/* JSON-LD */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
+      {post.faq?.length ? <JsonLd data={faqSchema(post.faq)} /> : null}
 
       {/* Cover image — full width */}
       {coverUrl && (
@@ -152,13 +141,7 @@ export default async function BlogPostPage({
       )}
 
       <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-10 md:py-12 w-full blog-article">
-        <Link
-          href="/blog"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
-        >
-          <ArrowLeft className="w-4 h-4" aria-hidden="true" />
-          All posts
-        </Link>
+        <Breadcrumbs items={[{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }, { name: post.title, path: `/blog/${slug}` }]} />
 
         <div
           className={`grid gap-x-12 gap-y-10 justify-center ${

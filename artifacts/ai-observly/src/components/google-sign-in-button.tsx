@@ -1,5 +1,6 @@
 "use client";
 import { useToast } from "@/hooks/use-toast";
+import Script from "next/script";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
@@ -59,6 +60,8 @@ export function GoogleSignInButton({ onSuccess, onError, label = "Continue with 
   };
 
   return (
+    <>
+    <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
     <button
       type="button"
       onClick={handleClick}
@@ -67,5 +70,6 @@ export function GoogleSignInButton({ onSuccess, onError, label = "Continue with 
       <GoogleLogo />
       {label}
     </button>
+    </>
   );
 }

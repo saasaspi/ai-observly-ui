@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { FeaturePageShell } from "@/components/feature-page-shell";
 import {
   HeroVisualFeatureMargins,
@@ -10,11 +11,7 @@ import {
 } from "@/components/feature-page-shell";
 import { BarChart2, TrendingUp, Zap } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Per-Feature AI Margins & ROI | AI Observly",
-  description:
-    "Find out which features in your AI product are profitable and which ones are quietly draining your LLM budget. Feature-level cost and ROI tracking for non-technical founders.",
-};
+export const metadata: Metadata = pageMetadata("/features/per-feature-margins-roi");
 
 export default function PerFeatureMarginsRoiPage() {
   return (

@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { UseCaseShell } from "@/components/use-case-shell";
 
-export const metadata: Metadata = {
-  title: "AI Cost Data for Unit Economics & Forecasting | AI Observly for Finance & Ops",
-  description:
-    "Turn unpredictable LLM spend into real per-customer and per-plan cost data — the missing input for unit economics and margin models.",
-};
+export const metadata: Metadata = pageMetadata("/use-cases/finance");
 
 export default function FinancePage() {
   return (

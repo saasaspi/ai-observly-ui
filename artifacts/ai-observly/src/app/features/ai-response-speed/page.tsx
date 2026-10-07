@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { FeaturePageShell } from "@/components/feature-page-shell";
 import {
   SpeedHeroVisual, SpeedSlowCostlyVisual, SpeedWritingVisual, SpeedProvidersVisual,
 } from "@/components/new-feature-visuals";
 import { Gauge, Timer, AlertCircle } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "AI Response Speed: See How Long Your Customers Wait | AI Observly",
-  description:
-    "See typical and unusually slow AI response times for each feature and model, spot requests that are both slow and costly, and compare OpenAI, Anthropic, Gemini, Groq and Azure.",
-};
+export const metadata: Metadata = pageMetadata("/features/ai-response-speed");
 
 export default function AiResponseSpeedPage() {
   return (

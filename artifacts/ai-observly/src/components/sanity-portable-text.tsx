@@ -3,6 +3,7 @@ import { PortableText, type PortableTextComponents } from '@portabletext/react'
 import { slugifyHeading } from '@/lib/sanity/toc'
 import { urlFor } from '@/lib/sanity/image'
 import Image from 'next/image'
+import { normalizeHeadings } from '@/lib/portable-text-headings'
 
 type PortableTextTable = {
   rows?: Array<{
@@ -25,6 +26,7 @@ type PortableTextImage = {
 
 const components: PortableTextComponents = {
   block: {
+    h1: ({ children }) => <h2 className="text-3xl font-bold font-outfit mt-10 mb-4 text-foreground">{children}</h2>,
     normal: ({ children }) => (
       <p className="mb-5 text-foreground leading-relaxed text-[1.0625rem]">{children}</p>
     ),
@@ -169,5 +171,5 @@ const components: PortableTextComponents = {
 }
 
 export function SanityPortableText({ value }: { value: unknown[] }) {
-  return <PortableText value={value as Parameters<typeof PortableText>[0]['value']} components={components} />
+  return <PortableText value={normalizeHeadings(value) as Parameters<typeof PortableText>[0]['value']} components={components} />
 }

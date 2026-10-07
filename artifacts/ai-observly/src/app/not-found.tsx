@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { PRIVATE_METADATA } from "@/lib/seo";
+export const metadata = { ...PRIVATE_METADATA, title: "Page not found" };
 
 export default function NotFound() {
   return (
@@ -14,6 +16,10 @@ export default function NotFound() {
       >
         Back to home
       </Link>
+      <div className="flex gap-6 mt-6">
+        <Link href="/blog" className="text-primary underline">Browse the blog</Link>
+        <Link href="/docs" className="text-primary underline">Read documentation</Link>
+      </div>
     </div>
   );
 }

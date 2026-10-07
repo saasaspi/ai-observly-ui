@@ -5,3 +5,4 @@
 - [Public feature launches](public-feature-launches.md) — plain-language launch messaging belongs on public website/blogs, not dashboard functionality.
 - [Homepage punctuation](homepage-copy.md) — use commas instead of em dashes in homepage copy, including displayed CMS text.
 - [Sanity reading estimates](sanity-reading-estimates.md) — plain-text extraction skips custom table content; keep card and article estimates consistent.
+- [Canonical hosting](canonical-hosting.md) — non-www canonicals are required; custom domains and the Replit deployment may serve different hosting surfaces.

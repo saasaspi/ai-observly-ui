@@ -2,6 +2,7 @@
 
 import { PortableText, PortableTextComponents, PortableTextProps } from '@portabletext/react';
 import { DocSteps } from './doc-steps';
+import { normalizeHeadings } from '@/lib/portable-text-headings';
 import { DocCodeBlock } from './doc-code-block';
 import { DocInlineImage } from './doc-inline-image';
 import { DocImage } from './doc-image';
@@ -99,10 +100,18 @@ const components: PortableTextComponents = {
   },
 };
 
-export function DocsPortableText(props: Omit<PortableTextProps, 'components'>) {
+export function DocsPortableText({ title, ...props }: Omit<PortableTextProps, 'components'> & { title?: string }) {
+  const imageComponents: PortableTextComponents = {
+    ...components,
+    types: {
+      ...components.types,
+      image: ({ value }) => <DocImage value={{ ...value, alt: value.alt || value.caption || `${title || 'AI Observly'} guide illustration` }} />,
+      docInlineImage: ({ value }) => <DocInlineImage value={{ ...value, altText: value.altText || value.image?.alt || `${title || 'AI Observly'} guide illustration` }} />,
+    },
+  };
   return (
     <div className="portable-text w-full max-w-none">
-      <PortableText components={components} {...props} />
+      <PortableText components={imageComponents} {...props} value={normalizeHeadings(props.value)} />
     </div>
   );
 }

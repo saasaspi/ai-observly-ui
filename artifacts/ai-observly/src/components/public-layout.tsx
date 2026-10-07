@@ -1,9 +1,11 @@
 "use client";
 import { ReactNode, useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import Link from "@/components/public-link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, Sparkles, ChevronDown, ChevronUp, BarChart3, Crosshair, Calculator } from "lucide-react";
+import { Breadcrumbs } from "@/components/seo";
+import { PUBLIC_PAGES } from "@/lib/seo";
 
 type NavPost = { _id: string; title: string; slug: string }
 
@@ -478,7 +480,14 @@ export function PublicLayout({ children }: { children: ReactNode }) {
         )}
       </header>
 
-      <main className="flex-1 flex flex-col">{children}</main>
+      <main className="flex-1 flex flex-col">
+        {(pathname.startsWith("/tools") || pathname === "/spend-checkup" || pathname === "/blind-spot-quiz") && PUBLIC_PAGES[pathname] && (
+          <div className="max-w-6xl w-full mx-auto px-6 pt-6">
+            <Breadcrumbs items={[{ name: "Home", path: "/" }, ...(pathname === "/tools" ? [] : [{ name: "Free tools", path: "/tools" }]), { name: PUBLIC_PAGES[pathname].title, path: pathname }]} />
+          </div>
+        )}
+        {children}
+      </main>
 
       <footer className="border-t border-border py-12 bg-card">
         <div className="max-w-7xl mx-auto px-6">
@@ -501,7 +510,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
 
             {/* Features */}
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-3">Features</h4>
+              <h2 className="text-sm font-semibold text-foreground mb-3">Features</h2>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link href="/features/per-customer-cost-attribution" className="hover:text-foreground transition-colors">
@@ -548,7 +557,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
 
             {/* Free Tools */}
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-3">Free Tools</h4>
+              <h2 className="text-sm font-semibold text-foreground mb-3">Free Tools</h2>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link href="/spend-checkup" className="hover:text-foreground transition-colors">
@@ -575,7 +584,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
 
             {/* Blog & Docs */}
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-3">Blog &amp; Docs</h4>
+              <h2 className="text-sm font-semibold text-foreground mb-3">Blog &amp; Docs</h2>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link href="/blog" className="hover:text-foreground transition-colors">
@@ -597,7 +606,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
 
             {/* Account */}
             <div>
-              <h4 className="text-sm font-semibold text-foreground mb-3">Account</h4>
+              <h2 className="text-sm font-semibold text-foreground mb-3">Account</h2>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link href="/login" className="hover:text-foreground transition-colors">

@@ -39,6 +39,11 @@ export interface DocDetail {
     slug: string;
   };
   relatedDocs?: DocReference[];
+  _updatedAt?: string;
+  _createdAt?: string;
+  seoTitle?: string;
+  metaDescription?: string;
+  coverImage?: unknown;
 }
 
 export const docsNavQuery = `*[_type == "docCategory"] | order(order asc) {
@@ -68,6 +73,11 @@ export const docBySlugQuery = `*[_type == "docPage" && slug.current == $slug][0]
   title,
   "slug": slug.current,
   excerpt,
+  _updatedAt,
+  _createdAt,
+  seoTitle,
+  metaDescription,
+  coverImage,
   body,
   order,
   category->{

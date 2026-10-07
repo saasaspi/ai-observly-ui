@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { UseCaseShell } from "@/components/use-case-shell";
 
-export const metadata: Metadata = {
-  title: "Spot Account Usage & Margin Signals Before Renewal | AI Observly for CS",
-  description:
-    "See which accounts are quietly costing you money and which are ready to expand — before the renewal call, not during it.",
-};
+export const metadata: Metadata = pageMetadata("/use-cases/customer-success");
 
 export default function CustomerSuccessPage() {
   return (

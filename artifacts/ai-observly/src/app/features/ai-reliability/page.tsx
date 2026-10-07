@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { FeaturePageShell } from "@/components/feature-page-shell";
 import {
   ReliabilityHeroVisual, ReliabilityTableVisual, ReliabilityFeedVisual, ReliabilityEndingsVisual,
 } from "@/components/new-feature-visuals";
 import { ShieldAlert, Search, DollarSign } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "AI Reliability: See What Failed Requests Cost You | AI Observly",
-  description:
-    "See money spent on failed or interrupted AI requests, why they happened, which responses were cut short, and which customers were affected. Plain language for founders.",
-};
+export const metadata: Metadata = pageMetadata("/features/ai-reliability");
 
 export default function AiReliabilityPage() {
   return (

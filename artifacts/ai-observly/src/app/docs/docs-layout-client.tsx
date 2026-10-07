@@ -45,7 +45,7 @@ export function DocsLayoutClient({ children, navData }: DocsLayoutClientProps) {
     <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex flex-col md:flex-row">
       {/* Mobile Header / Nav Toggle */}
       <div className="md:hidden flex items-center justify-between py-4 border-b border-border sticky top-16 z-40 bg-background/95 backdrop-blur-md">
-        <h2 className="text-sm font-semibold text-foreground tracking-tight">Documentation</h2>
+        <p className="text-sm font-semibold text-foreground tracking-tight font-outfit">Documentation</p>
         <MobileSheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <MobileSheetTrigger asChild>
             <button
