@@ -2,6 +2,7 @@ import { PublicLayout } from "@/components/public-layout";
 import Link from "next/link";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import type { Metadata } from "next";
+import { NEW_FEATURES, type NewFeatureKey } from "@/lib/new-features";
 
 export interface UseCaseProblem {
   label: string;
@@ -19,6 +20,7 @@ export interface UseCaseData {
   problems: UseCaseProblem[];
   helpItems: UseCaseHelp[];
   ctaLine: string;
+  featureKeys?: NewFeatureKey[];
 }
 
 export function UseCaseShell({ data }: { data: UseCaseData }) {
@@ -76,6 +78,34 @@ export function UseCaseShell({ data }: { data: UseCaseData }) {
                 <h3 className="text-base font-bold mb-3 text-foreground">{item.label}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{item.body}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* New capabilities */}
+      <section className="py-16 px-6">
+        <div className="max-w-5xl mx-auto">
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary text-center mb-3">
+            Also worth a look
+          </p>
+          <h2 className="text-2xl md:text-3xl font-bold font-outfit text-center mb-8">
+            More ways to see what your AI is doing
+          </h2>
+          <div className="grid md:grid-cols-3 gap-5">
+            {NEW_FEATURES.filter((f) => !data.featureKeys || data.featureKeys.includes(f.key)).map((f) => (
+              <Link
+                key={f.href}
+                href={f.href}
+                className="group bg-card border border-border rounded-2xl p-6 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 transition-all duration-200"
+              >
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-1">New</p>
+                <h3 className="font-bold font-outfit text-foreground group-hover:text-primary transition-colors mb-2">{f.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-3">{f.tagline}</p>
+                <span className="text-sm font-semibold text-primary inline-flex items-center gap-1">
+                  Learn more <ArrowRight className="w-3.5 h-3.5" />
+                </span>
+              </Link>
             ))}
           </div>
         </div>

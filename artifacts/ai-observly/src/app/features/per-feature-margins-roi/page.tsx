@@ -117,6 +117,9 @@ export default function PerFeatureMarginsRoiPage() {
             href: "/spend-checkup",
             label: "Free Tool",
           },
+          { title: "AI Savings", href: "/features/ai-savings", label: "New feature" },
+          { title: "AI Response Speed", href: "/features/ai-response-speed", label: "New feature" },
+          { title: "AI Reliability", href: "/features/ai-reliability", label: "New feature" },
         ],
 
         faqs: [

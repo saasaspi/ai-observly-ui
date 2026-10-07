@@ -42,6 +42,7 @@ export default function EngineeringPage() {
             body: "A lightweight integration you can add in one sitting, not a sprint — and you're done answering the cost question by hand.",
           },
         ],
+        featureKeys: ["savings", "speed", "reliability"],
         ctaLine: "Get cost visibility without the infra project.",
       }}
     />

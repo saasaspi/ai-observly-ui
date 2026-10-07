@@ -42,6 +42,7 @@ export default function CustomerSuccessPage() {
             body: "An account pushing past its plan's usage is a warmer upsell signal than a check-in email — and you'll see it before the renewal date, not at it.",
           },
         ],
+        featureKeys: ["speed", "reliability"],
         ctaLine: "Go into your next renewal with the full picture.",
       }}
     />

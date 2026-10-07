@@ -14,6 +14,11 @@ export function BlogCta() {
         Take our free 90-second quiz to find your AI cost blind spots — see if
         you know what you&apos;re really spending, and whether it&apos;s profitable.
       </p>
+      <div className="flex flex-wrap justify-center gap-x-5 gap-y-1 mb-6 text-sm">
+        <Link href="/features/ai-savings" className="text-primary hover:underline">AI Savings</Link>
+        <Link href="/features/ai-response-speed" className="text-primary hover:underline">AI Response Speed</Link>
+        <Link href="/features/ai-reliability" className="text-primary hover:underline">AI Reliability</Link>
+      </div>
       <Link
         href="/blind-spot-quiz"
         className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 shadow-sm"

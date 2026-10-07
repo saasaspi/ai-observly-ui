@@ -1,5 +1,12 @@
 {
   "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js",
   "/icon.png/route": "app/icon.png/route.js",
-  "/page": "app/page.js"
+  "/features/ai-savings/page": "app/features/ai-savings/page.js",
+  "/blog/[slug]/page": "app/blog/[slug]/page.js",
+  "/page": "app/page.js",
+  "/features/ai-response-speed/page": "app/features/ai-response-speed/page.js",
+  "/features/ai-reliability/page": "app/features/ai-reliability/page.js",
+  "/blog/page": "app/blog/page.js",
+  "/use-cases/finance/page": "app/use-cases/finance/page.js"
 }

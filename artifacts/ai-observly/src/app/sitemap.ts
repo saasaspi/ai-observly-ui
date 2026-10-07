@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { client } from '@/lib/sanity/client'
 import { SITEMAP_POSTS_QUERY } from '@/lib/sanity/queries'
+import { LAUNCH_POST } from '@/lib/new-features'
 import { STATIC_PAGES } from '@/lib/sitemap-pages'
 
 export const revalidate = 60
@@ -29,5 +30,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: page.priority,
   }))
 
-  return [...staticUrls, ...postUrls]
+  const launchUrl: MetadataRoute.Sitemap = [
+    {
+      url: `${siteUrl}/blog/${LAUNCH_POST.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+  ]
+
+  return [...staticUrls, ...launchUrl, ...postUrls]
 }

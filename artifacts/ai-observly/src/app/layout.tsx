@@ -6,7 +6,7 @@ import { AmplitudeInit } from "@/components/amplitude-init";
 
 export const metadata: Metadata = {
   title: "AI Observly",
-  description: "AI cost and margin tracking for founders who ship fast.",
+  description: "AI cost and margin tracking for founders who ship fast, with plain-language views of savings, response speed and reliability.",
 };
 
 export default function RootLayout({

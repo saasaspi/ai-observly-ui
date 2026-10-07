@@ -11,6 +11,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { LaunchArticle } from '@/components/launch-article'
+import { LAUNCH_POST } from '@/lib/new-features'
 
 export const revalidate = 60
 
@@ -39,6 +41,13 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
+  if (slug === LAUNCH_POST.slug) {
+    return {
+      title: LAUNCH_POST.title,
+      description: LAUNCH_POST.description,
+      openGraph: { type: 'article', title: LAUNCH_POST.title, description: LAUNCH_POST.description },
+    }
+  }
   const post: Post | null = await client.fetch(POST_QUERY, { slug }, { next: { revalidate: 60 } })
   if (!post) return {}
 
@@ -115,6 +124,8 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
+
+  if (slug === LAUNCH_POST.slug) return <LaunchArticle />
 
   const [post, candidatePosts]: [Post | null, PostSummary[]] = await Promise.all([
     client.fetch(POST_QUERY, { slug }, { next: { revalidate: 60 } }),

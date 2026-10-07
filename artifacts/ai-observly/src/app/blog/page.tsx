@@ -5,12 +5,13 @@ import { PublicLayout } from '@/components/public-layout'
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { LaunchCard } from '@/components/launch-article'
 
 export const revalidate = 60
 
 export const metadata: Metadata = {
   title: 'Blog | AI Observly',
-  description: 'Insights on AI cost management, unit economics, and margin visibility for founders.',
+  description: 'Insights on AI cost, speed, reliability, unit economics, and margin visibility for founders.',
 }
 
 function formatDate(iso: string) {
@@ -145,7 +146,11 @@ export default async function BlogPage({
         </div>
 
         {/* Posts grid */}
-        {posts.length === 0 ? (
+        {posts.length === 0 && !activeTopic ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <LaunchCard />
+          </div>
+        ) : posts.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-muted-foreground text-lg">
               {activeTopic
@@ -160,6 +165,7 @@ export default async function BlogPage({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {!activeTopic && <LaunchCard />}
             {posts.map((post) => (
               <PostCard key={post._id} post={post} />
             ))}

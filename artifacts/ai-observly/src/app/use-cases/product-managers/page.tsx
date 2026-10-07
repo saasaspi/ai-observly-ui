@@ -42,6 +42,7 @@ export default function ProductManagersPage() {
             body: "Trace a feature's cost back to the specific accounts driving it, so you know if it's a segment worth building for or an outlier to manage.",
           },
         ],
+        featureKeys: ["savings", "speed", "reliability"],
         ctaLine: "Bring cost data to your next roadmap review.",
       }}
     />

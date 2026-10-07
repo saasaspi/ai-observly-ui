@@ -146,6 +146,33 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../src/app/features/ai-reliability/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/features/ai-reliability">> = Specific
+  const handler = {} as typeof import("../../src/app/features/ai-reliability/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/features/ai-response-speed/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/features/ai-response-speed">> = Specific
+  const handler = {} as typeof import("../../src/app/features/ai-response-speed/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../src/app/features/ai-savings/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/features/ai-savings">> = Specific
+  const handler = {} as typeof import("../../src/app/features/ai-savings/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../src/app/features/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/features">> = Specific

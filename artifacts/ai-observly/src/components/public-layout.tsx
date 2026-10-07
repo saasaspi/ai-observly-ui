@@ -78,6 +78,11 @@ export function PublicLayout({ children }: { children: ReactNode }) {
     { title: "Per-Feature Margins & ROI", desc: "Know which features are worth building and which are burning budget", href: "/features/per-feature-margins-roi" },
     { title: "Plan & Pricing Profitability", desc: "See net margin by plan, not just revenue", href: "/features/plan-pricing-profitability" },
   ];
+  const newFeatures = [
+    { title: "AI Savings", desc: "See how much repeated work you reuse, and what you miss", href: "/features/ai-savings" },
+    { title: "AI Response Speed", desc: "See how long customers wait, and where it drags", href: "/features/ai-response-speed" },
+    { title: "AI Reliability", desc: "See what failed requests cost and why they happened", href: "/features/ai-reliability" },
+  ];
   const freeToolItems = [
     { title: "LLM Spend Analyzer", desc: "Upload your billing CSV, get an instant cost breakdown", href: "/spend-checkup", Icon: BarChart3 },
     { title: "AI Blind Spot Quiz", desc: "Find your AI cost blind spots in 2 minutes", href: "/blind-spot-quiz", Icon: Crosshair },
@@ -145,6 +150,20 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                     <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Core Features</p>
                     <div className="grid grid-cols-2 gap-2">
                       {coreFeatures.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setFeaturesOpen(false)}
+                          className="group flex flex-col gap-0.5 rounded-xl p-3 hover:bg-muted transition-colors"
+                        >
+                          <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors leading-snug">{item.title}</span>
+                          <span className="text-xs text-muted-foreground leading-snug">{item.desc}</span>
+                        </Link>
+                      ))}
+                    </div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary mt-4 mb-3">New: Savings, Speed &amp; Reliability</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {newFeatures.map((item) => (
                         <Link
                           key={item.href}
                           href={item.href}
@@ -366,7 +385,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             </button>
             {mobileFeaturesOpen && (
               <div className="pl-4 flex flex-col gap-0.5">
-                {coreFeatures.map((item) => (
+                {[...coreFeatures, ...newFeatures].map((item) => (
                   <Link key={item.href} href={item.href} className="px-3 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" onClick={() => setMobileOpen(false)}>
                     {item.title}
                   </Link>
@@ -497,6 +516,21 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                 <li>
                   <Link href="/features/plan-pricing-profitability" className="hover:text-foreground transition-colors">
                     Plan Profitability
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/features/ai-savings" className="hover:text-foreground transition-colors">
+                    AI Savings
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/features/ai-response-speed" className="hover:text-foreground transition-colors">
+                    AI Response Speed
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/features/ai-reliability" className="hover:text-foreground transition-colors">
+                    AI Reliability
                   </Link>
                 </li>
                 <li>

@@ -7,9 +7,11 @@ import {
   ArrowRight, CheckCircle2, AlertCircle, TrendingDown, DollarSign,
   Zap, BarChart2, Users, ChevronDown, ChevronUp,
   ArrowUpRight, GitBranch, CreditCard, MessageSquare,
+  PiggyBank, Gauge, ShieldAlert,
 } from "lucide-react";
 import Image from "next/image";
 import { urlFor } from "@/lib/sanity/image";
+import { NEW_FEATURES, LAUNCH_POST } from "@/lib/new-features";
 
 const faqs = [
   {
@@ -23,6 +25,10 @@ const faqs = [
   {
     q: "What LLM providers do you support?",
     a: "OpenAI, Anthropic, and Gemini today, with more being added.",
+  },
+  {
+    q: "Does it show more than cost?",
+    a: "Yes. Alongside cost and margin, AI Savings shows how much repeated work you reuse instead of paying full price for, AI Response Speed shows how long customers wait, and AI Reliability shows what failed requests cost and why they happened.",
   },
   {
     q: "Can this actually help with pricing, or just reporting?",
@@ -386,7 +392,7 @@ export default function LandingPage() {
 
           {/* Subtext — entrance d2 */}
           <p className="animate-hero animate-hero-d2 text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            AI Observly attributes every OpenAI, Anthropic, and Gemini call to a customer, a feature, and a plan — so you can see margin, not just spend.
+            AI Observly attributes every OpenAI, Anthropic, and Gemini call to a customer, a feature, and a plan — so you can see margin, not just spend. Then check whether you are saving on repeated work, how long customers wait, and what failed requests cost.
           </p>
 
           {/* CTAs — entrance d3 */}
@@ -579,6 +585,46 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* ── NEW: SAVINGS / SPEED / RELIABILITY ── */}
+      <section id="new-capabilities" className="py-24 px-6 bg-primary/5 border-y border-primary/10">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">New</p>
+            <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Beyond the bill: savings, speed, and reliability</h2>
+            <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">Three plain-language views of what your AI is really doing for your customers and your budget.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {NEW_FEATURES.map((f, i) => {
+              const Icon = f.key === "savings" ? PiggyBank : f.key === "speed" ? Gauge : ShieldAlert;
+              return (
+                <Link
+                  key={f.href}
+                  href={f.href}
+                  data-reveal
+                  style={{ transitionDelay: `${i * 90}ms` }}
+                  className="group flex flex-col bg-card border border-border rounded-2xl p-6 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 transition-all duration-200"
+                >
+                  <div className="hp-icon w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-bold font-outfit text-foreground group-hover:text-primary transition-colors mb-1">{f.title}</h3>
+                  <p className="text-sm font-medium text-foreground/80 mb-2">{f.tagline}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">{f.desc}</p>
+                  <span className="text-sm font-semibold text-primary flex items-center gap-1 group-hover:gap-2 transition-all mt-auto">
+                    Learn more <ArrowRight className="w-3.5 h-3.5" />
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+          <p data-reveal className="text-center mt-8 text-sm">
+            <Link href={`/blog/${LAUNCH_POST.slug}`} className="text-primary font-medium hover:underline">
+              Read the plain-language guide to all three
+            </Link>
+          </p>
         </div>
       </section>
 

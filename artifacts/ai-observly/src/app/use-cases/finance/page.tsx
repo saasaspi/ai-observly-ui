@@ -42,6 +42,7 @@ export default function FinancePage() {
             body: "The same cost numbers finance, product, and founders are looking at — no more reconciling spreadsheets before a board meeting.",
           },
         ],
+        featureKeys: ["savings", "reliability"],
         ctaLine: "Give your margin models the missing input.",
       }}
     />

@@ -42,6 +42,7 @@ export default function FoundersPage() {
             body: "One lightweight integration — no proxy, no stored API keys — gets you live data the same day, no dev sprint needed.",
           },
         ],
+        featureKeys: ["savings", "reliability"],
         ctaLine:
           "Stop guessing which customers are worth keeping.",
       }}
