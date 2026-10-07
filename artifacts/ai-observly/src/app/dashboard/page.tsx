@@ -1,12 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRef } from "react";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout";
 import { ProtectedRoute } from "@/components/protected-route";
 import { ChartPanel } from "@/components/charts";
 import { useIntegrationBanner } from "@/components/onboarding-dialog";
 import { useDashboardSummary } from "@/hooks/use-api";
+import { initializeAmplitude } from "@/components/amplitude-init";
 import { TrendingUp, TrendingDown, DollarSign, Loader2, AlertCircle, Info, X } from "lucide-react";
+import * as amplitude from "@amplitude/unified";
 
 function TrendSparkline({ data, color = "primary" }: { data: number[]; color?: "primary" | "green" | "red" }) {
   const max = Math.max(...data, 1);
@@ -47,6 +50,28 @@ function IntegrationBanner() {
 
 function OverviewContent() {
   const { data: summary, isLoading: summaryLoading } = useDashboardSummary();
+  const costDashboardEventSent = useRef(false);
+  const hasCostData =
+    summary != null &&
+    [summary.totalCost, summary.totalRevenue, summary.totalProfit].some(
+      (value) => Number.isFinite(value) && value > 0,
+    );
+
+  useEffect(() => {
+    if (summaryLoading || !hasCostData || costDashboardEventSent.current) return;
+
+    costDashboardEventSent.current = true;
+    void initializeAmplitude().then(async (initialized) => {
+      if (!initialized) {
+        costDashboardEventSent.current = false;
+        return;
+      }
+      await amplitude
+        .track("Viewed Cost Dashboard", { prompt_version: "BA400.4" })
+        .promise.catch(() => undefined);
+    });
+  }, [hasCostData, summaryLoading]);
+
   const costTrend = [820, 910, 755, 985, 1040, 890, 970, 1100, 1055, 1140];
   const revTrend  = [2800, 3100, 2950, 3400, 3600, 3300, 3800, 3900, 4050, 4200];
   const profitTrend = [1980, 2190, 2195, 2415, 2560, 2410, 2830, 2800, 2995, 3060];

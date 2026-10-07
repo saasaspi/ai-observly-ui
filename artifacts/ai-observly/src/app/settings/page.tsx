@@ -18,11 +18,13 @@ import {
   useSaveAddonCosts,
 } from "@/hooks/use-api";
 import { type CustomFeature, type CustomPlan, type AddonCost, getAddonCosts, saveAddonCosts } from "@/lib/api";
+import { initializeAmplitude } from "@/components/amplitude-init";
 import {
   Key, Copy, RefreshCw, Trash2, PlusCircle, X, ChevronDown, ChevronUp,
   Zap, CreditCard, BookOpen, FlaskConical, Loader2, AlertCircle, CheckCircle2,
   DollarSign, Pencil,
 } from "lucide-react";
+import * as amplitude from "@amplitude/unified";
 
 // ─── Add-on Cost Tab ───────────────────────────────────────────────────────
 
@@ -373,7 +375,19 @@ function SettingsContent() {
   };
 
   const handleGenerateKey = () => generateKey.mutate(undefined, {
-    onSuccess: (data) => { setApiKey(data.keyDisplay); toast({ title: "API key generated" }); },
+    onSuccess: async (data) => {
+      setApiKey(data.keyDisplay);
+      if (await initializeAmplitude()) {
+        await amplitude
+          .track("Connected Provider", {
+            provider: "ai_observly",
+            integration: "api_key",
+            prompt_version: "BA400.4",
+          })
+          .promise.catch(() => undefined);
+      }
+      toast({ title: "API key generated" });
+    },
   });
   const handleRegenerateKey = () => regenerateKey.mutate(undefined, {
     onSuccess: (data) => { setApiKey(data.keyDisplay); toast({ title: "API key regenerated" }); },

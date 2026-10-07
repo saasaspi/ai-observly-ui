@@ -46,21 +46,77 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 // ── Scroll-reveal: adds .is-revealed when element enters viewport ──────────────
 function useScrollReveal() {
   useEffect(() => {
-    const els = document.querySelectorAll<HTMLElement>("[data-reveal]");
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const show = (el: Element) => el.classList.add("is-revealed");
+    if (reduce || typeof IntersectionObserver === "undefined") {
+      document.querySelectorAll("[data-reveal]").forEach(show);
+      return;
+    }
+    const seen = new WeakSet<Element>();
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            e.target.classList.add("is-revealed");
+            show(e.target);
             observer.unobserve(e.target);
           }
         });
       },
       { threshold: 0.1, rootMargin: "0px 0px -40px 0px" }
     );
-    els.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
+    const scan = (root: ParentNode) => {
+      root.querySelectorAll<HTMLElement>("[data-reveal]").forEach((el) => {
+        if (seen.has(el) || el.classList.contains("is-revealed")) return;
+        seen.add(el);
+        observer.observe(el);
+      });
+    };
+    scan(document);
+    // Pick up async-rendered elements (e.g. blog cards)
+    const mo = new MutationObserver((muts) => {
+      if (muts.some((m) => m.addedNodes.length)) scan(document);
+    });
+    mo.observe(document.body, { childList: true, subtree: true });
+    // Safety net: never leave content hidden
+    const safety = window.setTimeout(() => {
+      document.querySelectorAll("[data-reveal]:not(.is-revealed)").forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.top < window.innerHeight) show(el);
+      });
+    }, 2500);
+    return () => {
+      observer.disconnect();
+      mo.disconnect();
+      window.clearTimeout(safety);
+    };
   }, []);
+}
+
+// ── Scroll progress bar (RAF-throttled, transform only) ───────────────────────
+function ScrollProgress() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      const p = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
+      if (ref.current) ref.current.style.transform = `scaleX(${p})`;
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
+  return <div ref={ref} aria-hidden className="hp-progress" />;
 }
 
 // ── Count-up animation for dashboard mockup numbers ───────────────────────────
@@ -68,14 +124,20 @@ function useCountUp(target: number, active: boolean, duration = 900): number {
   const [value, setValue] = useState(0);
   useEffect(() => {
     if (!active) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setValue(target);
+      return;
+    }
+    let id = 0;
     const startTime = performance.now();
     const raf = (now: number) => {
       const t = Math.min((now - startTime) / duration, 1);
       const eased = 1 - Math.pow(1 - t, 3);
       setValue(Math.round(target * eased));
-      if (t < 1) requestAnimationFrame(raf);
+      if (t < 1) id = requestAnimationFrame(raf);
     };
-    requestAnimationFrame(raf);
+    id = requestAnimationFrame(raf);
+    return () => cancelAnimationFrame(id);
   }, [active, target, duration]);
   return value;
 }
@@ -95,6 +157,11 @@ function DashboardMockup() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+        typeof IntersectionObserver === "undefined") {
+      setAnimated(true);
+      return;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -109,7 +176,8 @@ function DashboardMockup() {
   }, []);
 
   return (
-    <div ref={ref} className="relative w-full max-w-2xl mx-auto mt-12 rounded-2xl border border-border shadow-2xl shadow-primary/10 bg-card overflow-hidden">
+    <div ref={ref} className={`hp-float ${animated ? "hp-live" : ""} relative w-full max-w-2xl mx-auto mt-12 rounded-2xl border border-border shadow-2xl shadow-primary/10 bg-card overflow-hidden`}>
+      <span aria-hidden className="hp-sheen" />
       {/* Browser chrome */}
       <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border bg-muted/30">
         <div className="w-3 h-3 rounded-full bg-red-400/70" />
@@ -125,8 +193,8 @@ function DashboardMockup() {
             { label: "Total AI Cost", value: `$${cost.toLocaleString()}`, sub: "this month", color: "text-foreground" },
             { label: "Total Revenue", value: `$${revenue.toLocaleString()}`, sub: "attributed", color: "text-foreground" },
             { label: "Net Margin", value: `+$${profit.toLocaleString()}`, sub: "from AI features", color: "text-green-600" },
-          ].map((s) => (
-            <div key={s.label} className="bg-background border border-border rounded-lg p-2 sm:p-3 min-w-0">
+          ].map((s, i) => (
+            <div key={s.label} className="hp-mock-in bg-background border border-border rounded-lg p-2 sm:p-3 min-w-0" style={{ transitionDelay: `${i * 90}ms` }}>
               <p className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 leading-tight">{s.label}</p>
               <p className={`text-sm sm:text-xl font-bold font-outfit leading-tight break-all ${s.color}`}>{s.value}</p>
               <p className="text-[9px] sm:text-[10px] text-muted-foreground leading-snug">{s.sub}</p>
@@ -165,10 +233,10 @@ function DashboardMockup() {
             { name: "Acme Corp", cost: "$380", margin: "-$60", status: "bg-red-500", neg: true },
             { name: "Verity Labs", cost: "$315", margin: "+$95", status: "bg-yellow-500", neg: false },
             { name: "Moonshot AI", cost: "$95", margin: "+$315", status: "bg-green-500", neg: false },
-          ].map((c) => (
-            <div key={c.name} className="flex items-center justify-between px-4 py-2 border-b border-border last:border-0">
+          ].map((c, i) => (
+            <div key={c.name} style={{ transitionDelay: `${500 + i * 120}ms` }} className="hp-mock-in flex items-center justify-between px-4 py-2 border-b border-border last:border-0">
               <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${c.status}`} />
+                <div className={`w-2 h-2 rounded-full ${c.status} ${c.neg ? "hp-alert-dot" : ""}`} />
                 <span className="text-xs font-medium">{c.name}</span>
               </div>
               <span className="text-xs text-muted-foreground">{c.cost}</span>
@@ -251,6 +319,8 @@ function LatestFromBlog() {
               <Link
                 key={post._id}
                 href={`/blog/${post.slug}`}
+                data-reveal
+                style={{ transitionDelay: `${i * 90}ms` }}
                 className="group flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
               >
                 {imageUrl ? (
@@ -294,21 +364,24 @@ export default function LandingPage() {
 
   return (
     <PublicLayout>
+      <ScrollProgress />
       {/* ── HERO ── */}
       <section id="hero" className="relative pt-28 pb-10 px-6 overflow-hidden">
+        <div aria-hidden className="hp-orb hp-orb-a" />
+        <div aria-hidden className="hp-orb hp-orb-b" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/8 via-background to-background pointer-events-none" />
         <div className="max-w-5xl mx-auto text-center relative z-10">
 
           {/* Badge — entrance d0 */}
           <div className="animate-hero animate-hero-d0 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-8 shadow-sm">
-            <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse" />
+            <span className="hp-ping relative flex h-2 w-2 rounded-full bg-primary mr-2" />
             AI cost &amp; margin visibility for founders
           </div>
 
           {/* Headline — entrance d1 */}
           <h1 className="animate-hero animate-hero-d1 text-5xl md:text-7xl font-bold tracking-tight mb-6 font-outfit text-foreground leading-[1.08]">
             Your AI bill keeps climbing.{" "}
-            <span className="text-primary">Do you know who&apos;s driving it up?</span>
+            <span className="hp-shimmer text-primary">Do you know who&apos;s driving it up?</span>
           </h1>
 
           {/* Subtext — entrance d2 */}
@@ -323,7 +396,7 @@ export default function LandingPage() {
               className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 w-full sm:w-auto shadow-sm"
               data-testid="hero-cta"
             >
-              Start monitoring now <ArrowRight className="ml-2 w-5 h-5" />
+              Start monitoring now <ArrowRight className="hp-arrow ml-2 w-5 h-5" />
             </Link>
             <a
               href="/docs"
@@ -396,7 +469,7 @@ export default function LandingPage() {
                 style={{ transitionDelay: delay }}
                 className={`rounded-xl border p-6 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 ${bg}`}
               >
-                <Icon className={`w-8 h-8 ${color} mb-4`} />
+                <Icon className={`hp-icon w-8 h-8 ${color} mb-4`} />
                 <h3 className="font-bold text-lg mb-2 text-foreground">{title}</h3>
                 <p className="text-muted-foreground leading-relaxed text-sm">{desc}</p>
               </div>
@@ -433,14 +506,14 @@ export default function LandingPage() {
             <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">No rebuild required. No data engineering stack. One identifier per call is all it takes.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-12 relative">
-            <div className="hidden md:block absolute top-6 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-border" />
+            <div data-reveal className="hp-line hidden md:block absolute top-6 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-border" />
             {[
               { num: "1", title: "Connect", desc: "Point AI Observly at your OpenAI, Anthropic, or Gemini usage. Attach a customer_id, feature tag, and plan to your existing calls — no rebuild required.", note: "~2 minutes", delay: "0s" },
               { num: "2", title: "Attribute", desc: "Every request is automatically mapped to the customer, feature, and plan that generated it. No spreadsheets, no manual tagging after the fact.", note: "~5 lines of code", delay: "0.1s" },
               { num: "3", title: "Decide", desc: "Your dashboard surfaces cost, margin, and ROI at the customer, feature, and plan level — so pricing, roadmap, and account decisions are based on data, not a hunch.", note: "Live in seconds", delay: "0.2s" },
             ].map(({ num, title, desc, note, delay }) => (
               <div key={num} data-reveal style={{ transitionDelay: delay }} className="relative flex flex-col items-start">
-                <div className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold font-outfit mb-6 shadow-md z-10">{num}</div>
+                <div className="hp-pop w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold font-outfit mb-6 shadow-md z-10">{num}</div>
                 <span className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">{note}</span>
                 <h3 className="text-xl font-bold mb-3 text-foreground">{title}</h3>
                 <p className="text-muted-foreground leading-relaxed">{desc}</p>
@@ -496,7 +569,7 @@ export default function LandingPage() {
                 style={{ transitionDelay: delay }}
                 className="flex gap-5 p-6 rounded-xl border border-border bg-card shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
               >
-                <div className="w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                <div className="hp-icon w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5" />
                 </div>
                 <div>

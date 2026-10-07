@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useSignup } from "@/hooks/use-api";
 import { Sparkles } from "lucide-react";
 import { GoogleSignInButton } from "@/components/google-sign-in-button";
+import { initializeAmplitude } from "@/components/amplitude-init";
+import * as amplitude from "@amplitude/unified";
 
 const signupSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -35,9 +37,14 @@ export default function Signup() {
     signupMutation.mutate(
       { email: data.email, password: data.password },
       {
-        onSuccess: () => {
+        onSuccess: async () => {
           localStorage.setItem("ai_observly_user_name", data.name.trim());
           fireEvent("signup_complete");
+          if (await initializeAmplitude()) {
+            await amplitude
+              .track("Signed Up", { prompt_version: "BA400.4" })
+              .promise.catch(() => undefined);
+          }
           router.push("/dashboard");
         },
         onError: () => {
@@ -47,11 +54,16 @@ export default function Signup() {
     );
   };
 
-  const handleGoogleSuccess = (name: string, email: string) => {
+  const handleGoogleSuccess = async (name: string, email: string) => {
     localStorage.setItem("ai_observly_authed", "true");
     localStorage.setItem("ai_observly_user_name", name);
     localStorage.setItem("ai_observly_user_email", email);
     fireEvent("signup_complete");
+    if (await initializeAmplitude()) {
+      await amplitude
+        .track("Signed Up", { prompt_version: "BA400.4" })
+        .promise.catch(() => undefined);
+    }
     router.push("/dashboard");
   };
 

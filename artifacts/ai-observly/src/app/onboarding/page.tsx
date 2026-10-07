@@ -4,7 +4,9 @@ import { useRouter } from "next/navigation";
 import { useGenerateKey } from "@/hooks/use-api";
 import { useToast } from "@/hooks/use-toast";
 import { ProtectedRoute } from "@/components/protected-route";
+import { initializeAmplitude } from "@/components/amplitude-init";
 import { Copy, AlertCircle, ArrowRight } from "lucide-react";
+import * as amplitude from "@amplitude/unified";
 
 function OnboardingContent() {
   const router = useRouter();
@@ -19,8 +21,17 @@ function OnboardingContent() {
 
   const handleGenerateKey = () => {
     generateKey.mutate(undefined, {
-      onSuccess: (data) => {
+      onSuccess: async (data) => {
         setApiKey(data.keyDisplay);
+        if (await initializeAmplitude()) {
+          await amplitude
+            .track("Connected Provider", {
+              provider: "ai_observly",
+              integration: "api_key",
+              prompt_version: "BA400.4",
+            })
+            .promise.catch(() => undefined);
+        }
       },
     });
   };
