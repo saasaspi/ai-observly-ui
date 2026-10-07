@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { PublicLayout } from "@/components/public-layout";
+import { SetupPaths } from "@/components/setup-paths";
 import { PositioningMatrix } from "@/components/positioning-matrix";
 import Link from "next/link";
 import {
@@ -503,36 +504,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
-      <section id="how-it-works" className="py-24 px-6 bg-card border-y border-border">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Setup in minutes</p>
-            <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Three steps from raw invoice to real margin</h2>
-            <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">No rebuild required. No data engineering stack. One identifier per call is all it takes.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-12 relative">
-            <div data-reveal className="hp-line hidden md:block absolute top-6 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-border" />
-            {[
-              { num: "1", title: "Connect", desc: "Point AI Observly at your OpenAI, Anthropic, or Gemini usage. Attach a customer_id, feature tag, and plan to your existing calls — no rebuild required.", note: "~2 minutes", delay: "0s" },
-              { num: "2", title: "Attribute", desc: "Every request is automatically mapped to the customer, feature, and plan that generated it. No spreadsheets, no manual tagging after the fact.", note: "~5 lines of code", delay: "0.1s" },
-              { num: "3", title: "Decide", desc: "Your dashboard surfaces cost, margin, and ROI at the customer, feature, and plan level — so pricing, roadmap, and account decisions are based on data, not a hunch.", note: "Live in seconds", delay: "0.2s" },
-            ].map(({ num, title, desc, note, delay }) => (
-              <div key={num} data-reveal style={{ transitionDelay: delay }} className="relative flex flex-col items-start">
-                <div className="hp-pop w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xl font-bold font-outfit mb-6 shadow-md z-10">{num}</div>
-                <span className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">{note}</span>
-                <h3 className="text-xl font-bold mb-3 text-foreground">{title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
-          <div data-reveal className="mt-12 text-center">
-            <Link href="/docs" className="inline-flex items-center gap-2 text-primary font-medium hover:underline text-sm">
-              Read the full integration guide <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
-      </section>
+      <SetupPaths />
 
       {/* ── FEATURES ── */}
       <section id="features" className="py-24 px-6 bg-background">
