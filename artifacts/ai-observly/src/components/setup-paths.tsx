@@ -37,7 +37,7 @@ const paths = [
 
 export function SetupPaths() {
   return (
-    <section id="how-it-works" className="sp-section relative py-24 px-6 bg-card border-y border-border overflow-hidden">
+    <section id="how-it-works" className="sp-section pub-section relative py-16 md:py-24 px-6 bg-card border-y border-border overflow-hidden">
       <div aria-hidden className="sp-wash" />
       <div className="relative max-w-5xl mx-auto">
         <div className="text-center mb-14">
@@ -46,7 +46,7 @@ export function SetupPaths() {
             Two ways in. One moment that matters.
           </h2>
           <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">
-            Choose the route that fits how you build. Either way, you finish by watching your first real AI usage show up.
+            Pick the route that fits how you build. You finish when your first real usage appears.
           </p>
         </div>
 
@@ -56,7 +56,7 @@ export function SetupPaths() {
               key={p.id}
               data-reveal
               style={{ transitionDelay: `${i * 0.12}s` }}
-              className="sp-card flex flex-col rounded-2xl border border-border bg-background p-7 shadow-sm"
+              className="sp-card pub-card pub-card-link bg-background"
             >
               <div className="flex items-center gap-3 mb-5">
                 <div className="hp-icon w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
@@ -67,7 +67,7 @@ export function SetupPaths() {
               <h3 className="text-xl font-bold text-foreground mb-2">{p.title}</h3>
               <p className="text-muted-foreground text-sm leading-relaxed mb-6">{p.blurb}</p>
 
-              <ol className="sp-steps flex-1 space-y-4 mb-6">
+              <ol className="sp-steps flex-1 space-y-3 mb-6">
                 {p.steps.map((s, n) => (
                   <li key={s} className="sp-step flex gap-3 items-start" style={{ ["--i" as string]: n }}>
                     <span className="sp-num shrink-0 w-7 h-7 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-bold font-outfit flex items-center justify-center">
@@ -84,7 +84,7 @@ export function SetupPaths() {
 
               <Link
                 href={p.href}
-                className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline underline-offset-4 mt-auto"
+                className="pub-btn pub-btn-secondary w-full sm:w-auto mt-auto self-start"
               >
                 {p.cta} <ArrowRight className="hp-arrow w-4 h-4" />
               </Link>

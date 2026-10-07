@@ -119,10 +119,10 @@ export function FeaturePageShell({ data }: { data: FeaturePageData }) {
             <p className="text-lg text-muted-foreground leading-relaxed mb-8">
               {data.hero.subhead}
             </p>
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-wrap items-center gap-4 sm:gap-5">
               <Link
                 href="/pricing"
-                className="inline-flex items-center gap-2 h-13 px-7 py-3.5 rounded-lg bg-primary text-primary-foreground font-semibold text-base hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 shadow-sm"
+                className="pub-btn pub-btn-primary pub-btn-lg"
               >
                 View Pricing <ArrowRight className="w-4 h-4" />
               </Link>
@@ -176,10 +176,10 @@ export function FeaturePageShell({ data }: { data: FeaturePageData }) {
             <div className="p-4 sm:p-6">{data.productPreview.visual}</div>
           </div>
           <p className="mt-4 text-sm text-muted-foreground text-center">{data.productPreview.caption}</p>
-          <div className="mt-6 flex justify-center">
+          <div className="mt-8 flex justify-center">
             <Link
               href="/pricing"
-              className="inline-flex items-center gap-2 h-11 px-6 rounded-lg bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 shadow-sm"
+              className="pub-btn pub-btn-primary"
             >
               View Pricing <ArrowRight className="w-4 h-4" />
             </Link>
@@ -205,7 +205,7 @@ export function FeaturePageShell({ data }: { data: FeaturePageData }) {
                 <p className="text-muted-foreground leading-relaxed mb-6">{section.body}</p>
                 <Link
                   href="/pricing"
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline transition-colors"
+                  className="pub-link"
                 >
                   View Pricing <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -245,7 +245,7 @@ export function FeaturePageShell({ data }: { data: FeaturePageData }) {
                 <p className="text-muted-foreground leading-relaxed mb-5">{tab.body}</p>
                 <Link
                   href={tab.link}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
+                  className="pub-link"
                 >
                   {tab.linkLabel} <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -264,7 +264,7 @@ export function FeaturePageShell({ data }: { data: FeaturePageData }) {
               <Link
                 key={f.href}
                 href={f.href}
-                className="group bg-card border border-border rounded-xl p-5 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 transition-all duration-200"
+                className="group pub-card pub-card-link bg-card"
               >
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-1">{f.label}</p>
                 <p className="font-semibold text-foreground text-sm leading-snug group-hover:text-primary transition-colors">
@@ -289,15 +289,15 @@ export function FeaturePageShell({ data }: { data: FeaturePageData }) {
       </section>
 
       {/* ── FOOTER CTA ── */}
-      <section className="py-24 px-6 bg-primary text-primary-foreground">
+      <section className="py-16 md:py-24 px-6 bg-primary text-primary-foreground">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold font-outfit mb-3 leading-snug">
             {data.footerCta.headline}
           </h2>
-          <p className="text-primary-foreground/80 text-lg mb-8">{data.footerCta.subhead}</p>
+          <p className="text-primary-foreground/80 text-lg mb-10">{data.footerCta.subhead}</p>
           <Link
             href="/pricing"
-            className="inline-flex items-center gap-2 h-14 px-8 text-base rounded-lg bg-white text-primary font-bold hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 shadow-sm"
+            className="pub-btn pub-btn-inverse pub-btn-lg"
           >
             View Pricing <ArrowRight className="w-4 h-4" />
           </Link>

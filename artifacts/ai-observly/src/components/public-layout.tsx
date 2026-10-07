@@ -199,7 +199,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                       <Link
                         href="/pricing"
                         onClick={() => setFeaturesOpen(false)}
-                        className="block text-center text-xs font-semibold bg-primary text-primary-foreground rounded-lg px-3 py-2 hover:opacity-90 transition-opacity"
+                        className="pub-btn pub-btn-primary w-full !h-9 !text-xs"
                       >
                         View Pricing
                       </Link>
@@ -325,7 +325,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             </Link>
             <Link
               href="/signup"
-              className="text-sm bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:opacity-90 transition-opacity shadow-sm"
+              className="pub-btn pub-btn-primary !h-10 !text-sm"
               data-testid="link-signup"
             >
               Sign up
@@ -468,7 +468,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
               </Link>
               <Link
                 href="/signup"
-                className="px-3 py-2.5 rounded-md text-sm font-medium bg-primary text-primary-foreground text-center hover:opacity-90 transition-opacity"
+                className="pub-btn pub-btn-primary w-full"
                 onClick={() => setMobileOpen(false)}
               >
                 Start Monitoring now

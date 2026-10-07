@@ -5,10 +5,10 @@ import type { ReactNode } from "react";
 
 function Frame({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="bg-card p-5 sm:p-6">
-      <div className="flex items-center justify-between gap-3 mb-4">
+    <div className="bg-card p-4 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-4">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{title}</p>
-        <span className="shrink-0 rounded-full border border-dashed border-primary/40 bg-primary/5 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">
+        <span className="shrink-0 rounded-full border border-dashed border-primary/40 bg-primary/5 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-primary">
           Example, not live data
         </span>
       </div>
@@ -36,12 +36,12 @@ export function SavingsHeroVisual() {
         </div>
         <div className="grid grid-cols-2 gap-3 mt-4">
           <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3">
-            <p className="text-[10px] uppercase font-semibold text-emerald-700 tracking-wider">Saved</p>
+            <p className="text-[11px] uppercase font-semibold text-emerald-700 tracking-wider">Saved</p>
             <p className="text-2xl font-bold font-outfit text-emerald-700">$212</p>
             <p className="text-[11px] text-emerald-700/80">by reusing earlier work</p>
           </div>
           <div className="rounded-xl bg-amber-50 border border-amber-100 p-3">
-            <p className="text-[10px] uppercase font-semibold text-amber-700 tracking-wider">Missed</p>
+            <p className="text-[11px] uppercase font-semibold text-amber-700 tracking-wider">Missed</p>
             <p className="text-2xl font-bold font-outfit text-amber-700">$148</p>
             <p className="text-[11px] text-amber-700/80">could have been reused</p>
           </div>
@@ -106,7 +106,7 @@ export function SavingsTableVisual() {
   ];
   return (
     <div>
-      <div className="flex text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-4 py-2 border-b border-border">
+      <div className="flex text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-4 py-2 border-b border-border">
         <span className="flex-1">Feature</span>
         <span className="w-20 text-right">Saved</span>
         <span className="w-20 text-right">Missed</span>
@@ -118,7 +118,7 @@ export function SavingsTableVisual() {
           <span className="w-20 text-right font-semibold text-amber-700">{r.missed}</span>
         </div>
       ))}
-      <p className="px-4 py-2 text-[10px] text-muted-foreground border-t border-border">Example numbers for illustration only.</p>
+      <p className="px-4 py-2 text-[11px] text-muted-foreground border-t border-border">Example numbers for illustration only.</p>
     </div>
   );
 }
@@ -171,7 +171,7 @@ export function SpeedSlowCostlyVisual() {
             <span className="font-medium text-foreground">{r.f}</span>
             <span className="text-xs text-muted-foreground">waited {r.w}</span>
             <span className="text-xs font-semibold text-foreground">{r.c}</span>
-            {r.hot && <span className="hidden sm:inline text-[10px] font-semibold uppercase text-red-600">Slow + costly</span>}
+            {r.hot && <span className="hidden sm:inline text-[11px] font-semibold uppercase text-red-600">Slow + costly</span>}
           </div>
         ))}
       </div>
@@ -215,7 +215,7 @@ export function SpeedProvidersVisual() {
       <div className="p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3 mb-4">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Typical wait by service</p>
-          <span className="shrink-0 rounded-full border border-dashed border-primary/40 bg-primary/5 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary">Example, not live data</span>
+          <span className="shrink-0 rounded-full border border-dashed border-primary/40 bg-primary/5 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-primary">Example, not live data</span>
         </div>
         <div className="space-y-3">
           {rows.map((r) => (
@@ -225,7 +225,7 @@ export function SpeedProvidersVisual() {
             </div>
           ))}
         </div>
-        <p className="text-[11px] text-muted-foreground mt-3">Shorter bar means a shorter wait. Shapes are illustrative.</p>
+        <p className="text-xs text-muted-foreground mt-4">Shorter bar means a shorter wait. Shapes are illustrative.</p>
       </div>
     </div>
   );
@@ -307,7 +307,7 @@ export function ReliabilityEndingsVisual() {
           </div>
         ))}
       </div>
-      <p className="text-[11px] text-muted-foreground mt-3">A tool handoff is normal: the AI asked another system to do a step.</p>
+      <p className="text-xs text-muted-foreground mt-4">A tool handoff is normal: the AI asked another system to do a step.</p>
     </Frame>
   );
 }
@@ -320,7 +320,7 @@ export function ReliabilityTableVisual() {
   ];
   return (
     <div>
-      <div className="flex text-[10px] font-semibold text-muted-foreground uppercase tracking-wider px-4 py-2 border-b border-border">
+      <div className="flex text-[11px] font-semibold text-muted-foreground uppercase tracking-wider px-4 py-2 border-b border-border">
         <span className="flex-1">Reason</span>
         <span className="w-20 text-right">Requests</span>
         <span className="w-20 text-right">Money spent</span>
@@ -332,7 +332,7 @@ export function ReliabilityTableVisual() {
           <span className="w-20 text-right font-semibold text-red-600">{r.c}</span>
         </div>
       ))}
-      <p className="px-4 py-2 text-[10px] text-muted-foreground border-t border-border">Example numbers for illustration only.</p>
+      <p className="px-4 py-2 text-[11px] text-muted-foreground border-t border-border">Example numbers for illustration only.</p>
     </div>
   );
 }

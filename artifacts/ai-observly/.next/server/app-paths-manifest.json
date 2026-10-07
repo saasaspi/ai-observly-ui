@@ -1,3 +1,7 @@
 {
-  "/page": "app/page.js"
+  "/napi/recent-posts/route": "app/napi/recent-posts/route.js",
+  "/icon.png/route": "app/icon.png/route.js",
+  "/features/ai-savings/page": "app/features/ai-savings/page.js",
+  "/page": "app/page.js",
+  "/use-cases/founders/page": "app/use-cases/founders/page.js"
 }

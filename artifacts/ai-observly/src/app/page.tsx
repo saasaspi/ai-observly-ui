@@ -40,7 +40,7 @@ const faqs = [
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-border rounded-xl overflow-hidden bg-card shadow-sm cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300" onClick={() => setOpen(!open)}>
+    <div className="pub-card !p-0 overflow-hidden bg-card cursor-pointer" onClick={() => setOpen(!open)}>
       <div className="flex items-center justify-between p-6 gap-4">
         <h3 className="font-semibold text-foreground text-base leading-snug">{q}</h3>
         {open ? <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0" /> : <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />}
@@ -186,14 +186,15 @@ function DashboardMockup() {
     <div ref={ref} className={`hp-float ${animated ? "hp-live" : ""} relative w-full max-w-2xl mx-auto mt-12 rounded-2xl border border-border shadow-2xl shadow-primary/10 bg-card overflow-hidden`}>
       <span aria-hidden className="hp-sheen" />
       {/* Browser chrome */}
-      <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border bg-muted/30">
-        <div className="w-3 h-3 rounded-full bg-red-400/70" />
-        <div className="w-3 h-3 rounded-full bg-yellow-400/70" />
-        <div className="w-3 h-3 rounded-full bg-green-400/70" />
-        <span className="ml-3 text-xs text-muted-foreground font-mono">AI Observly, Dashboard</span>
+      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 px-4 py-3 border-b border-border bg-muted/30">
+        <div className="hidden sm:block w-3 h-3 rounded-full bg-red-400/70" />
+        <div className="hidden sm:block w-3 h-3 rounded-full bg-yellow-400/70" />
+        <div className="hidden sm:block w-3 h-3 rounded-full bg-green-400/70" />
+        <span className="sm:ml-3 text-xs font-semibold sm:font-normal text-foreground sm:text-muted-foreground">Sample dashboard</span>
+        <span className="ml-auto rounded-full border border-dashed border-primary/40 bg-primary/5 px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-primary">Illustrative</span>
       </div>
 
-      <div className="p-6 space-y-5">
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
         {/* Summary cards with count-up */}
         <div className="grid grid-cols-3 gap-2 sm:gap-4">
           {[
@@ -202,16 +203,16 @@ function DashboardMockup() {
             { label: "Net Margin", value: `+$${profit.toLocaleString()}`, sub: "from AI features", color: "text-green-600" },
           ].map((s, i) => (
             <div key={s.label} className="hp-mock-in bg-background border border-border rounded-lg p-2 sm:p-3 min-w-0" style={{ transitionDelay: `${i * 90}ms` }}>
-              <p className="text-[9px] sm:text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 leading-tight">{s.label}</p>
-              <p className={`text-sm sm:text-xl font-bold font-outfit leading-tight break-all ${s.color}`}>{s.value}</p>
-              <p className="text-[9px] sm:text-[10px] text-muted-foreground leading-snug">{s.sub}</p>
+              <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide sm:tracking-wider mb-1 leading-tight">{s.label}</p>
+              <p className={`text-base sm:text-xl font-bold font-outfit leading-tight ${s.color}`}>{s.value}</p>
+              <p className="text-[10px] text-muted-foreground leading-snug">{s.sub}</p>
             </div>
           ))}
         </div>
 
         {/* Bar chart with grow-up animation */}
-        <div className="bg-background border border-border rounded-lg p-4">
-          <p className="text-xs font-semibold text-muted-foreground mb-3">Monthly AI Cost vs Revenue</p>
+        <div className="hidden sm:block bg-background border border-border rounded-lg p-4">
+          <p className="text-xs font-semibold text-foreground mb-3">Monthly AI cost, sample trend</p>
           <div className="flex items-end gap-1.5 h-20">
             {bars.map((h, i) => (
               <div
@@ -233,24 +234,25 @@ function DashboardMockup() {
 
         {/* Customer rows */}
         <div className="bg-background border border-border rounded-lg overflow-hidden">
-          <div className="px-4 py-2 border-b border-border flex justify-between text-[10px] font-semibold text-muted-foreground uppercase">
-            <span>Customer</span><span>AI Cost</span><span>Margin</span>
+          <div className="px-4 py-2 border-b border-border grid grid-cols-[minmax(0,1fr)_4.5rem_4.5rem] gap-2 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+            <span>Customer</span><span className="text-right">AI cost</span><span className="text-right">Margin</span>
           </div>
           {[
             { name: "Acme Corp", cost: "$380", margin: "-$60", status: "bg-red-500", neg: true },
             { name: "Verity Labs", cost: "$315", margin: "+$95", status: "bg-yellow-500", neg: false },
             { name: "Moonshot AI", cost: "$95", margin: "+$315", status: "bg-green-500", neg: false },
           ].map((c, i) => (
-            <div key={c.name} style={{ transitionDelay: `${500 + i * 120}ms` }} className="hp-mock-in flex items-center justify-between px-4 py-2 border-b border-border last:border-0">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${c.status} ${c.neg ? "hp-alert-dot" : ""}`} />
-                <span className="text-xs font-medium">{c.name}</span>
+            <div key={c.name} style={{ transitionDelay: `${500 + i * 120}ms` }} className="hp-mock-in grid grid-cols-[minmax(0,1fr)_4.5rem_4.5rem] gap-2 items-center px-4 py-2.5 border-b border-border last:border-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className={`w-2 h-2 shrink-0 rounded-full ${c.status} ${c.neg ? "hp-alert-dot" : ""}`} />
+                <span className="text-xs font-medium truncate">{c.name}</span>
               </div>
-              <span className="text-xs text-muted-foreground">{c.cost}</span>
-              <span className={`text-xs font-bold ${c.neg ? "text-red-600" : "text-green-600"}`}>{c.margin}</span>
+              <span className="text-xs text-muted-foreground text-right tabular-nums">{c.cost}</span>
+              <span className={`text-xs font-bold text-right tabular-nums ${c.neg ? "text-red-600" : "text-green-600"}`}>{c.margin}</span>
             </div>
           ))}
         </div>
+        <p className="text-[11px] text-muted-foreground text-center">Illustrative example, not live customer data.</p>
       </div>
     </div>
   );
@@ -291,7 +293,7 @@ function LatestFromBlog() {
   if (posts.length === 0) return null;
 
   return (
-    <section id="blog-preview" className="py-24 px-6 bg-background">
+    <section id="blog-preview" className="pub-section py-16 md:py-24 px-6 bg-background">
       <div className="max-w-5xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12">
           <div>
@@ -304,7 +306,7 @@ function LatestFromBlog() {
           </div>
           <Link
             href="/blog"
-            className="shrink-0 text-sm font-medium text-primary hover:underline underline-offset-2 flex items-center gap-1"
+            className="pub-link shrink-0"
           >
             View all posts <ArrowRight className="w-4 h-4" />
           </Link>
@@ -330,7 +332,7 @@ function LatestFromBlog() {
                 href={`/blog/${post.slug}`}
                 data-reveal
                 style={{ transitionDelay: `${i * 90}ms` }}
-                className="group flex flex-col bg-card border border-border rounded-xl overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+                className="group pub-card pub-card-link bg-card !p-0 overflow-hidden"
               >
                 {imageUrl ? (
                   <div className="relative w-full aspect-[16/9] overflow-hidden bg-muted">
@@ -345,7 +347,7 @@ function LatestFromBlog() {
                 ) : (
                   <div className="w-full aspect-[16/9] bg-primary/5" />
                 )}
-                <div className="p-5 flex flex-col flex-1">
+                <div className="p-6 flex flex-col flex-1">
                   <p className="text-[11px] text-muted-foreground mb-2">
                     {formatBlogDate(post.publishedAt)}
                   </p>
@@ -394,30 +396,30 @@ export default function LandingPage() {
           </h1>
 
           {/* Subtext, entrance d2 */}
-          <p className="animate-hero animate-hero-d2 text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            AI Observly attributes every OpenAI, Anthropic, and Gemini call to a customer, a feature, and a plan, so you can see margin, not just spend. Then check whether you are saving on repeated work, how long customers wait, and what failed requests cost.
+          <p className="animate-hero animate-hero-d2 text-xl text-muted-foreground mb-12 max-w-xl mx-auto leading-relaxed">
+            See which customer, feature, and plan each OpenAI, Anthropic, and Gemini call belongs to. Know your margin, not just your spend.
           </p>
 
           {/* CTAs, entrance d3 */}
-          <div className="animate-hero animate-hero-d3 flex flex-col sm:flex-row items-center justify-center gap-4">
+          <div className="animate-hero animate-hero-d3 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5">
             <Link
               href="/signup"
-              className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 w-full sm:w-auto shadow-sm"
+              className="pub-btn pub-btn-primary pub-btn-lg w-full sm:w-auto"
               data-testid="hero-cta"
             >
               Start monitoring now <ArrowRight className="hp-arrow ml-2 w-5 h-5" />
             </Link>
             <a
               href="/docs"
-              className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg border border-border bg-card hover:bg-muted hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 w-full sm:w-auto"
+              className="pub-btn pub-btn-secondary pub-btn-lg w-full sm:w-auto"
             >
               See how to integrate
             </a>
           </div>
 
           {/* Optional note under CTAs */}
-          <p className="animate-hero animate-hero-d3 text-sm text-muted-foreground mt-5">
-            No data engineer required, one identifier per call is all it takes.
+          <p className="animate-hero animate-hero-d3 text-sm text-muted-foreground mt-6">
+            No data engineer needed. One identifier per call.
           </p>
 
           {/* Dashboard mockup, entrance d4 */}
@@ -428,7 +430,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── PROBLEM ── */}
-      <section id="problem" className="py-24 px-6 bg-background">
+      <section id="problem" className="pub-section py-16 md:py-24 px-6 bg-background">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Sound familiar?</p>
@@ -444,7 +446,7 @@ export default function LandingPage() {
                 color: "text-red-500",
                 bg: "bg-red-50 border-red-100",
                 title: "Invoice up, MRR flat, no explanation",
-                desc: "Your provider invoice goes up every month, faster than MRR, and the total number alone can't tell you why.",
+                desc: "Your provider invoice outpaces MRR, and the total can't say why.",
                 delay: "0s",
               },
               {
@@ -452,7 +454,7 @@ export default function LandingPage() {
                 color: "text-yellow-600",
                 bg: "bg-yellow-50 border-yellow-100",
                 title: "One customer costs more than they pay",
-                desc: "One customer could be costing you more than they pay you, and you won't find out until months of margin have already leaked away.",
+                desc: "One account may cost more than it pays, and you find out months late.",
                 delay: "0.1s",
               },
               {
@@ -460,7 +462,7 @@ export default function LandingPage() {
                 color: "text-blue-500",
                 bg: "bg-blue-50 border-blue-100",
                 title: "Free-tier users eating your AI budget",
-                desc: "Trial and low-tier users might be quietly eating a disproportionate share of your AI spend, with zero revenue to show for it.",
+                desc: "Trial and low-tier users may use a big share of spend with no revenue.",
                 delay: "0s",
               },
               {
@@ -468,7 +470,7 @@ export default function LandingPage() {
                 color: "text-purple-500",
                 bg: "bg-purple-50 border-purple-100",
                 title: "You don't know which plan covers its AI cost",
-                desc: "You don't actually know which pricing plan covers its own AI cost, and which one is subsidized by every other customer.",
+                desc: "Which plan covers its own AI cost, and which is subsidized?",
                 delay: "0.1s",
               },
             ].map(({ icon: Icon, color, bg, title, desc, delay }) => (
@@ -476,7 +478,7 @@ export default function LandingPage() {
                 key={title}
                 data-reveal
                 style={{ transitionDelay: delay }}
-                className={`rounded-xl border p-6 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 ${bg}`}
+                className={`pub-card ${bg}`}
               >
                 <Icon className={`hp-icon w-8 h-8 ${color} mb-4`} />
                 <h3 className="font-bold text-lg mb-2 text-foreground">{title}</h3>
@@ -488,18 +490,18 @@ export default function LandingPage() {
             <div
               data-reveal
               style={{ transitionDelay: "0.1s" }}
-              className="md:col-span-2 rounded-xl border bg-foreground/5 border-foreground/10 p-6 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+              className="md:col-span-2 pub-card bg-foreground/5 border-foreground/10 flex flex-col sm:flex-row items-start sm:items-center gap-4"
             >
               <Zap className="w-8 h-8 text-primary shrink-0" />
               <div>
                 <h3 className="font-bold text-lg mb-1 text-foreground">Some features are cash cows. Others lose money on every call.</h3>
-                <p className="text-muted-foreground leading-relaxed text-sm">Some of your AI features are probably cash cows. Others are losing money on every call. Right now, you can&apos;t tell which is which.</p>
+                <p className="text-muted-foreground leading-relaxed text-sm">Some AI features earn their keep. Others lose money on every call. Today you can&apos;t tell which.</p>
               </div>
             </div>
           </div>
 
           {/* Closing line */}
-          <p data-reveal style={{ transitionDelay: "0.2s" }} className="text-center text-muted-foreground text-lg mt-12 max-w-2xl mx-auto font-medium">
+          <p data-reveal style={{ transitionDelay: "0.2s" }} className="text-center text-muted-foreground text-lg mt-10 md:mt-12 max-w-2xl mx-auto font-medium">
             Total bill is one number. MRR is another.{" "}
             <span className="text-foreground font-semibold">AI Observly is the bridge between them.</span>
           </p>
@@ -509,37 +511,37 @@ export default function LandingPage() {
       <SetupPaths />
 
       {/* ── FEATURES ── */}
-      <section id="features" className="py-24 px-6 bg-background">
+      <section id="features" className="pub-section py-16 md:py-24 px-6 bg-background">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Core features</p>
             <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Built for the questions your invoice can&apos;t answer</h2>
-            <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">Every feature is designed around the cost and margin questions your provider dashboard was never built to answer.</p>
+            <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">Answers your provider dashboard can't give.</p>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {[
               {
                 icon: Users,
                 title: "Per-Customer Cost Attribution",
-                desc: "Every API call gets mapped to the customer_id that triggered it. Instantly see your top spenders, find the small slice of users eating most of your bill, and catch a margin-negative account before it costs you a full quarter.",
+                desc: "Every call maps to its customer_id. See top spenders and catch a margin-negative account early.",
                 delay: "0s",
               },
               {
                 icon: Zap,
                 title: "Per-Feature Margins & ROI",
-                desc: "See exactly what each AI feature costs to run against what it earns you. Spot the feature that's a genuine cash cow, and the one that's technically 'used' but quietly losing money on every invocation, so you know what to double down on and what to re-scope or retire.",
+                desc: "Compare what each AI feature costs with what it earns. Know what to grow, re-scope, or retire.",
                 delay: "0.1s",
               },
               {
                 icon: CreditCard,
                 title: "Plan & Pricing Profitability",
-                desc: "Break down AI cost by pricing tier. See which plans generate enough revenue to cover the AI cost they create, and which ones are being subsidized by your other customers, so your next pricing change is based on actual unit economics, not a guess.",
+                desc: "See AI cost by pricing tier. Find plans that cover their cost, and plans others subsidize.",
                 delay: "0s",
               },
               {
                 icon: TrendingDown,
                 title: "Trial & Free-Tier Cost Tracking",
-                desc: "Isolate how much of your total AI spend is going to trial and free-tier users before they ever convert. Set usage guardrails with real numbers instead of finding out after the invoice lands.",
+                desc: "See how much spend goes to trial and free users. Set usage guardrails with real numbers.",
                 delay: "0.1s",
               },
             ].map(({ icon: Icon, title, desc, delay }) => (
@@ -547,7 +549,7 @@ export default function LandingPage() {
                 key={title}
                 data-reveal
                 style={{ transitionDelay: delay }}
-                className="flex gap-5 p-6 rounded-xl border border-border bg-card shadow-sm hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300"
+                className="pub-card pub-card-row bg-card"
               >
                 <div className="hp-icon w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5" />
@@ -563,12 +565,12 @@ export default function LandingPage() {
       </section>
 
       {/* ── NEW: SAVINGS / SPEED / RELIABILITY ── */}
-      <section id="new-capabilities" className="py-24 px-6 bg-primary/5 border-y border-primary/10">
+      <section id="new-capabilities" className="pub-section py-16 md:py-24 px-6 bg-primary/5 border-y border-primary/10">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">New</p>
             <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Beyond the bill: savings, speed, and reliability</h2>
-            <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">Three plain-language views of what your AI is really doing for your customers and your budget.</p>
+            <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg max-w-xl mx-auto">Three plain-language views of what your AI does for customers and budget.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {NEW_FEATURES.map((f, i) => {
@@ -579,7 +581,7 @@ export default function LandingPage() {
                   href={f.href}
                   data-reveal
                   style={{ transitionDelay: `${i * 90}ms` }}
-                  className="group flex flex-col bg-card border border-border rounded-2xl p-6 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 transition-all duration-200"
+                  className="group pub-card pub-card-link bg-card"
                 >
                   <div className="hp-icon w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
                     <Icon className="w-5 h-5" />
@@ -587,15 +589,15 @@ export default function LandingPage() {
                   <h3 className="font-bold font-outfit text-foreground group-hover:text-primary transition-colors mb-1">{f.title}</h3>
                   <p className="text-sm font-medium text-foreground/80 mb-2">{f.tagline}</p>
                   <p className="text-sm text-muted-foreground leading-relaxed mb-4">{f.desc}</p>
-                  <span className="text-sm font-semibold text-primary flex items-center gap-1 group-hover:gap-2 transition-all mt-auto">
+                  <span className="pub-card-action">
                     Learn more <ArrowRight className="w-3.5 h-3.5" />
                   </span>
                 </Link>
               );
             })}
           </div>
-          <p data-reveal className="text-center mt-8 text-sm">
-            <Link href={`/blog/${LAUNCH_POST.slug}`} className="text-primary font-medium hover:underline">
+          <p data-reveal className="text-center mt-10 text-sm">
+            <Link href={`/blog/${LAUNCH_POST.slug}`} className="pub-link">
               Read the plain-language guide to all three
             </Link>
           </p>
@@ -603,7 +605,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── QUIZ PROMO SECTION ── */}
-      <section className="py-24 px-6 bg-primary/5 border-y border-primary/10">
+      <section className="pub-section py-16 md:py-24 px-6 bg-primary/5 border-y border-primary/10">
         <div className="max-w-3xl mx-auto text-center">
           <p data-reveal className="text-xs font-bold uppercase tracking-widest text-primary mb-4">
             Find Your AI Blind Spot Quiz
@@ -620,12 +622,12 @@ export default function LandingPage() {
             style={{ transitionDelay: "0.14s" }}
             className="text-muted-foreground text-lg leading-relaxed mb-6 max-w-xl mx-auto"
           >
-            8 quick questions, each peeling back one more layer, from what you spend, to who&apos;s driving it, to whether you&apos;d even notice if it changed. Answer honestly.
+            Eight quick questions on what you spend, who drives it, and whether you would notice a change.
           </p>
           <div
             data-reveal
             style={{ transitionDelay: "0.20s" }}
-            className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground mb-8"
+            className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground mb-10"
           >
             {["8 questions", "~90 seconds", "Nothing saved or uploaded"].map((item) => (
               <span key={item} className="flex items-center gap-1.5">
@@ -637,7 +639,7 @@ export default function LandingPage() {
           <div data-reveal style={{ transitionDelay: "0.26s" }}>
             <Link
               href="/blind-spot-quiz"
-              className="inline-flex items-center justify-center h-14 px-8 text-base rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 shadow-sm"
+              className="pub-btn pub-btn-primary pub-btn-lg"
             >
               Start the Quiz
             </Link>
@@ -646,7 +648,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── WHO IT'S FOR ── */}
-      <section id="who-its-for" className="py-24 px-6 bg-card border-y border-border">
+      <section id="who-its-for" className="pub-section py-16 md:py-24 px-6 bg-card border-y border-border">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">Built for</p>
@@ -667,7 +669,7 @@ export default function LandingPage() {
               <Link
                 key={href}
                 href={href}
-                className="group bg-background border border-border rounded-2xl p-6 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/30 transition-all duration-200 flex flex-col gap-4"
+                className="group pub-card pub-card-link bg-background gap-4"
               >
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5 text-primary" />
@@ -676,7 +678,7 @@ export default function LandingPage() {
                   <h3 className="font-bold font-outfit text-foreground group-hover:text-primary transition-colors mb-1.5">{label}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{detail}</p>
                 </div>
-                <span className="text-sm font-semibold text-primary flex items-center gap-1 group-hover:gap-2 transition-all mt-auto">
+                <span className="pub-card-action">
                   Learn more <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </Link>
@@ -684,9 +686,9 @@ export default function LandingPage() {
           </div>
 
           {/* Comparison table */}
-          <div data-reveal style={{ transitionDelay: "0.1s" }} className="bg-muted/50 border border-border rounded-2xl p-8 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
+          <div data-reveal style={{ transitionDelay: "0.1s" }} className="pub-card bg-muted/50 p-6 sm:p-8">
             <h3 className="text-xl font-bold font-outfit mb-2">How we compare</h3>
-            <p className="text-muted-foreground text-sm mb-6">Tools like <strong>Langfuse</strong>, <strong>Helicone</strong>, and <strong>Datadog</strong> are powerful, but they&apos;re built for engineering teams. We&apos;re the plain-English margin visibility tool for founders who need to know if their AI is making money.</p>
+            <p className="text-muted-foreground text-sm mb-6"><strong>Langfuse</strong>, <strong>Helicone</strong>, and <strong>Datadog</strong> are built for engineers. We show founders, in plain English, if AI makes money.</p>
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
               {[
                 { them: "Complex setup & SDKs", us: "One fire-and-forget call" },
@@ -711,7 +713,7 @@ export default function LandingPage() {
       <LatestFromBlog />
 
       {/* ── FAQ ── */}
-      <section id="faq" className="py-24 px-6 bg-background">
+      <section id="faq" className="pub-section py-16 md:py-24 px-6 bg-background">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <p data-reveal className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">FAQs</p>
@@ -722,17 +724,17 @@ export default function LandingPage() {
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section id="cta" className="py-28 px-6 bg-gradient-to-br from-primary/5 via-background to-indigo-50/40 border-t border-border">
+      <section id="cta" className="py-20 md:py-28 px-6 bg-gradient-to-br from-primary/5 via-background to-indigo-50/40 border-t border-border">
         <div className="max-w-2xl mx-auto text-center">
           <div data-reveal className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-6 shadow-sm">
             <ArrowUpRight className="w-8 h-8" />
           </div>
           <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Stop finding out about margin-negative customers three months late.</h2>
-          <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg mb-10 max-w-lg mx-auto">See your AI spend broken down by customer, feature, and plan, not just as one line on an invoice.</p>
+          <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg mb-10 max-w-lg mx-auto">See AI spend by customer, feature, and plan, not one invoice line.</p>
           <div data-reveal style={{ transitionDelay: "0.24s" }}>
             <Link
               href="/pricing"
-              className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg bg-primary text-primary-foreground hover:opacity-90 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-200 shadow-sm"
+              className="pub-btn pub-btn-primary pub-btn-lg w-full sm:w-auto"
               data-testid="btn-cta-bottom"
             >
               Start monitoring now <ArrowRight className="ml-2 w-5 h-5" />

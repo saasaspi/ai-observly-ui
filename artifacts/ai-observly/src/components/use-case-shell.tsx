@@ -37,7 +37,7 @@ export function UseCaseShell({ data }: { data: UseCaseData }) {
       </section>
 
       {/* The Problem */}
-      <section className="py-20 px-6">
+      <section className="py-16 md:py-24 px-6">
         <div className="max-w-5xl mx-auto">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary text-center mb-3">
             The problem
@@ -49,7 +49,7 @@ export function UseCaseShell({ data }: { data: UseCaseData }) {
             {data.problems.map((p) => (
               <div
                 key={p.label}
-                className="bg-card border border-border rounded-2xl p-6 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+                className="pub-card bg-card"
               >
                 <h3 className="text-base font-bold mb-3 text-foreground">{p.label}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{p.body}</p>
@@ -72,7 +72,7 @@ export function UseCaseShell({ data }: { data: UseCaseData }) {
             {data.helpItems.map((item) => (
               <div
                 key={item.label}
-                className="bg-card border border-primary/20 rounded-2xl p-6 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+                className="pub-card bg-card !border-primary/25"
               >
                 <CheckCircle2 className="w-5 h-5 text-primary mb-4" />
                 <h3 className="text-base font-bold mb-3 text-foreground">{item.label}</h3>
@@ -97,12 +97,12 @@ export function UseCaseShell({ data }: { data: UseCaseData }) {
               <Link
                 key={f.href}
                 href={f.href}
-                className="group bg-card border border-border rounded-2xl p-6 hover:-translate-y-0.5 hover:shadow-md hover:border-primary/40 transition-all duration-200"
+                className="group pub-card pub-card-link bg-card"
               >
                 <p className="text-[10px] font-semibold uppercase tracking-widest text-primary mb-1">New</p>
                 <h3 className="font-bold font-outfit text-foreground group-hover:text-primary transition-colors mb-2">{f.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-3">{f.tagline}</p>
-                <span className="text-sm font-semibold text-primary inline-flex items-center gap-1">
+                <span className="pub-card-action">
                   Learn more <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </Link>
@@ -112,12 +112,12 @@ export function UseCaseShell({ data }: { data: UseCaseData }) {
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6 bg-primary text-primary-foreground text-center">
+      <section className="py-16 md:py-24 px-6 bg-primary text-primary-foreground text-center">
         <div className="max-w-2xl mx-auto">
           <p className="text-lg font-medium mb-7 leading-relaxed opacity-95">{data.ctaLine}</p>
           <Link
             href="/pricing"
-            className="inline-flex items-center gap-2 bg-white text-primary font-semibold px-7 py-3.5 rounded-xl hover:opacity-90 transition-opacity shadow-sm"
+            className="pub-btn pub-btn-inverse pub-btn-lg"
           >
             Start monitoring now <ArrowRight className="w-4 h-4" />
           </Link>
