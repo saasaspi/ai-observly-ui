@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Bot, Code2, Sparkles, Check } from "lucide-react";
+import { ArrowRight, Bot, Code2 } from "lucide-react";
 
 const paths = [
   {
@@ -92,39 +92,6 @@ export function SetupPaths() {
           ))}
         </div>
 
-        {/* Convergence */}
-        <div aria-hidden className="hidden md:flex justify-center">
-          <div className="sp-join" data-reveal />
-        </div>
-
-        <div
-          data-reveal
-          className="sp-arrive relative mx-auto md:mt-0 mt-8 max-w-2xl rounded-2xl border border-primary/25 bg-primary/5 p-6 sm:p-7"
-        >
-          <div className="flex items-start gap-4">
-            <div className="sp-spark shrink-0 w-11 h-11 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-lg font-bold text-foreground mb-1">Then, your first usage entry</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Use your product once, then open AI Observly. You will see that real action recorded, so you know it is working.
-              </p>
-              <div className="mt-4 rounded-xl border border-border bg-background px-4 py-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Example only</span>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-medium text-green-700">
-                    <Check className="w-3 h-3" /> Recorded
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-3 text-sm">
-                  <span className="font-medium text-foreground truncate">Customer: Example Studio</span>
-                  <span className="text-muted-foreground truncate">Feature: Summaries</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );
