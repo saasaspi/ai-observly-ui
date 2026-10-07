@@ -95,7 +95,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
     "block px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors";
 
   return (
-    <div className="min-h-[100dvh] bg-background text-foreground flex flex-col font-sans">
+    <div className="public-site min-h-[100dvh] bg-background text-foreground flex flex-col font-sans">
       <header
         className={`border-b sticky top-0 z-50 transition-all duration-300 ${
           scrolled
@@ -241,7 +241,7 @@ export function PublicLayout({ children }: { children: ReactNode }) {
                           className="block px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors leading-snug"
                           onClick={() => setBlogsOpen(false)}
                         >
-                          {post.title}
+                          {isHome ? post.title.replace(/\s*\u2014\s*/g, ", ") : post.title}
                         </Link>
                       ))}
                       <div className="border-t border-border mt-1 pt-1">

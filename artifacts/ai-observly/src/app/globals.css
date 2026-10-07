@@ -287,3 +287,26 @@ a:hover > .hp-arrow { transform: translateX(4px); }
   .sp-step { opacity: 1 !important; transform: none !important; }
   .sp-card:hover { transform: none; }
 }
+
+/* ── Public polish (scoped) ── */
+.public-site [id] { scroll-margin-top: 5rem; }
+.public-site ::selection { background: hsl(var(--primary) / 0.15); }
+.public-site h1, .public-site h2 { text-wrap: balance; }
+.public-site h2 { letter-spacing: -0.02em; }
+.public-site p { text-wrap: pretty; }
+.public-site a:focus-visible, .public-site button:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; border-radius: 6px; }
+.public-site { background-image: radial-gradient(hsl(var(--primary) / 0.05) 1px, transparent 1px); background-size: 28px 28px; background-attachment: fixed; }
+.public-site #hero { background: linear-gradient(180deg, hsl(var(--primary) / 0.07), transparent 70%); padding-bottom: 5rem; }
+.public-site #hero h1 { letter-spacing: -0.035em; }
+.public-site #hero .shadow-2xl { box-shadow: 0 40px 80px -30px hsl(var(--primary) / 0.35), 0 0 0 6px hsl(var(--primary) / 0.05); }
+.public-site section > div > .grid > div.rounded-xl,
+.public-site section > div > .grid > a.rounded-2xl,
+.public-site section > div > .grid > a.rounded-xl { position: relative; border-radius: 1.25rem; }
+.public-site #problem, .public-site #features { background: linear-gradient(180deg, hsl(var(--background)), hsl(var(--muted) / 0.5) 50%, hsl(var(--background))); }
+.public-site section > div > .text-center > p.uppercase { display: inline-block; padding: 0.3rem 0.85rem; border-radius: 9999px; background: hsl(var(--primary) / 0.08); border: 1px solid hsl(var(--primary) / 0.15); font-size: 0.7rem; }
+.public-site #features .hp-icon, .public-site #new-capabilities .hp-icon { background: linear-gradient(135deg, hsl(var(--primary) / 0.16), hsl(var(--primary) / 0.05)); box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.15); }
+.public-site #cta { background: radial-gradient(ellipse at 50% 0%, hsl(var(--primary) / 0.12), transparent 65%), hsl(var(--background)); }
+.public-site #faq .rounded-xl:hover { border-color: hsl(var(--primary) / 0.35); }
+.public-site > header { background-image: linear-gradient(90deg, hsl(var(--primary) / 0.05), transparent 40%, hsl(var(--primary) / 0.05)); }
+.public-site > footer { background: linear-gradient(180deg, hsl(var(--card)), hsl(var(--primary) / 0.05)); border-top: 1px solid hsl(var(--primary) / 0.18); }
+.public-site > footer a:hover { color: hsl(var(--primary)); }

@@ -3,3 +3,4 @@
 - [Recharts SVG fill](recharts-svg-fill.md) — CSS vars don't work as SVG fill; use hex colors + Cell component.
 - [Sanity nested array dialogs](sanity-nested-array-dialogs.md) — disable tree editing for nested Docs arrays so autosave does not navigate out of an open item.
 - [Public feature launches](public-feature-launches.md) — plain-language launch messaging belongs on public website/blogs, not dashboard functionality.
+- [Homepage punctuation](homepage-copy.md) — use commas instead of em dashes in homepage copy, including displayed CMS text.

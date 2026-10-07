@@ -17,7 +17,7 @@ import { NEW_FEATURES, LAUNCH_POST } from "@/lib/new-features";
 const faqs = [
   {
     q: "Isn't this the same as the usage dashboard my provider already gives me?",
-    a: "No. Your provider dashboard shows you total tokens and total spend. It has no idea which customer, feature, or plan generated that spend — that mapping has to happen on your side, which is exactly what AI Observly does automatically.",
+    a: "No. Your provider dashboard shows you total tokens and total spend. It has no idea which customer, feature, or plan generated that spend, that mapping has to happen on your side, which is exactly what AI Observly does automatically.",
   },
   {
     q: "Do I need to rebuild anything to set this up?",
@@ -33,14 +33,14 @@ const faqs = [
   },
   {
     q: "Can this actually help with pricing, or just reporting?",
-    a: "Both. Once you can see which plans and which customers are margin-negative, you have the numbers to reprice a tier, add a usage cap, or have a direct conversation with a specific account — instead of raising prices across the board and hoping it fixes itself.",
+    a: "Both. Once you can see which plans and which customers are margin-negative, you have the numbers to reprice a tier, add a usage cap, or have a direct conversation with a specific account, instead of raising prices across the board and hoping it fixes itself.",
   },
 ];
 
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-border rounded-xl overflow-hidden bg-card shadow-sm cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all duration-200" onClick={() => setOpen(!open)}>
+    <div className="border border-border rounded-xl overflow-hidden bg-card shadow-sm cursor-pointer hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300" onClick={() => setOpen(!open)}>
       <div className="flex items-center justify-between p-6 gap-4">
         <h3 className="font-semibold text-foreground text-base leading-snug">{q}</h3>
         {open ? <ChevronUp className="w-5 h-5 text-muted-foreground shrink-0" /> : <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />}
@@ -190,7 +190,7 @@ function DashboardMockup() {
         <div className="w-3 h-3 rounded-full bg-red-400/70" />
         <div className="w-3 h-3 rounded-full bg-yellow-400/70" />
         <div className="w-3 h-3 rounded-full bg-green-400/70" />
-        <span className="ml-3 text-xs text-muted-foreground font-mono">AI Observly — Dashboard</span>
+        <span className="ml-3 text-xs text-muted-foreground font-mono">AI Observly, Dashboard</span>
       </div>
 
       <div className="p-6 space-y-5">
@@ -276,6 +276,8 @@ function formatBlogDate(iso: string) {
   });
 }
 
+const noDash = (t: string) => t.replace(/\s*[\u2014]\s*/g, ", ");
+
 function LatestFromBlog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
 
@@ -334,7 +336,7 @@ function LatestFromBlog() {
                   <div className="relative w-full aspect-[16/9] overflow-hidden bg-muted">
                     <Image
                       src={imageUrl}
-                      alt={post.title}
+                      alt={noDash(post.title)}
                       fill
                       className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
                       sizes="(max-width: 768px) 100vw, 33vw"
@@ -348,11 +350,11 @@ function LatestFromBlog() {
                     {formatBlogDate(post.publishedAt)}
                   </p>
                   <h3 className="font-bold font-outfit text-foreground group-hover:text-primary transition-colors leading-snug mb-2 line-clamp-2">
-                    {post.title}
+                    {noDash(post.title)}
                   </h3>
                   {post.metaDescription && (
                     <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 flex-1">
-                      {post.metaDescription}
+                      {noDash(post.metaDescription)}
                     </p>
                   )}
                 </div>
@@ -379,24 +381,24 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/8 via-background to-background pointer-events-none" />
         <div className="max-w-5xl mx-auto text-center relative z-10">
 
-          {/* Badge — entrance d0 */}
+          {/* Badge, entrance d0 */}
           <div className="animate-hero animate-hero-d0 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-8 shadow-sm">
             <span className="hp-ping relative flex h-2 w-2 rounded-full bg-primary mr-2" />
             AI cost &amp; margin visibility for founders
           </div>
 
-          {/* Headline — entrance d1 */}
+          {/* Headline, entrance d1 */}
           <h1 className="animate-hero animate-hero-d1 text-5xl md:text-7xl font-bold tracking-tight mb-6 font-outfit text-foreground leading-[1.08]">
             Your AI bill keeps climbing.{" "}
             <span className="hp-shimmer text-primary">Do you know who&apos;s driving it up?</span>
           </h1>
 
-          {/* Subtext — entrance d2 */}
+          {/* Subtext, entrance d2 */}
           <p className="animate-hero animate-hero-d2 text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-            AI Observly attributes every OpenAI, Anthropic, and Gemini call to a customer, a feature, and a plan — so you can see margin, not just spend. Then check whether you are saving on repeated work, how long customers wait, and what failed requests cost.
+            AI Observly attributes every OpenAI, Anthropic, and Gemini call to a customer, a feature, and a plan, so you can see margin, not just spend. Then check whether you are saving on repeated work, how long customers wait, and what failed requests cost.
           </p>
 
-          {/* CTAs — entrance d3 */}
+          {/* CTAs, entrance d3 */}
           <div className="animate-hero animate-hero-d3 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/signup"
@@ -407,7 +409,7 @@ export default function LandingPage() {
             </Link>
             <a
               href="/docs"
-              className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg border border-border bg-card hover:bg-muted hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 w-full sm:w-auto"
+              className="inline-flex items-center justify-center h-14 px-8 text-lg font-medium rounded-lg border border-border bg-card hover:bg-muted hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 w-full sm:w-auto"
             >
               See how to integrate
             </a>
@@ -415,10 +417,10 @@ export default function LandingPage() {
 
           {/* Optional note under CTAs */}
           <p className="animate-hero animate-hero-d3 text-sm text-muted-foreground mt-5">
-            No data engineer required — one identifier per call is all it takes.
+            No data engineer required, one identifier per call is all it takes.
           </p>
 
-          {/* Dashboard mockup — entrance d4 */}
+          {/* Dashboard mockup, entrance d4 */}
           <div className="animate-hero animate-hero-d4">
             <DashboardMockup />
           </div>
@@ -441,8 +443,8 @@ export default function LandingPage() {
                 icon: DollarSign,
                 color: "text-red-500",
                 bg: "bg-red-50 border-red-100",
-                title: "Invoice up, MRR flat — no explanation",
-                desc: "Your provider invoice goes up every month, faster than MRR — and the total number alone can't tell you why.",
+                title: "Invoice up, MRR flat, no explanation",
+                desc: "Your provider invoice goes up every month, faster than MRR, and the total number alone can't tell you why.",
                 delay: "0s",
               },
               {
@@ -466,7 +468,7 @@ export default function LandingPage() {
                 color: "text-purple-500",
                 bg: "bg-purple-50 border-purple-100",
                 title: "You don't know which plan covers its AI cost",
-                desc: "You don't actually know which pricing plan covers its own AI cost — and which one is subsidized by every other customer.",
+                desc: "You don't actually know which pricing plan covers its own AI cost, and which one is subsidized by every other customer.",
                 delay: "0.1s",
               },
             ].map(({ icon: Icon, color, bg, title, desc, delay }) => (
@@ -474,7 +476,7 @@ export default function LandingPage() {
                 key={title}
                 data-reveal
                 style={{ transitionDelay: delay }}
-                className={`rounded-xl border p-6 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 ${bg}`}
+                className={`rounded-xl border p-6 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 ${bg}`}
               >
                 <Icon className={`hp-icon w-8 h-8 ${color} mb-4`} />
                 <h3 className="font-bold text-lg mb-2 text-foreground">{title}</h3>
@@ -482,11 +484,11 @@ export default function LandingPage() {
               </div>
             ))}
 
-            {/* 5th card — spans full width */}
+            {/* 5th card, spans full width */}
             <div
               data-reveal
               style={{ transitionDelay: "0.1s" }}
-              className="md:col-span-2 rounded-xl border bg-foreground/5 border-foreground/10 p-6 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+              className="md:col-span-2 rounded-xl border bg-foreground/5 border-foreground/10 p-6 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300 flex flex-col sm:flex-row items-start sm:items-center gap-4"
             >
               <Zap className="w-8 h-8 text-primary shrink-0" />
               <div>
@@ -525,13 +527,13 @@ export default function LandingPage() {
               {
                 icon: Zap,
                 title: "Per-Feature Margins & ROI",
-                desc: "See exactly what each AI feature costs to run against what it earns you. Spot the feature that's a genuine cash cow, and the one that's technically 'used' but quietly losing money on every invocation — so you know what to double down on and what to re-scope or retire.",
+                desc: "See exactly what each AI feature costs to run against what it earns you. Spot the feature that's a genuine cash cow, and the one that's technically 'used' but quietly losing money on every invocation, so you know what to double down on and what to re-scope or retire.",
                 delay: "0.1s",
               },
               {
                 icon: CreditCard,
                 title: "Plan & Pricing Profitability",
-                desc: "Break down AI cost by pricing tier. See which plans generate enough revenue to cover the AI cost they create, and which ones are being subsidized by your other customers — so your next pricing change is based on actual unit economics, not a guess.",
+                desc: "Break down AI cost by pricing tier. See which plans generate enough revenue to cover the AI cost they create, and which ones are being subsidized by your other customers, so your next pricing change is based on actual unit economics, not a guess.",
                 delay: "0s",
               },
               {
@@ -545,7 +547,7 @@ export default function LandingPage() {
                 key={title}
                 data-reveal
                 style={{ transitionDelay: delay }}
-                className="flex gap-5 p-6 rounded-xl border border-border bg-card shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"
+                className="flex gap-5 p-6 rounded-xl border border-border bg-card shadow-sm hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300"
               >
                 <div className="hp-icon w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5" />
@@ -618,7 +620,7 @@ export default function LandingPage() {
             style={{ transitionDelay: "0.14s" }}
             className="text-muted-foreground text-lg leading-relaxed mb-6 max-w-xl mx-auto"
           >
-            8 quick questions, each peeling back one more layer — from what you spend, to who&apos;s driving it, to whether you&apos;d even notice if it changed. Answer honestly.
+            8 quick questions, each peeling back one more layer, from what you spend, to who&apos;s driving it, to whether you&apos;d even notice if it changed. Answer honestly.
           </p>
           <div
             data-reveal
@@ -659,8 +661,8 @@ export default function LandingPage() {
               { label: "SaaS Founders", detail: "Know which customers and plans are margin-negative before it shows up in your burn rate.", Icon: DollarSign, href: "/use-cases/founders" },
               { label: "Product Managers", detail: "See per-feature AI cost and bring real unit economics into every roadmap call.", Icon: BarChart2, href: "/use-cases/product-managers" },
               { label: "Customer Success", detail: "Catch usage spikes and margin problems before the renewal call, not during it.", Icon: Users, href: "/use-cases/customer-success" },
-              { label: "Engineering", detail: "One fire-and-forget call gets you cost attribution — no proxy, no stored API keys.", Icon: Zap, href: "/use-cases/engineering" },
-              { label: "Finance & Ops", detail: "Per-customer and per-plan cost data — the missing input for your unit economics model.", Icon: CreditCard, href: "/use-cases/finance" },
+              { label: "Engineering", detail: "One fire-and-forget call gets you cost attribution, no proxy, no stored API keys.", Icon: Zap, href: "/use-cases/engineering" },
+              { label: "Finance & Ops", detail: "Per-customer and per-plan cost data, the missing input for your unit economics model.", Icon: CreditCard, href: "/use-cases/finance" },
             ].map(({ label, detail, Icon, href }) => (
               <Link
                 key={href}
@@ -682,9 +684,9 @@ export default function LandingPage() {
           </div>
 
           {/* Comparison table */}
-          <div data-reveal style={{ transitionDelay: "0.1s" }} className="bg-muted/50 border border-border rounded-2xl p-8 hover:shadow-md transition-all duration-200">
+          <div data-reveal style={{ transitionDelay: "0.1s" }} className="bg-muted/50 border border-border rounded-2xl p-8 hover:shadow-lg hover:shadow-primary/10 transition-all duration-300">
             <h3 className="text-xl font-bold font-outfit mb-2">How we compare</h3>
-            <p className="text-muted-foreground text-sm mb-6">Tools like <strong>Langfuse</strong>, <strong>Helicone</strong>, and <strong>Datadog</strong> are powerful — but they&apos;re built for engineering teams. We&apos;re the plain-English margin visibility tool for founders who need to know if their AI is making money.</p>
+            <p className="text-muted-foreground text-sm mb-6">Tools like <strong>Langfuse</strong>, <strong>Helicone</strong>, and <strong>Datadog</strong> are powerful, but they&apos;re built for engineering teams. We&apos;re the plain-English margin visibility tool for founders who need to know if their AI is making money.</p>
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
               {[
                 { them: "Complex setup & SDKs", us: "One fire-and-forget call" },
@@ -726,7 +728,7 @@ export default function LandingPage() {
             <ArrowUpRight className="w-8 h-8" />
           </div>
           <h2 data-reveal style={{ transitionDelay: "0.08s" }} className="text-3xl md:text-4xl font-bold font-outfit mb-4">Stop finding out about margin-negative customers three months late.</h2>
-          <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg mb-10 max-w-lg mx-auto">See your AI spend broken down by customer, feature, and plan — not just as one line on an invoice.</p>
+          <p data-reveal style={{ transitionDelay: "0.16s" }} className="text-muted-foreground text-lg mb-10 max-w-lg mx-auto">See your AI spend broken down by customer, feature, and plan, not just as one line on an invoice.</p>
           <div data-reveal style={{ transitionDelay: "0.24s" }}>
             <Link
               href="/pricing"

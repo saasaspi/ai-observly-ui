@@ -10,7 +10,7 @@ const TOOLS = [
     x: 697, y: 97, r: 9,
     fill: "#2563eb", labelFill: "#1d4ed8", labelWeight: "600",
     labelX: 14, labelY: 4,
-    desc: "Per-customer margin, per-feature ROI, and plan-pricing guidance — built for non-technical AI SaaS founders.",
+    desc: "Per-customer margin, per-feature ROI, and plan-pricing guidance, built for non-technical AI SaaS founders.",
   },
   {
     name: "Costr", cat: "direct", catlabel: "Per-Customer Cost Tool",
@@ -38,7 +38,7 @@ const TOOLS = [
     x: 242, y: 342, r: 6,
     fill: "#94a3b8", labelFill: "#64748b", labelWeight: "400",
     labelX: 12, labelY: 4,
-    desc: "Request-level observability and cost tagging. No revenue or margin data — built for debugging, not pricing.",
+    desc: "Request-level observability and cost tagging. No revenue or margin data, built for debugging, not pricing.",
   },
   {
     name: "Langfuse", cat: "obs", catlabel: "LLM Observability",
@@ -176,9 +176,9 @@ export function PositioningMatrix() {
           >
             <strong className="text-foreground">How to read this:</strong> the
             horizontal axis is{" "}
-            <strong className="text-foreground">who the tool is built for</strong> —
+            <strong className="text-foreground">who the tool is built for</strong>,
             an engineering team, or a non-technical founder. The vertical axis is{" "}
-            <strong className="text-foreground">what problem it solves</strong> —
+            <strong className="text-foreground">what problem it solves</strong>,
             tracing requests, or telling you if a customer is profitable. Hover any
             point for specifics.
           </div>
@@ -198,7 +198,7 @@ export function PositioningMatrix() {
           </p>
 
           <div className="flex items-stretch gap-2">
-            {/* Rotated Y-axis label — desktop only */}
+            {/* Rotated Y-axis label, desktop only */}
             <div className="hidden md:block relative w-8 flex-none select-none">
               <div
                 className="absolute left-1/2 top-1/2 whitespace-nowrap text-[10px] font-mono tracking-wide text-muted-foreground"
@@ -332,7 +332,7 @@ export function PositioningMatrix() {
 
         {/* Footnote */}
         <p className="mt-4 text-[11px] font-mono text-muted-foreground/60 max-w-3xl leading-relaxed">
-          Positioning reflects publicly documented target audiences, setup model, and feature scope as of August 2026 — a qualitative read of the market, not a scored benchmark.
+          Positioning reflects publicly documented target audiences, setup model, and feature scope as of August 2026, a qualitative read of the market, not a scored benchmark.
         </p>
 
       </div>
