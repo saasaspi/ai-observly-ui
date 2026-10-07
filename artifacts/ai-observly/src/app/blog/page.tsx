@@ -1,11 +1,16 @@
 import { client } from '@/lib/sanity/client'
-import { POSTS_QUERY, POSTS_BY_TOPIC_QUERY, TOPIC_OPTIONS, type PostSummary } from '@/lib/sanity/queries'
 import { urlFor } from '@/lib/sanity/image'
 import { PublicLayout } from '@/components/public-layout'
-import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
-import { LaunchCard } from '@/components/launch-article'
+import { Search } from 'lucide-react'
+import { LAUNCH_POST } from '@/lib/new-features'
+import { LAUNCH_READ_MINUTES } from '@/components/launch-article'
+import { BlogCard, FeaturedCard } from '@/components/blog/blog-cards'
+import {
+  BLOG_TOPICS, LAUNCH_TOPIC, buildListingQuery, cleanQuery, launchMatches,
+  minutesFromText, portableTextToPlain, searchTokens, type BlogCardData, type PostWithLength,
+} from '@/lib/blog-utils'
 
 export const revalidate = 60
 
@@ -14,162 +19,123 @@ export const metadata: Metadata = {
   description: 'Insights on AI cost, speed, reliability, unit economics, and margin visibility for founders.',
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
-const TOPIC_COLORS: Record<string, string> = {
-  'Cost & Margin Management': 'bg-primary/10 text-primary',
-  'Unit Economics': 'bg-emerald-50 text-emerald-700',
-  'Comparisons': 'bg-violet-50 text-violet-700',
-  'Data Reports': 'bg-amber-50 text-amber-700',
-}
-
-function TopicBadge({ topic }: { topic: string }) {
-  const cls = TOPIC_COLORS[topic] ?? 'bg-muted text-muted-foreground'
-  return (
-    <span className={`inline-block text-xs font-medium px-2.5 py-1 rounded-full ${cls}`}>
-      {topic}
-    </span>
-  )
-}
-
-function PostCard({ post }: { post: PostSummary }) {
-  const imageUrl = post.coverImage
-    ? urlFor(post.coverImage).width(800).height(420).fit('crop').auto('format').url()
-    : null
-
-  return (
-    <Link
-      href={`/blog/${post.slug}`}
-      className="group flex flex-col bg-card border border-border rounded-2xl overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
-    >
-      {imageUrl ? (
-        <div className="relative w-full aspect-[16/9] overflow-hidden bg-muted">
-          <Image
-            src={imageUrl}
-            alt={post.title}
-            fill
-            className="object-cover group-hover:scale-[1.02] transition-transform duration-300"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-        </div>
-      ) : (
-        <div className="w-full aspect-[16/9] bg-primary/5 flex items-center justify-center">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary/30">
-            <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
-          </svg>
-        </div>
-      )}
-
-      <div className="flex flex-col flex-1 p-6 gap-3">
-        {post.topic && <TopicBadge topic={post.topic} />}
-        <h2 className="text-lg font-bold font-outfit text-foreground group-hover:text-primary transition-colors leading-snug line-clamp-2">
-          {post.title}
-        </h2>
-        {post.metaDescription && (
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3 flex-1">
-            {post.metaDescription}
-          </p>
-        )}
-        <p className="text-xs text-muted-foreground mt-auto pt-2 border-t border-border/50">
-          {formatDate(post.publishedAt)}
-        </p>
-      </div>
-    </Link>
-  )
+function href(topic?: string, q?: string) {
+  const p = new URLSearchParams()
+  if (topic) p.set('topic', topic)
+  if (q) p.set('q', q)
+  const s = p.toString()
+  return s ? `/blog?${s}` : '/blog'
 }
 
 export default async function BlogPage({
   searchParams,
 }: {
-  searchParams: Promise<{ topic?: string }>
+  searchParams: Promise<{ topic?: string | string[]; q?: string | string[] }>
 }) {
-  const { topic } = await searchParams
+  const sp = await searchParams
+  const rawTopic = Array.isArray(sp.topic) ? sp.topic[0] : sp.topic
+  const activeTopic = rawTopic && BLOG_TOPICS.includes(rawTopic) ? rawTopic : undefined
+  const q = cleanQuery(sp.q)
+  const tokens = searchTokens(q)
+  const filtered = Boolean(activeTopic || q)
 
-  const activeTopic = TOPIC_OPTIONS.includes(topic as typeof TOPIC_OPTIONS[number])
-    ? (topic as string)
-    : undefined
+  let posts: PostWithLength[] = []
+  if (activeTopic !== LAUNCH_TOPIC) {
+    const { query, params } = buildListingQuery(Boolean(activeTopic), tokens)
+    posts = await client.fetch(query, activeTopic ? { ...params, topic: activeTopic } : params, { next: { revalidate: 60 } })
+  }
 
-  const posts: PostSummary[] = await client.fetch(
-    activeTopic ? POSTS_BY_TOPIC_QUERY : POSTS_QUERY,
-    activeTopic ? { topic: activeTopic } : {},
-    { next: { revalidate: 60 } },
-  )
+  const cards: BlogCardData[] = posts.map((p) => ({
+    key: p._id,
+    href: `/blog/${p.slug}`,
+    title: p.title,
+    description: p.metaDescription,
+    topic: p.topic,
+    date: p.publishedAt,
+    minutes: minutesFromText(portableTextToPlain(p.body)),
+    imageUrl: p.coverImage ? urlFor(p.coverImage).width(1000).height(560).fit('crop').auto('format').url() : null,
+  }))
+
+  const showLaunch =
+    (!activeTopic || activeTopic === LAUNCH_TOPIC) && launchMatches(LAUNCH_POST.title, LAUNCH_POST.description, tokens)
+  const launch: BlogCardData = {
+    key: 'launch',
+    href: `/blog/${LAUNCH_POST.slug}`,
+    title: LAUNCH_POST.title,
+    description: LAUNCH_POST.description,
+    topic: LAUNCH_TOPIC,
+    minutes: LAUNCH_READ_MINUTES,
+  }
+
+  // Featured: newest real CMS article on the unsearched view, otherwise the launch guide if it is all there is.
+  const all = showLaunch ? [launch, ...cards] : cards
+  const featured = !q && cards.length > 0 ? cards[0] : !q && showLaunch ? launch : null
+  const rest = featured ? all.filter((c) => c.key !== featured.key) : all
+  const total = all.length
 
   return (
     <PublicLayout>
-      <div className="max-w-6xl mx-auto px-6 py-16 w-full">
-        {/* Header */}
-        <div className="mb-12 text-center">
-          <div className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary mb-6 shadow-sm">
-            <span className="flex h-2 w-2 rounded-full bg-primary mr-2 animate-pulse" />
-            AI Observly Blog
-          </div>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 md:py-16 w-full">
+        <header className="mb-10 text-center">
+          <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-4">AI Observly Blog</p>
           <h1 className="text-4xl md:text-5xl font-bold font-outfit tracking-tight text-foreground mb-4">
             Insights on AI cost & margin
           </h1>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto mb-8">
             Practical guidance for founders who want to understand what their AI is actually costing them.
           </p>
-        </div>
 
-        {/* Topic filter */}
-        <div className="flex flex-wrap gap-2 justify-center mb-10">
-          <Link
-            href="/blog"
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              !activeTopic
-                ? 'bg-primary text-primary-foreground shadow-sm'
-                : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
-            }`}
-          >
-            All posts
-          </Link>
-          {TOPIC_OPTIONS.map((t) => (
-            <Link
-              key={t}
-              href={`/blog?topic=${encodeURIComponent(t)}`}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                activeTopic === t
-                  ? 'bg-primary text-primary-foreground shadow-sm'
-                  : 'bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80'
-              }`}
-            >
-              {t}
-            </Link>
-          ))}
-        </div>
+          <form action="/blog" method="get" role="search" className="blog-search">
+            {activeTopic && <input type="hidden" name="topic" value={activeTopic} />}
+            <label htmlFor="blog-q" className="sr-only">Search articles by title or description</label>
+            <input id="blog-q" type="search" name="q" defaultValue={q} placeholder="Search articles, e.g. margin" autoComplete="off" maxLength={80} />
+            <button type="submit" className="pub-btn pub-btn-primary">
+              <Search className="w-4 h-4" aria-hidden="true" /> Search
+            </button>
+          </form>
+        </header>
 
-        {/* Posts grid */}
-        {posts.length === 0 && !activeTopic ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <LaunchCard />
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-muted-foreground text-lg">
-              {activeTopic
-                ? `No posts in "${activeTopic}" yet.`
-                : 'No posts published yet. Check back soon.'}
-            </p>
-            {activeTopic && (
-              <Link href="/blog" className="mt-4 inline-block text-primary hover:underline text-sm">
-                View all posts →
+        <nav aria-label="Filter articles by topic" className="mb-8">
+          <div className="blog-topics no-scrollbar">
+            <Link href={href(undefined, q)} className="blog-topic" aria-current={!activeTopic ? 'page' : undefined}>All posts</Link>
+            {BLOG_TOPICS.map((t) => (
+              <Link key={t} href={href(t, q)} className="blog-topic" aria-current={activeTopic === t ? 'page' : undefined}>
+                {t}
               </Link>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {!activeTopic && <LaunchCard />}
-            {posts.map((post) => (
-              <PostCard key={post._id} post={post} />
             ))}
           </div>
+        </nav>
+
+        <div role="status" aria-live="polite" className="flex flex-wrap items-center justify-between gap-2 mb-6 text-sm text-muted-foreground">
+          <span>
+            {filtered
+              ? `${total} ${total === 1 ? 'article' : 'articles'}${q ? ` matching "${q}"` : ''}${activeTopic ? ` in ${activeTopic}` : ''}`
+              : `${total} ${total === 1 ? 'article' : 'articles'}`}
+          </span>
+          {filtered && total > 0 && <Link href="/blog" className="pub-link">Clear filters</Link>}
+        </div>
+
+        {total === 0 ? (
+          <div className="pub-card items-center text-center py-14 bg-card">
+            <h2 className="text-xl font-bold font-outfit text-foreground mb-2">
+              {filtered ? 'Nothing matches that yet' : 'No posts published yet'}
+            </h2>
+            <p className="text-muted-foreground max-w-md mb-6">
+              {filtered
+                ? 'Try fewer words, check the spelling, or look across every topic.'
+                : 'Check back soon.'}
+            </p>
+            {filtered && <Link href="/blog" className="pub-btn pub-btn-secondary">Clear search and topic</Link>}
+          </div>
+        ) : (
+          <>
+            {featured && <FeaturedCard post={featured} />}
+            {rest.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {rest.map((c) => <BlogCard key={c.key} post={c} />)}
+              </div>
+            )}
+          </>
         )}
       </div>
     </PublicLayout>

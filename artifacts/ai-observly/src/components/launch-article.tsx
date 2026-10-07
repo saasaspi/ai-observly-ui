@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { PublicLayout } from "@/components/public-layout";
+import { BlogShare } from "@/components/blog/blog-share";
+import { NextReads } from "@/components/blog/blog-cards";
+import { minutesFromText, type BlogCardData } from "@/lib/blog-utils";
 import { BlogCta } from "@/components/blog-cta";
 import { LAUNCH_POST, NEW_FEATURES } from "@/lib/new-features";
 import {
@@ -8,6 +11,8 @@ import {
 } from "@/components/new-feature-visuals";
 
 const LABEL = "Product launch";
+const LAUNCH_INTRO = 'Your AI bill tells you what you spent. It does not tell you whether you wasted some of it, whether customers waited too long, or whether requests failed along the way. AI Observly now has three views that answer those questions in everyday language.';
+const LAUNCH_CLOSING = 'If the bill is your worry, start with AI Savings. If customers complain that the product feels sluggish, start with AI Response Speed. If support keeps hearing that something did not work, start with AI Reliability. The three views are separate, so you can use whichever answers your question first.';
 
 const sections: { id: string; h: string; paras: string[]; key: "savings" | "speed" | "reliability"; visual: React.ReactNode }[] = [
   {
@@ -44,6 +49,10 @@ const sections: { id: string; h: string; paras: string[]; key: "savings" | "spee
   },
 ];
 
+// Plain article text, used server-side to derive reading time and nothing else.
+export const LAUNCH_PLAIN_TEXT = [LAUNCH_POST.title, LAUNCH_INTRO, ...sections.flatMap((x) => [x.h, ...x.paras]), LAUNCH_CLOSING].join(" ");
+export const LAUNCH_READ_MINUTES = minutesFromText(LAUNCH_PLAIN_TEXT);
+
 export function LaunchCard() {
   return (
     <Link
@@ -66,7 +75,7 @@ export function LaunchCard() {
   );
 }
 
-export function LaunchArticle() {
+export function LaunchArticle({ nextReads = [] }: { nextReads?: BlogCardData[] }) {
   return (
     <PublicLayout>
       <script
@@ -81,7 +90,7 @@ export function LaunchArticle() {
           }),
         }}
       />
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 w-full">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 w-full blog-article">
         <Link href="/blog" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
           <ArrowLeft className="w-4 h-4" />
           All posts
@@ -91,8 +100,12 @@ export function LaunchArticle() {
           <h1 className="text-3xl md:text-4xl font-bold font-outfit tracking-tight text-foreground mb-6 leading-tight">
             {LAUNCH_POST.title}
           </h1>
-          <p className="text-lg text-muted-foreground leading-relaxed mb-10">
-            Your AI bill tells you what you spent. It does not tell you whether you wasted some of it, whether customers waited too long, or whether requests failed along the way. AI Observly now has three views that answer those questions in everyday language.
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3 mb-8">
+            {LAUNCH_READ_MINUTES && <span className="text-sm text-muted-foreground">{LAUNCH_READ_MINUTES} min read</span>}
+            <BlogShare />
+          </div>
+          <p className="text-xl text-muted-foreground leading-relaxed mb-10">
+            {LAUNCH_INTRO}
           </p>
 
           <nav aria-label="In this article" className="mb-12 rounded-xl border border-border bg-card p-5">
@@ -104,7 +117,7 @@ export function LaunchArticle() {
             </ul>
           </nav>
 
-          <div className="space-y-14">
+          <div className="space-y-14 blog-prose">
             {sections.map((s) => {
               const f = NEW_FEATURES.find((x) => x.key === s.key)!;
               return (
@@ -124,7 +137,7 @@ export function LaunchArticle() {
             <section>
               <h2 className="text-2xl font-bold font-outfit text-foreground mb-4">Which one should you look at first?</h2>
               <p className="text-muted-foreground leading-relaxed mb-4">
-                If the bill is your worry, start with AI Savings. If customers complain that the product feels sluggish, start with AI Response Speed. If support keeps hearing that something did not work, start with AI Reliability. The three views are separate, so you can use whichever answers your question first.
+                {LAUNCH_CLOSING}
               </p>
               <p className="text-muted-foreground leading-relaxed">
                 See the <Link href="/pricing" className="text-primary hover:underline">pricing page</Link> for current plan details.
@@ -133,6 +146,7 @@ export function LaunchArticle() {
           </div>
         </article>
         <BlogCta />
+        <NextReads posts={nextReads} />
       </div>
     </PublicLayout>
   );
