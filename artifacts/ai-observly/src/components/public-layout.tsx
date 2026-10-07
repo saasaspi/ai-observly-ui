@@ -614,7 +614,6 @@ export function PublicLayout({ children }: { children: ReactNode }) {
           </div>
           <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
             <p>© {new Date().getFullYear()} AI Observly. See exactly what your AI costs.</p>
-            <p>Built in public · Made for founders</p>
           </div>
         </div>
       </footer>
